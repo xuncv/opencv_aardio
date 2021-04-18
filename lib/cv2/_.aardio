@@ -1,0 +1,48 @@
+﻿namespace cv2
+
+var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
+imgproc_medianBlur = dll.api("imgproc_medianBlur","int(ptr src,ptr& dst,int ksize)" )
+
+imread = function(path,mode=1){
+	if(..io.exist(path)){
+		return ..cv2.mat(dll.imgcodecs_imreadP(path,mode))
+	}
+	return null; 
+}
+
+imshow = function(winName="",matHandle){
+	dll.highgui_imshow(winName,matHandle)
+}
+
+waitKey = function(code=0){
+	return dll.highgui_waitKey(code)
+}
+
+imwrite = function(){
+	
+}
+
+//中值模糊
+medianBlur = function(srcMat,ksize){
+    dstMat = srcMat.clone()
+	dll.imgproc_medianBlur(srcMat,dstMat,ksize)
+	return dstMat; 
+}
+
+
+videoCapture = function(index,apiPreference=0){
+	return dll.videoio_VideoCapture_new3(index,apiPreference)
+}
+
+_dll = dll
+namespace cv2{
+    import fsys
+	import cv2.mat
+}
+
+/**intellisense(cv2)
+imread() = !matObject
+imread(.(图片路径,载入模式) = 读取图片
+imshow(.(窗口标题,显示内容) = 弹出窗口,显示图片
+waitKey() = 窗口等待键盘指令,返回按键代码
+end intellisense**/

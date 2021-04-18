@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project ver="10" name="opencv_aardio_demo" libEmbed="true" icon="..." ui="console" output="opencv_aardio_demo.exe" CompanyName="单位名称" FileDescription="opencv_aardio_demo" LegalCopyright="Copyright (C) 作者 2021" ProductName="opencv_aardio_demo" InternalName="opencv_aardio_demo" FileVersion="0.0.0.02" ProductVersion="0.0.0.02" publishDir="/dist/" dstrip="false" local="false" ignored="false">
+	<file name="main.aardio" path="main.aardio" comment="启动程序代码"/>
+	<folder name="资源文件" path="res" embed="true" local="false" ignored="false"/>
+	<folder name="unit" path="unit" embed="true" comment="目录" local="false" ignored="false">
+		<file name="readApi.aardio" path="unit\readApi.aardio" comment="unit\readApi.aardio"/>
+	</folder>
+</project>

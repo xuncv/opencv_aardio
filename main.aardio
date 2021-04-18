@@ -1,0 +1,12 @@
+import cv2
+import win
+import console
+
+mat = cv2.imread("./Lena.jpg",1)
+console.log("depth:",mat.depth())
+console.log("type:",mat.type())
+console.log("channels",mat.channels())
+cv2.imshow( "aa",mat )
+cv2.waitKey(0)
+
+console.pause() 

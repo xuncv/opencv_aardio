@@ -1,0 +1,84 @@
+﻿import util.metaProperty
+import console
+namespace cv2;
+class mat{
+	ctor( handle ){
+		var dll = ..cv2._dll;
+		handle = handle : topointer( dll.core_Mat_new1() )
+		this.handle = handle
+		var handle = this.handle
+	};
+	
+	size = function(dim){
+		return dll.core_Mat_sizeAt(handle,dim); 
+	}
+	
+	step = function(){
+		return dll.core_Mat_step(handle); 
+	}
+	
+	empty = function(){
+		return dll.core_Mat_empty(handle)==1;
+	}
+	
+	clone = function(){
+		var retHandle = dll.core_Mat_cloneP(handle)
+		return self.mat(retHandle)
+		//mat(retHandle)
+	}
+	
+	depth = function(){
+		return dll.core_Mat_depth(handle); 
+	}
+	
+	["type"] = function(){
+		return dll.core_Mat_type(handle); 
+	}
+	
+	channels = function(){
+		return dll.core_Mat_channels(handle); 
+	}
+	
+	@_metaProperty;
+}
+
+namespace mat {
+    var dll = ..cv2._dll;
+	_metaProperty = ..util.metaProperty(
+		_topointer = function(){
+			return owner.handle; 
+		}
+		
+		cols = {
+			_get = function(){
+				return dll.core_Mat_cols(owner.handle); 
+			}
+			
+		};
+		width = {
+			_get = function(){
+				return owner.cols; 				
+			}
+		}
+		
+		rows = {
+			_get = function(){
+				return dll.core_Mat_rows(owner.handle); 
+			}
+		}
+		
+		height = {
+			_get = function(){
+				return owner.rows; 
+			}
+		}
+	)
+}
+
+/**intellisense()
+
+end intellisense**/
+
+/**intellisense(!matObject)
+empty() = 判断是否图像是否为空
+end intellisense**/
