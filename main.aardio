@@ -1,12 +1,6 @@
 import cv2
-import win
-import console
-
-mat = cv2.imread("./Lena.jpg",1)
-console.log("depth:",mat.depth())
-console.log("type:",mat.type())
-console.log("channels",mat.channels())
-cv2.imshow( "aa",mat )
+img = cv2.imread("./Lena.jpg",1)
+img = cv2.medianBlur(img,5)
+cv2.imshow( "窗口标题",img )
+cv2.imwrite("result.jpg",img)
 cv2.waitKey(0)
-
-console.pause() 

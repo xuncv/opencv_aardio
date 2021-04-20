@@ -23,7 +23,7 @@ class mat{
 	
 	clone = function(){
 		var retHandle = dll.core_Mat_cloneP(handle)
-		return self.mat(retHandle)
+		return ..cv2.mat(retHandle)
 		//mat(retHandle)
 	}
 	
@@ -39,6 +39,10 @@ class mat{
 		return dll.core_Mat_channels(handle); 
 	}
 	
+	getMat = function(){
+		
+	}
+	
 	@_metaProperty;
 }
 
@@ -47,6 +51,12 @@ namespace mat {
 	_metaProperty = ..util.metaProperty(
 		_topointer = function(){
 			return owner.handle; 
+		}
+		
+		cvPtr = {
+			_get = function(){
+				return dll.core_InputArray_new_byMatP(owner.handle); 
+			}
 		}
 		
 		cols = {
@@ -72,13 +82,11 @@ namespace mat {
 				return owner.rows; 
 			}
 		}
+		
+		shape = {
+			_get = function(){
+				return {owner.height,owner.width,owner.channels()}; 
+			}	
+		}
 	)
 }
-
-/**intellisense()
-
-end intellisense**/
-
-/**intellisense(!matObject)
-empty() = 判断是否图像是否为空
-end intellisense**/

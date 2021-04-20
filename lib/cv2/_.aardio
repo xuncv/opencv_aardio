@@ -1,7 +1,5 @@
 ﻿namespace cv2
-
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
-imgproc_medianBlur = dll.api("imgproc_medianBlur","int(ptr src,ptr& dst,int ksize)" )
 
 imread = function(path,mode=1){
 	if(..io.exist(path)){
@@ -11,6 +9,7 @@ imread = function(path,mode=1){
 }
 
 imshow = function(winName="",matHandle){
+    var winName = ..string.fromto( winName )
 	dll.highgui_imshow(winName,matHandle)
 }
 
@@ -18,18 +17,29 @@ waitKey = function(code=0){
 	return dll.highgui_waitKey(code)
 }
 
-imwrite = function(){
-	
+imwrite = function(filename,img){
+	dll.imgcodecs_imwrite(filename,img)
+}
+// todo
+resize = function(src,width,height,interpolation=0){
+	var dst = ..cv2.mat()
+	var size = {
+		INT width=width;
+		INT height=height;
+	}
+	dll.imgproc_resize(src.cvPtr,dst.cvPtr,::SIZE(width,height),1.0,1.0,interpolation)
 }
 
 //中值模糊
 medianBlur = function(srcMat,ksize){
-    dstMat = srcMat.clone()
-	dll.imgproc_medianBlur(srcMat,dstMat,ksize)
+    var dstMat = ..cv2.mat()
+	dll.imgproc_medianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize)
 	return dstMat; 
 }
 
+// 均值滤波 todo
 
+// todo
 videoCapture = function(index,apiPreference=0){
 	return dll.videoio_VideoCapture_new3(index,apiPreference)
 }
@@ -41,8 +51,19 @@ namespace cv2{
 }
 
 /**intellisense(cv2)
-imread() = !matObject
+imread() = !matObject.
 imread(.(图片路径,载入模式) = 读取图片
 imshow(.(窗口标题,显示内容) = 弹出窗口,显示图片
 waitKey() = 窗口等待键盘指令,返回按键代码
 end intellisense**/
+
+/**intellisense(!matObject)
+type() = 图片类型
+width = 图片宽度
+height = 图片高度
+channels() = 图片通道数
+depth() = 图片深度
+shape = 图片形状，包括高度、宽度、通道数
+empty() = 判断是否图像是否为空
+end intellisense**/
+
