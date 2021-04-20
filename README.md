@@ -1,6 +1,18 @@
 # opencv_aardio
 dll库下载地址：https://github.com/shimat/opencvsharp/releases
 
+###### DEMO
+```
+import cv2
+img = cv2.imread("./Lena.jpg",1)
+img = cv2.medianBlur(img,5)
+cv2.imshow( "窗口标题",img )
+cv2.imwrite("result.jpg",img)
+cv2.waitKey(0)
+```
+
+![](./result.jpg)
+
 opencv具有500多个跨平台的图像处理函数，是目前应用最广的数字图像库。opencv历史发展过程中由C接口慢慢转向C++接口，使其他语言（python除外）调用opencv的难度增大。最近找到一个针对.NET的封装库项目[OpenCvSharp ](https://github.com/shimat/opencvsharp) ，对opencv的接口进行了重新封装，对opencv版本的跟进也很及时。
 
 虽然这个库面向.NET，但其封装的接口对aardio异常友好。使用aardio调用dll时，甚至比.NET更简单方便。
