@@ -1,43 +1,76 @@
 ﻿import util.metaProperty
 import console
+import gdip
 namespace cv2;
 class mat{
-	ctor( handle ){
+	ctor( handle ){ //
 		var dll = ..cv2._dll;
-		handle = handle : topointer( dll.core_Mat_new1() )
-		this.handle = handle
-		var handle = this.handle
+		this.handle = handle : rget(2,dll.core_Mat_new1({ptr p})).p
 	};
 	
-	size = function(dim){
-		return dll.core_Mat_sizeAt(handle,dim); 
+	sizeAt = function(dim){
+		return dll.core_Mat_sizeAt(this.handle,dim); 
+	}
+	
+	size = function(){
+		var err,stu = dll.core_Mat_size(this,::SIZE(0,0))
+		return stu; 
 	}
 	
 	step = function(){
-		return dll.core_Mat_step(handle); 
+		return dll.core_Mat_step(this.handle); 
 	}
 	
 	empty = function(){
-		return dll.core_Mat_empty(handle)==1;
+		return dll.core_Mat_empty(this.handle)==1;
 	}
 	
 	clone = function(){
-		var retHandle = dll.core_Mat_cloneP(handle)
+		var retHandle = dll.core_Mat_cloneP(this.handle)
 		return ..cv2.mat(retHandle)
-		//mat(retHandle)
 	}
 	
 	depth = function(){
-		return dll.core_Mat_depth(handle); 
+		var err,ret = dll.core_Mat_depth(this.handle,{int value})
+		return ret.value; 
 	}
 	
 	["type"] = function(){
-		return dll.core_Mat_type(handle); 
+		var err,ret =  dll.core_Mat_type(this,{int value })
+		return ret.value; 
 	}
 	
 	channels = function(){
-		return dll.core_Mat_channels(handle); 
+		var err,ret =  dll.core_Mat_channels(this,{int value })
+		return ret.value; 
 	}
+	
+	step1 = function(i=0){
+		var err,ret = dll.core_Mat_step1(this,i,{int value})
+		return ret.value; 
+	}
+	
+	getData = function(){
+		var bufferSize = this.rows * this.cols * this.elemSize
+		var buffer = ..raw.buffer( bufferSize );
+		var err,stu = dll.core_Mat_data(this.handle,buffer)
+		..console.log(buffer)
+		return buffer; 
+	}
+	
+	asBitmap = function(){
+		if(this.empty() or this.depth() != 0/*_CV_8U*/) return null;
+		var dst = this;
+		if(this.channels()==1){
+			dst = cv2.cvtColor(this,9/*_CV2_COLOR_GRAY2BGRA*/)
+		}elseif(this.channels==3){
+			dst = cv2.cvtColor( this,0/*_CV2_COLOR_BGR2BGRA*/ )
+		}
+		var bmp,err = ..gdip.bitmap( dst.width,dst.height,0x26200A/*_PixelFormat32bppARGB*/,dst.getData(),dst.step1() )
+		..console.log("mat",bmp,err)
+		return bmp; 
+	}
+	
 	
 	getMat = function(){
 		
@@ -55,13 +88,18 @@ namespace mat {
 		
 		cvPtr = {
 			_get = function(){
-				return dll.core_InputArray_new_byMatP(owner.handle); 
+				var err, stu = dll.core_InputArray_new_byMat(owner.handle,{ptr p});
+				return stu.p
+			}
+			_set = function(){
+				
 			}
 		}
 		
 		cols = {
 			_get = function(){
-				return dll.core_Mat_cols(owner.handle); 
+				var err,stu = dll.core_Mat_cols(owner.handle,{int value}); 
+				return stu.value
 			}
 			
 		};
@@ -73,7 +111,8 @@ namespace mat {
 		
 		rows = {
 			_get = function(){
-				return dll.core_Mat_rows(owner.handle); 
+				var err,stu = dll.core_Mat_rows(owner.handle,{int value}); 
+				return stu.value
 			}
 		}
 		
@@ -87,6 +126,14 @@ namespace mat {
 			_get = function(){
 				return {owner.height,owner.width,owner.channels()}; 
 			}	
+		}
+		
+		elemSize = {
+			_get = function(){
+				var err,stu = dll.core_Mat_elemSize(owner.handle,{int value})
+				return stu.value; 
+			}
+			
 		}
 	)
 }

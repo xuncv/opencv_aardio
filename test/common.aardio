@@ -1,0 +1,24 @@
+import cv2
+
+path = ..io.fullpath("./images/Lena.jpg")
+//调整大小
+img = cv2.imread(path,1/*_CV2_IMREAD_COLOR*/)
+img = cv2.resize( img,::SIZE(500,500) )
+cv2.imshow("调整大小",img)
+//cv2.waitKey()
+
+//转换颜色空间
+img = cv2.cvtColor(img,6/*_CV2_COLOR_BGR2GRAY*/)
+cv2.imshow( "转换颜色空间",img )
+//cv2.waitKey()
+
+img = cv2.threshold(img,127,255)
+
+img = cv2.imread( "./images/tower.jpg",0 )
+img = cv2.gaussianBlur(img, ::SIZE(3,3))
+cv2.imshow( "gaussianBlur",img )
+edge = cv2.canny(img,30,50)
+cv2.imshow( "canny",edge )
+cv2.waitKey()
+
+

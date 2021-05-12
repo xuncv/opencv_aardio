@@ -1,0 +1,11 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="aardio form";right=759;bottom=469)
+winform.add(
+trackbar={cls="trackbar";left=32;top=10;right=730;bottom=40;max=255;min=0;z=1}
+)
+/*}}*/
+
+winform.show();
+win.loopMessage();
+return winform;

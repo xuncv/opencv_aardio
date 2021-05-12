@@ -1,0 +1,27 @@
+import console; 
+import cv2
+
+var path = ..io.fullpath("./Lena.jpg")
+console.log("main",path)
+img = cv2.imread(path,1/*_CV2_IMREAD_COLOR*/)
+if !img.empty() {
+	console.varDump("depth:",img.shape)
+}
+
+console.varDump(img.size())
+console.log("step1:",img.step1())
+console.log(img.channels())
+
+//console.log(data)
+/*
+bmp,err = gdip.bitmap( data )
+gdip.bitmap(
+console.log(bmp,err)
+*/
+
+bmp = img.asBitmap()
+bmp.save("out.jpg",80)
+console.log("w",bmp.width,bmp.height)
+console.log( bmp.getPixel(10,10) )
+console.log(bmp,err)
+console.pause(true);

@@ -1,0 +1,23 @@
+// 模糊函数测试
+import cv2
+
+path = ..io.fullpath("./Lena.jpg")
+src = cv2.imread(path);
+cv2.imshow("输入图像",src)
+
+dst = cv2.medianBlur(src,5)
+cv2.imshow("中值滤波",dst)
+//cv2.waitKey()
+
+dst = cv2.gaussianBlur( src,::SIZE(5,5) )
+cv2.imshow("高斯滤波",dst)
+//cv2.waitKey()
+
+dst = cv2.blur( src,::SIZE(5,5) )
+cv2.imshow("均值滤波",dst)
+//cv2.waitKey()
+
+dst = cv2.boxFilter( src,-1,::SIZE(5,5) )
+cv2.imshow("方框滤波",dst)
+cv2.waitKey()
+cv2.destroyAllWindows()

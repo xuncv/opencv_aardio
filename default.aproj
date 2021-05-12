@@ -5,4 +5,11 @@
 	<folder name="unit" path="unit" embed="true" comment="目录" local="false" ignored="false">
 		<file name="readApi.aardio" path="unit\readApi.aardio" comment="unit\readApi.aardio"/>
 	</folder>
+	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
+		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
+		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
+		<file name="blur.aardio" path="test\blur.aardio" comment="test\blur.aardio"/>
+		<file name="common.aardio" path="test\common.aardio" comment="test\common.aardio"/>
+		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
+	</folder>
 </project>
