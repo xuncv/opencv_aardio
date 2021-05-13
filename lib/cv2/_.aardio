@@ -30,7 +30,7 @@ getTickCount = function(){
 }
 
 imwrite = function(filename,img){
-	dll.imgcodecs_imwrite(filename,img,0,0)
+	dll.imgcodecs_imwrite(filename,img,{},0)
 }
 
 resize = function(src,dsize,fx=1.0,fy=1.0,interpolation=1/*_CV2_INTER_LINEAR*/){
@@ -84,8 +84,8 @@ canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
 	return dst; 	
 }
 
-line = function(src,from,to){
-    var err = dll.imgproc_line(src.cvPtr,from,to,{double a[]={127;127;127;0}},3,1,0)
+line = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0){
+    var err = dll.imgproc_line(src.cvPtr,from,to,scalar,thickness,lineType,shift)
 	return src; 
 }
 
@@ -123,6 +123,7 @@ blur(.(输入图像,::SIZE对象 核大小) = 均值滤波,对于椒盐噪声的
 boxFilter(.(输入图像,输出图像深度 默认-1 与输入图像相同,::SIZE对象 核大小,是否标准化 默认true 为false时与blur函数相同,边缘模式) = 方块滤波
 cvtColor(.(输入图像,颜色空间代码) = 转换颜色空间
 canny(.(输入图像,阈值1,阈值2,Sobel算子大小 默认3,是否使用L2范数 默认true) = 边缘检测
+line(.(输入图像,起点POINT对象,终点POINT对象,颜色Scalar对象BGRA,线条宽度 默认1像素,线条类型 可选 ) = 在输入图像上画直线
 end intellisense**/
 
 /**intellisense(!matObject)
