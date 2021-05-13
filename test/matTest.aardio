@@ -1,16 +1,16 @@
 import console; 
 import cv2
 
-var path = ..io.fullpath("./Lena.jpg")
+var path = ..io.fullpath("./images/Lena.jpg")
 console.log("main",path)
-img = cv2.imread(path,1/*_CV2_IMREAD_COLOR*/)
+img = cv2.imread(path,1)
 if !img.empty() {
 	console.varDump("depth:",img.shape)
 }
 
 console.varDump(img.size())
 console.log("step1:",img.step1())
-console.log(img.channels())
+console.log("channels",img.channels())
 
 //console.log(data)
 /*
@@ -20,7 +20,7 @@ console.log(bmp,err)
 */
 
 bmp = img.asBitmap()
-bmp.save("out.jpg",80)
+bmp.save("out.jpg",100)
 console.log("w",bmp.width,bmp.height)
 console.log( bmp.getPixel(10,10) )
 console.log(bmp,err)

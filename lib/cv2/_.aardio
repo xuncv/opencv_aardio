@@ -135,6 +135,7 @@ depth() = 图片深度
 shape = 图片形状，包括高度、宽度、通道数
 empty() = 判断是否图像是否为空
 size() = 获取图片尺寸,返回::SIZE结构体
+toBitmap() = 转换为bitmap对象,返回bitmap对象
 end intellisense**/
 
 //cv2 常量表

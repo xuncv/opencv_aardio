@@ -1,11 +1,11 @@
 ﻿import util.metaProperty
-import console
 import gdip
 namespace cv2;
 class mat{
 	ctor( handle ){ //
 		var dll = ..cv2._dll;
 		this.handle = handle : rget(2,dll.core_Mat_new1({ptr p})).p
+		..table.gc( this,"delete" )
 	};
 	
 	sizeAt = function(dim){
@@ -50,27 +50,31 @@ class mat{
 		return ret.value; 
 	}
 	
-	getData = function(){
-		var bufferSize = this.rows * this.cols * this.elemSize
-		var buffer = ..raw.buffer( bufferSize );
-		var err,stu = dll.core_Mat_data(this.handle,buffer)
-		..console.log(buffer)
-		return buffer; 
+	isContinuous = function(){
+		var err,ret = dll.core_Mat_isContinuous(this,{int value})
+		return ret.value != 0; 
 	}
 	
-	asBitmap = function(){
+	isSubmatrix = function(){
+		var err,ret = dll.core_Mat_isSubmatrix(this,{int value})
+		return ret.value != 0; 
+	}
+	
+	toBitmap = function(){
 		if(this.empty() or this.depth() != 0/*_CV_8U*/) return null;
 		var dst = this;
 		if(this.channels()==1){
-			dst = cv2.cvtColor(this,9/*_CV2_COLOR_GRAY2BGRA*/)
-		}elseif(this.channels==3){
-			dst = cv2.cvtColor( this,0/*_CV2_COLOR_BGR2BGRA*/ )
+			dst = ..cv2.cvtColor(this,9/*_CV2_COLOR_GRAY2BGRA*/) 
+		}elseif(this.channels()==3){
+			dst = ..cv2.cvtColor( this,0/*_CV2_COLOR_BGR2BGRA*/ )
 		}
-		var bmp,err = ..gdip.bitmap( dst.width,dst.height,0x26200A/*_PixelFormat32bppARGB*/,dst.getData(),dst.step1() )
-		..console.log("mat",bmp,err)
-		return bmp; 
+		var bmp,err = ..gdip.bitmap( dst.width,dst.height,0x26200A/*_PixelFormat32bppARGB*/,dst.data,dst.step1() )
+		return bmp,err;
 	}
 	
+	delete = function(){
+		dll.core_Mat_delete(this)
+	}
 	
 	getMat = function(){
 		
@@ -86,13 +90,17 @@ namespace mat {
 			return owner.handle; 
 		}
 		
+		data = {
+			_get = function(){
+				var err,stu = dll.core_Mat_data(owner.handle,{ptr buffer})
+				return stu.buffer;	
+			}
+		}
+
 		cvPtr = {
 			_get = function(){
 				var err, stu = dll.core_InputArray_new_byMat(owner.handle,{ptr p});
 				return stu.p
-			}
-			_set = function(){
-				
 			}
 		}
 		
@@ -133,7 +141,6 @@ namespace mat {
 				var err,stu = dll.core_Mat_elemSize(owner.handle,{int value})
 				return stu.value; 
 			}
-			
 		}
 	)
 }

@@ -1,7 +1,7 @@
 // 模糊函数测试
 import cv2
 
-path = ..io.fullpath("./Lena.jpg")
+path = ..io.fullpath("./images/Lena.jpg")
 src = cv2.imread(path);
 cv2.imshow("输入图像",src)
 
