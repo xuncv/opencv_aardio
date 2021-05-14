@@ -2,6 +2,23 @@ import cv2
 import cv2.types
 path = ..io.fullpath("./images/Lena.jpg")
 img = cv2.imread(path,1/*_CV2_IMREAD_COLOR*/)
+
 img = cv2.line(img,::POINT(100,100),::POINT(200,200),::Scalar(255,0,255,0),3)
 cv2.imshow("line",img)
+img = cv2.arrowedLine(img,::POINT(200,250),::POINT(270,550),::Scalar(255,0,255,0),3)
+cv2.imshow("arrowedLine",img)
+
+img = cv2.rectangle(img,::POINT(100,100),::POINT(200,200),::Scalar(255,0,255,0),3)
+cv2.imshow("rectangle",img)
+
+img = cv2.circle( img,::POINT(150,150),50,::Scalar(255,0,255,0),-1 )
+cv2.imshow("circle",img)
+
+cv2.ellipse( img,::POINT(100,50),::SIZE(100,50),0,0,360,::Scalar(0,0,255),3 )
+cv2.imshow("ellipse",img)
+
+img = cv2.drawMarker(img,::POINT(100,100),::Scalar(0,0,255),1/*_CV2_MarkerTypes_MARKER_TILTED_CROSS*/,50,10 )
+cv2.imshow("drawMarker",img)
+
 cv2.waitKey()
+

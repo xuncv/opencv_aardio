@@ -1,10 +1,10 @@
 # opencv_aardio
-dll库下载地址：[Releases · xuncv/opencv_aardio (github.com)](https://github.com/xuncv/opencv_aardio/releases)
+dll库下载地址：[[Releases · xuncv/opencv-plugin (github.com)](https://github.com/xuncv/opencv-plugin/releases)](https://github.com/xuncv/opencv_aardio/releases)
 
 ###### DEMO
 ```
 import cv2
-img = cv2.imread("./Lena.jpg",1)
+img = cv2.imread("./images/Lena.jpg",1)
 img = cv2.medianBlur(img,5)
 cv2.imshow( "窗口标题",img )
 cv2.imwrite("result.jpg",img)
@@ -43,6 +43,7 @@ aardio原生支持opencv，我希望能解决以下问题：
 2. 结合aardio桌面优势，如制作上位机软件时可提高工程进度。
 3. 使opencv项目轻量化。（我的conda文件夹已经10+G了）。
 4. 提高opencv启动速度，在算法测试中提高效率。
+5. 实时窗体显示,便于调参。
 
 `2021年4月18日`
 
