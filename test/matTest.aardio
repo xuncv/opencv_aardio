@@ -19,7 +19,7 @@ gdip.bitmap(
 console.log(bmp,err)
 */
 
-bmp = img.asBitmap()
+bmp = img.toBitmap()
 bmp.save("out.jpg",100)
 console.log("w",bmp.width,bmp.height)
 console.log( bmp.getPixel(10,10) )

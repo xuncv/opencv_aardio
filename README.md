@@ -1,7 +1,6 @@
 # opencv_aardio
-dll库下载地址：[[Releases · xuncv/opencv-plugin (github.com)](https://github.com/xuncv/opencv-plugin/releases)](https://github.com/xuncv/opencv_aardio/releases)
+dll库下载地址：https://github.com/xuncv/opencv-plugin/releases
 
-###### DEMO
 ```
 import cv2
 img = cv2.imread("./images/Lena.jpg",1)

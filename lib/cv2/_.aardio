@@ -109,10 +109,15 @@ ellipse = function(src,center,axes,angle,startAngle,endAngle,color,thickness=1,l
 	return src; 
 }
 
-//有问题
 drawMarker = function(src,position,color,markerType,markerSize=20,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
     var err = dll.imgproc_drawMarker(src.cvPtr,position,color,markerType,markerSize,thickness,lineType)
     return src; 
+}
+
+putText = function(src,text,position,font=0/*_CV2_HersheyFonts_FONT_HERSHEY_SIMPLEX*/,fontSize=1,color,thickness=1){
+    if !color color = ::Scalar(255,255,255)
+	var err = imgproc_putText(src.cvPtr,text,position,font,fontSize,color,thickness,0x10/*_CV2_LineTypes_LINE_AA*/,0)
+	return src; 
 }
 
 //
@@ -133,8 +138,6 @@ imgproc_Canny1 = dll.api("imgproc_Canny1","int(pointer src,pointer edges,double 
 imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,struct pt2,struct color,int thickness, int line_type, int shift, double tipLength)" )
 imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
-
-
     
 namespace cv2{
     import fsys
@@ -161,6 +164,7 @@ rectangle(.(输入图像,起点POINT对象,终点POINT对象,颜色Scalar对象B
 circle(.(输入图像,中心点坐标 POINT对象,圆半径,线条颜色 Scalar对象BGRA,线条宽度 默认1像素 为-1时填充闭合区域,线条类型 可选) = 在输入图像上画圆形
 ellipse(.(输入图像,椭圆中心坐标 POINT对象,椭圆长轴短轴 SIZE对象,椭圆旋转角度以度为单位,椭圆弧的起始角度以度为单位,椭圆弧的终止角度以度为单位,线条颜色 Scalar对象BGRA,线条宽度 默认1像素 为-1时填充闭合区域,线条类型 可选) = 在输入图像上画椭圆
 drawMarker(.(输入图像,图案坐标,图案描边颜色,图案类型,图案尺寸 默认20,线条宽带 默认1像素,线条类型 可选) = 在输入图像上画图案
+putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,颜色Scalar对象BGRA 可选,字体粗细 可选) = 在输入图像上写文字
 end intellisense**/
 
 /**intellisense(!matObject)

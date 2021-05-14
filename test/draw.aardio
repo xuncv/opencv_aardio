@@ -20,5 +20,8 @@ cv2.imshow("ellipse",img)
 img = cv2.drawMarker(img,::POINT(100,100),::Scalar(0,0,255),1/*_CV2_MarkerTypes_MARKER_TILTED_CROSS*/,50,10 )
 cv2.imshow("drawMarker",img)
 
+img = cv2.putText(img,"hello Lena!",::POINT(0,500))
+cv2.imshow("putText",img)
+
 cv2.waitKey()
 

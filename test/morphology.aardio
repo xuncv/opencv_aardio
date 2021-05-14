@@ -1,0 +1,9 @@
+//形态学函数测试
+import cv2
+img = cv2.imread( "./images/tower.jpg",0 )
+//边缘检测
+img = cv2.gaussianBlur(img, ::SIZE(3,3))
+cv2.imshow( "gaussianBlur",img )
+edge = cv2.canny(img,30,50)
+cv2.imshow( "canny",edge )
+cv2.waitKey()
