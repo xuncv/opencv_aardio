@@ -1,6 +1,6 @@
 ﻿namespace cv2
 import gdip
-
+import cv2.types
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
 imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
     var path = ..io.fullpath(path)
@@ -120,7 +120,33 @@ putText = function(src,text,position,font=0/*_CV2_HersheyFonts_FONT_HERSHEY_SIMP
 	return src; 
 }
 
-//
+
+getStructuringElement = function(shape=0/*_CV2_MorphShapes_MORPH_RECT*/,ksize,anchor){
+	anchor = anchor : ::POINT(-1,-1)
+	var ref = {pointer p};
+	var err,ret = dll.imgproc_getStructuringElement(shape,ksize,anchor,ref);
+	return ..cv2.mat(ref.p); 
+}
+
+morphologyEx = function(src,op,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
+    anchor = anchor : ::POINT(-1,-1)
+    var dst = ..cv2.mat()
+	if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !borderValue){
+    	borderValue = ::Scalar(0,0,0)
+    }
+    var err = dll.imgproc_morphologyEx(src.cvPtr,dst.cvPtr,op,kernel.cvPtr,anchor,iterations,borderType,borderValue);
+    return dst; 
+}
+
+copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTypes_BORDER_CONSTANT*/,color){
+    var dst = ..cv2.mat();
+    if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !color){
+    	color = ::Scalar(0,0,0)
+    }
+	var err = dll.core_copyMakeBorder(src.cvPtr,dst.cvPtr,top,bottom,left,right,borderType,color)
+	return dst; 
+}
+
 bitwise_not = function(src,dst){
 	
 }
@@ -138,7 +164,7 @@ imgproc_Canny1 = dll.api("imgproc_Canny1","int(pointer src,pointer edges,double 
 imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,struct pt2,struct color,int thickness, int line_type, int shift, double tipLength)" )
 imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
-    
+
 namespace cv2{
     import fsys
 	import cv2.mat
@@ -165,6 +191,9 @@ circle(.(输入图像,中心点坐标 POINT对象,圆半径,线条颜色 Scalar�
 ellipse(.(输入图像,椭圆中心坐标 POINT对象,椭圆长轴短轴 SIZE对象,椭圆旋转角度以度为单位,椭圆弧的起始角度以度为单位,椭圆弧的终止角度以度为单位,线条颜色 Scalar对象BGRA,线条宽度 默认1像素 为-1时填充闭合区域,线条类型 可选) = 在输入图像上画椭圆
 drawMarker(.(输入图像,图案坐标,图案描边颜色,图案类型,图案尺寸 默认20,线条宽带 默认1像素,线条类型 可选) = 在输入图像上画图案
 putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,颜色Scalar对象BGRA 可选,字体粗细 可选) = 在输入图像上写文字
+copyMakeBorder(.(输入图像,上边宽度,下边宽度,左边宽度,右边宽度,边界类型 可选,边框类型为0时,可设置边框颜色 默认黑色) = 扩充图像边框,返回新图像
+getStructuringElement(.(元素形状 默认矩形,元素大小 ::SIZE对象,锚点位置 默认中心点) = 返回指定形状和尺寸的内核矩阵 
+morphologyEx(.(输入图像,形态学类别,锚点中心,迭代次数 默认为1) = 通用形态学变换,可作用在输入图像上
 end intellisense**/
 
 /**intellisense(!matObject)

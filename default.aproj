@@ -3,8 +3,9 @@
 	<file name="main.aardio" path="main.aardio" comment="启动程序代码"/>
 	<folder name="资源文件" path="res" embed="true" local="false" ignored="false"/>
 	<folder name="tools" path="tools" embed="true" comment="目录" local="false" ignored="false">
-		<file name="readApi.aardio" path="unit\readApi.aardio" comment="unit\readApi.aardio"/>
+		<file name="readApi.aardio" path="tools\readApi.aardio" comment="tools\readApi.aardio"/>
 		<file name="enum2const.aardio" path="tools\enum2const.aardio" comment="tools\enum2const.aardio"/>
+		<file name="api.aardio" path="tools\api.aardio" comment="tools\api.aardio"/>
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
 		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>

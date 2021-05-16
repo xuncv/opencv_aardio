@@ -1,5 +1,4 @@
 import win.ui;
-
 /*DSG{{*/
 var winform = win.form(text="全局常量优化工具";right=685;bottom=440;parent=...)
 winform.add(

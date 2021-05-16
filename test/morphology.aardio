@@ -6,4 +6,12 @@ img = cv2.gaussianBlur(img, ::SIZE(3,3))
 cv2.imshow( "gaussianBlur",img )
 edge = cv2.canny(img,30,50)
 cv2.imshow( "canny",edge )
+
+//通用形态学变换
+img = cv2.threshold(img,127,255)
+cv2.imshow( "threshold",img )
+
+kernel = cv2.getStructuringElement(0/*_CV2_MorphShapes_MORPH_RECT*/,::SIZE(5,5) )
+img = cv2.morphologyEx(img,0/*_CV2_MorphTypes_MORPH_ERODE*/,kernel)
+cv2.imshow( "morphologyEx",img )
 cv2.waitKey()
