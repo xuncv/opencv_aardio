@@ -1,0 +1,54 @@
+﻿import cv2
+import util.metaProperty
+namespace cv2;
+class vectorOfMat
+{
+	ctor( arg ){
+		var dll = ..cv2._dll;
+		
+		if type(arg)== type.number {
+			this.handle = dll.vector_Mat_new2P(arg)
+		}elseif(!arg){
+			this.handle = dll.vector_Mat_new1P()
+		}
+		..table.gc( this,"free" )
+	};
+	
+	toArray = function(){
+		var dst = {}
+		var size = this.size;
+		var dstPtr = {}
+		for(i=1;size;1){
+			var m = ..cv2.mat()
+			..table.push( dst, m );
+			..table.push( dstPtr,m.handle )
+		}
+		var re = dll.vector_Mat_assignToArray(this.handle,{ptr p[] = dstPtr})
+		return dstPtr;
+	}
+	
+	free = function(){
+		dll.vector_Mat_delete(this.handle)
+	}
+	
+	@_meta;	
+}
+
+namespace vectorOfMat{
+    var dll = ..cv2._dll;
+    _meta = ..util.metaProperty(
+    	_topointer = function(){
+    		return owner.handle; 
+    	}	
+    	size = {
+    		_get = function(){ 
+    			return dll.vector_Mat_getSize(owner.handle);
+    		}	
+    	};
+    	elemPtr = {
+    		_get = function(){
+    			return dll.vector_Mat_getPointerP(owner.handle); 
+    		}
+    	}
+    )	
+}

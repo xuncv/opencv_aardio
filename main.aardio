@@ -1,6 +1,6 @@
 import cv2
-img = cv2.imread("./images/Lena.jpg",1)
+img = cv2.imread("./images/Lena.jpg",1/*_CV2_IMREAD_COLOR*/)
 img = cv2.medianBlur(img,5)
 cv2.imshow( "窗口标题",img )
-cv2.imwrite("./images/result.jpg",img)
-cv2.waitKey(0)
+//cv2.imwrite("./images/result.jpg",img) 
+cv2.waitKey()

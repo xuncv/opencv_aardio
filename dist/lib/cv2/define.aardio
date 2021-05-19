@@ -326,20 +326,4 @@ _CV2_NormTypes_NORM_HAMMING2=@7/*_CV2_NormTypes_NORM_HAMMING2*/
 _CV2_NormTypes_NORM_TYPE_MASK=@7/*_CV2_NormTypes_NORM_TYPE_MASK*/
 _CV2_NormTypes_NORM_RELATIVE=@8/*_CV2_NormTypes_NORM_RELATIVE*/
 _CV2_NormTypes_NORM_MINMAX=@0x20/*_CV2_NormTypes_NORM_MINMAX*/
-
-_CV2_RetrievalModes_RETR_EXTERNAL=@0/*_CV2_RetrievalModes_RETR_EXTERNAL*/
-_CV2_RetrievalModes_RETR_LIST=@1/*_CV2_RetrievalModes_RETR_LIST*/
-_CV2_RetrievalModes_RETR_CCOMP=@2/*_CV2_RetrievalModes_RETR_CCOMP*/
-_CV2_RetrievalModes_RETR_TREE=@3/*_CV2_RetrievalModes_RETR_TREE*/
-_CV2_RetrievalModes_RETR_FLOODFILL=@4/*_CV2_RetrievalModes_RETR_FLOODFILL*/
-
-_CV2_ContourApproximationModes_CHAIN_APPROX_NONE=@1/*_CV2_ContourApproximationModes_CHAIN_APPROX_NONE*/
-_CV2_ContourApproximationModes_CHAIN_APPROX_SIMPLE=@2/*_CV2_ContourApproximationModes_CHAIN_APPROX_SIMPLE*/
-_CV2_ContourApproximationModes_CHAIN_APPROX_TC89_L1=@3/*_CV2_ContourApproximationModes_CHAIN_APPROX_TC89_L1*/
-_CV2_ContourApproximationModes_CHAIN_APPROX_TC89_KCOS=@4/*_CV2_ContourApproximationModes_CHAIN_APPROX_TC89_KCOS*/
-
-_CV2_LineTypes_FILLED=@-1/*_CV2_LineTypes_FILLED*/
-_CV2_LineTypes_LINE_4=@4/*_CV2_LineTypes_LINE_4*/
-_CV2_LineTypes_LINE_8=@8/*_CV2_LineTypes_LINE_8*/
-_CV2_LineTypes_LINE_AA=@0x10/*_CV2_LineTypes_LINE_AA*/
 end intellisense**/

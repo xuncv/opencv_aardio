@@ -222,6 +222,7 @@ USN=long
 WORD=WORD
 cv\:\:_InputArray*=pointer
 cv\:\:_OutputArray*=pointer
+cv\:\:_InputOutputArray*=pointer
 MyCvScalar=struct
 */
 

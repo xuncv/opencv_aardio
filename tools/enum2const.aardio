@@ -53,6 +53,7 @@ winform.btnConv.oncommand = function(id,event){
 	
 	var prefix = string.match(str,"\s*enum\s+(\S+)\s*{")
 	str = string.replace(str,'//.*?\n','\n')
+	str = string.replace( str, "\/\*.*?\*/","" )
 	str = string.replace(str, "\s*enum\s+(\S+)\s*{","")
 	str = string.replace(str, "}.*","")
 	str = string.replace(str,",",";")

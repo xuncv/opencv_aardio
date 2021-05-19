@@ -1,0 +1,15 @@
+﻿
+namespace cv2.types{}
+
+class ::Scalar{
+	ctor( b,g,r,a=0 ){
+		this.b = b;
+		this.g = g;
+		this.r = r;
+		this.a = a
+	};
+	double b;
+	double g;
+	double r;
+	double a;
+}

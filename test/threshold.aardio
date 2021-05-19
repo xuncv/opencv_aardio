@@ -2,7 +2,10 @@ import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=337;bottom=699)
 winform.add(
-plus={cls="plus";left=12;top=45;right=312;bottom=685;z=2};
+groupbox={cls="groupbox";text="函数选择";left=17;top=38;right=324;bottom=94;edge=1;z=3};
+plus={cls="plus";left=17;top=104;right=317;bottom=744;z=2};
+radiobutton={cls="radiobutton";text="threshold";left=31;top=63;right=136;bottom=80;checked=1;z=4};
+radiobutton2={cls="radiobutton";text="adaptiveThreshold";left=124;top=62;right=275;bottom=86;z=5};
 trackbar={cls="trackbar";left=12;top=10;right=291;bottom=40;max=255;min=0;z=1}
 )
 /*}}*/
@@ -15,12 +18,35 @@ var bmp,err = img.toBitmap()
 winform.plus.setForeground(bmp)
 winform.trackbar.oncommand = function(id,event,pos){
 	if( event == 8/*_SB_ENDSCROLL*/ ){
+		if(winform.radiobutton.checked){
+			winform.text = winform.trackbar.pos
+			var thresh = winform.trackbar.pos
+			var dst = cv2.threshold( img,thresh,255 )
+			bmp,err = dst.toBitmap()
+			winform.plus.setForeground(bmp)
+			winform.plus.redraw()			
+		}
+	}
+}
+
+winform.radiobutton2.oncommand = function(id,event){
+	if(winform.radiobutton2.checked){
+		var dst = cv2.adaptiveThreshold( img,255,1/*_CV2_AdaptiveThresholdTypes_ADAPTIVE_THRESH_GAUSSIAN_C*/,
+			0x0/*_CV2_THRESH_BINARY*/,5,5)
+		bmp,err = dst.toBitmap()
+		winform.plus.setForeground(bmp)
+		winform.plus.redraw()
+	}
+}
+
+winform.radiobutton.oncommand = function(id,event){
+	if(owner.checked){
 		winform.text = winform.trackbar.pos
 		var thresh = winform.trackbar.pos
 		var dst = cv2.threshold( img,thresh,255 )
 		bmp,err = dst.toBitmap()
 		winform.plus.setForeground(bmp)
-		winform.plus.redraw()
+		winform.plus.redraw()		
 	}
 }
 

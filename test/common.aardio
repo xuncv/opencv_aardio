@@ -18,4 +18,9 @@ path = ..io.fullpath("./images/Lena.jpg")
 img = cv2.imread(path,1/*_CV2_IMREAD_COLOR*/)
 img = cv2.copyMakeBorder(img,20,20,20,20,0/*_CV2_BORDER_CONSTANT*/,::Scalar(127,0,0))
 cv2.imshow( "copyMakeBorder",img )
+
+
+img = cv2.bitwise_not(img)
+cv2.imshow( "bitwise_not",img )
+
 cv2.waitKey()

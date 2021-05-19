@@ -77,6 +77,7 @@ threshold = function(src,thresh,maxVal=255,thresholdType=0x0/*_CV2_THRESH_BINARY
 	return dst
 }
 
+imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
 adaptiveThreshold = function(src,maxValue,adaptiveMethod=1/*_CV2_AdaptiveThresholdTypes_ADAPTIVE_THRESH_GAUSSIAN_C*/,thresholdType=0x0/*_CV2_THRESH_BINARY*/,blockSize,C){
 	var dst = ..cv2.mat();
 	imgproc_adaptiveThreshold(src.cvPtr,dst.cvPtr,maxValue,adaptiveMethod,thresholdType,blockSize,C);
@@ -220,26 +221,13 @@ normalize = function(src,alpha=null,beta=null,normType=null,dtype=null,mask=null
 }
 */
 
-findContours = function(src,mode=3/*_CV2_RetrievalModes_RETR_TREE*/,method=2/*_CV2_ContourApproximationModes_CHAIN_APPROX_SIMPLE*/){
-    var contours = ..cv2.vectorOfMat()
-    var hierarchy = ..cv2.mat()
-	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
-	return src,contours,hierarchy; 
-}
-
-drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
-    var contoursLength = contours.size  
-    color = color : (::Scalar(0,255,0))
-    var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours.toArray() },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
-	return src; 
-}
-
 // todo
 videoCapture = function(index,apiPreference=0){
 	return dll.videoio_VideoCapture_new3(index,apiPreference)
 }
 
 _dll = dll
+import console
 imgproc_GaussianBlur = dll.api("imgproc_GaussianBlur","int(pointer src,pointer dst,struct ksize,double sigmaX, double sigmaY, int borderType)")
 imgproc_resize = dll.api("imgproc_resize","pointer(pointer,pointer,struct,double,double,int)")
 imgproc_threshold = dll.api("imgproc_threshold","int(pointer src,pointer dst,double thresh,double maxVal, int type, double& returnValue)")
@@ -247,11 +235,10 @@ imgproc_Canny1 = dll.api("imgproc_Canny1","int(pointer src,pointer edges,double 
 imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,struct pt2,struct color,int thickness, int line_type, int shift, double tipLength)" )
 imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
-imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
+
 namespace cv2{
     import fsys
 	import cv2.mat
-	import cv2.vectorOfMat
 	import cv2.types
 }
 
@@ -287,8 +274,6 @@ bitwise_or(.(输入图像1,输入图像2) = 对图像的每一个像素值进行
 bitwise_xor(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑异或操作
 bitwise_not(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑非操作
 distanceTransform(.(输入图像,距离算法类型,距离变换腌膜大小) = 距离变换
-findContours(.(输入图像,轮廓检索模式,轮廓近似方法) = 轮廓检测
-drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
 end intellisense**/
 
 /**intellisense(!matObject)

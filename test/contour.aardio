@@ -1,0 +1,11 @@
+import cv2
+src = cv2.imread( "./images/contour.png",0 )
+img = cv2.threshold(src,180,255,0x8/*_CV_THRESH_OTSU*/)
+cv2.imshow( "threshold",img )
+
+img,contours,hierarchy = cv2.findContours(img)
+
+src = cv2.imread( "./images/contour.png",1 ) //读入彩色图像,便于标记
+img = cv2.drawContours(src,contours,-1,::Scalar(0,255,0),5)
+cv2.imshow( tostring(contours.size),img )
+cv2.waitKey()
