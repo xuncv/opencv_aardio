@@ -72,10 +72,25 @@ class mat{
 		return bmp,err;
 	}
 	
+	zeros = function(rows,cols,tp){
+		var err,ret = dll.core_Mat_zeros1(rows,cols,tp,{pointer p})
+		return ret.p; 
+	}
+	
+	ones = function(rows,cols,tp){
+		var err,ret = dll.core_Mat_ones1(rows,cols,tp,{pointer p})
+		return ret.p; 
+	}
+	
+	convertTo = function(rtype,alpha=1,beta=0){
+		var dst = ..cv2.mat();
+		var err = core_Mat_convertTo(this,dst.cvPtr,rtype,alpha,beta)
+		return dst; 
+	}
+	
 	delete = function(){
 		dll.core_Mat_delete(this)
 	}
-	
 	getMat = function(){
 		
 	}
@@ -84,7 +99,9 @@ class mat{
 }
 
 namespace mat {
+    import cv2.matExpr
     var dll = ..cv2._dll;
+    core_Mat_convertTo= dll.api("core_Mat_convertTo","INT(pointer self, pointer m, int rtype, double alpha, double beta)")
 	_metaProperty = ..util.metaProperty(
 		_topointer = function(){
 			return owner.handle; 

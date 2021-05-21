@@ -1,5 +1,5 @@
 ﻿namespace cv2
-
+import console
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
 imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
     var path = ..io.fullpath(path)
@@ -89,8 +89,12 @@ canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
 	return dst; 	
 }
 
+f2i = function(p){
+    return ::POINT(p.x,p.y); 
+}
+
 line = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0,tipLength=0.1){
-    var err = dll.imgproc_line(src.cvPtr,from,to,scalar,thickness,lineType,shift)
+    var err = dll.imgproc_line(src.cvPtr,f2i(from),f2i(to),scalar,thickness,lineType,shift)
 	return src; 
 }
 
@@ -212,31 +216,51 @@ distanceTransform = function(src,distanceType,maskSize){
 	return dst; 
 }
 
-/*
-normalize(.(输入图像,) = 图像归一化
 core_normalize= dll.api("core_normalize","INT(pointer src,pointer dst,double alpha,double beta,int normType,int dtype,pointer mask)")
-normalize = function(src,alpha=null,beta=null,normType=null,dtype=null,mask=null){
+normalize = function(src,alpha,beta,normType=0x20/*_CV2_NormTypes_NORM_MINMAX*/,dtype=-1,mask){
 	var dst = ..cv2.mat();
+	//mask = mask : ..cv2.mat().cvPtr
+	var err = core_normalize(src.cvPtr,dst.cvPtr,alpha,beta,normType,dtype,topointer(0))
+	return dst; 
 }
-*/
+
 
 findContours = function(src,mode=3/*_CV2_RetrievalModes_RETR_TREE*/,method=2/*_CV2_ContourApproximationModes_CHAIN_APPROX_SIMPLE*/){
     var contours = ..cv2.vectorOfMat()
     var hierarchy = ..cv2.mat()
 	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
-	return src,contours,hierarchy; 
+	return src,contours.toArray(),hierarchy; 
 }
 
 drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
-    var contoursLength = contours.size  
+    var contoursLength = #contours  
     color = color : (::Scalar(0,255,0))
-    var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours.toArray() },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
+    var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
 	return src; 
 }
 
+minAreaRect = function(points){
+    var err,ret = dll.imgproc_minAreaRect_InputArray(..cv2.mat(points).cvPtr,::RotatedRect( ::POINTF(),::POINTF(),0 ))
+	return ret; 
+}
+
+boxPoints = function(box){
+    var ref = {
+		struct value[] = {
+			length = 4;
+			::POINTF();
+		}
+    }
+    var err = dll.imgproc_boxPoints_Point2f(box,ref)
+    return ref.value;
+}
+
+
 // todo
 videoCapture = function(index,apiPreference=0){
-	return dll.videoio_VideoCapture_new3(index,apiPreference)
+    var err,ret = dll.videoio_VideoCapture_new3(index,apiPreference,{pointer p})
+    //ret.p
+	return ..cv2.videoCapture(ret.p) 
 }
 
 _dll = dll
@@ -249,7 +273,9 @@ imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,str
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
 imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
 namespace cv2{
+    //import cv2.videoCapture
     import fsys
+    
 	import cv2.mat
 	import cv2.vectorOfMat
 	import cv2.types
@@ -280,8 +306,9 @@ putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,
 copyMakeBorder(.(输入图像,上边宽度,下边宽度,左边宽度,右边宽度,边界类型 可选,边框类型为0时,可设置边框颜色 默认黑色) = 扩充图像边框,返回新图像
 getStructuringElement(.(元素形状 默认矩形,元素大小 ::SIZE对象,锚点位置 默认中心点) = 返回指定形状和尺寸的内核矩阵 
 morphologyEx(.(输入图像,形态学类别,结构内核,迭代次数 默认为1) = 通用形态学变换,可作用在输入图像上
-erode(.(输入图像,结构内核,迭代次数 默认为1) = 腐蚀操作,可作用在输入图像上
-dilate(.(输入图像,结构内核,迭代次数 默认为1) = 膨胀操作,可作用在输入图像上
+erode(.(输入图像,结构内核,迭代次数 默认为1) = 腐蚀操作
+dilate(.(输入图像,结构内核,迭代次数 默认为1) = 膨胀操作
+normalize(.(输入图像,alpha值,beta值) = 图像归一化
 bitwise_and(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑与操作
 bitwise_or(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑或操作
 bitwise_xor(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑异或操作
@@ -289,6 +316,8 @@ bitwise_not(.(输入图像1,输入图像2) = 对图像的每一个像素值进�
 distanceTransform(.(输入图像,距离算法类型,距离变换腌膜大小) = 距离变换
 findContours(.(输入图像,轮廓检索模式,轮廓近似方法) = 轮廓检测
 drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
+minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
+boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
 end intellisense**/
 
 /**intellisense(!matObject)

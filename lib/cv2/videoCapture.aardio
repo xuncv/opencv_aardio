@@ -1,0 +1,21 @@
+﻿
+namespace cv2
+class videoCapture{
+	ctor( cameraPtr ){
+		this.ptr = cameraPtr
+	};
+	
+	read = function(){
+		var dst = ..cv2.mat()
+		dll.videoio_VideoCapture_retrieve_OutputArray(this.ptr,dst.cvPtr,0,0)
+		return dst; 
+	}
+	
+}
+
+namespace videoCapture{
+    //import cv2
+	dll = ..cv2._dll;
+    //import cv2.mat
+	
+}

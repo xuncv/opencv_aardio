@@ -1,11 +1,20 @@
 import cv2
 src = cv2.imread( "./images/contour.png",0 )
 img = cv2.threshold(src,180,255,0x8/*_CV_THRESH_OTSU*/)
-cv2.imshow( "threshold",img )
+//cv2.imshow( "threshold",img )
 
 img,contours,hierarchy = cv2.findContours(img)
 
 src = cv2.imread( "./images/contour.png",1 ) //读入彩色图像,便于标记
 img = cv2.drawContours(src,contours,-1,::Scalar(0,255,0),5)
-cv2.imshow( tostring(contours.size),img )
+
+for(i=1;#contours;1){
+	var ret = cv2.minAreaRect(contours[i])
+	var points = cv2.boxPoints(ret)
+	cv2.line( img,points[1],points[2],::Scalar(255,127,0),3)
+	cv2.line( img,points[2],points[3],::Scalar(255,127,0),3)
+	cv2.line( img,points[3],points[4],::Scalar(255,127,0),3)
+	cv2.line( img,points[4],points[1],::Scalar(255,127,0),3)
+}
+cv2.imshow( "contours",img )
 cv2.waitKey()

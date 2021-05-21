@@ -13,3 +13,14 @@ class ::Scalar{
 	double r;
 	double a;
 }
+
+class ::RotatedRect{ //RotatedRect
+	ctor( center,size,angle ){
+		this.center = center;
+		this.size = size;
+		this.angle = angle;
+	};
+	struct center;
+	struct size;
+	float angle;
+}

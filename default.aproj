@@ -15,5 +15,9 @@
 		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
 		<file name="morphology.aardio" path="test\morphology.aardio" comment="test\morphology.aardio"/>
 		<file name="contour.aardio" path="test\contour.aardio" comment="test\contour.aardio"/>
+		<file name="video.aardio" path="test\video.aardio" comment="test\vedio.aardio"/>
+	</folder>
+	<folder name="samples" path="samples" embed="true" comment="目录" local="false" ignored="false">
+		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>
 	</folder>
 </project>

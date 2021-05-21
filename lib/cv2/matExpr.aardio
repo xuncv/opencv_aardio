@@ -1,0 +1,10 @@
+﻿
+namespace cv2
+
+class matExpr{
+	ctor( ptr ){
+		
+	};
+	
+	
+}

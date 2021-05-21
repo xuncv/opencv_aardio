@@ -1,5 +1,4 @@
-﻿import cv2
-import util.metaProperty
+﻿import util.metaProperty
 namespace cv2;
 class vectorOfMat
 {
