@@ -1,10 +1,25 @@
 ﻿import util.metaProperty
 import gdip
+import cv2.matExpr
 namespace cv2;
 class mat{
-	ctor( handle ){ //
+	ctor( arg,... ){ //
 		var dll = ..cv2._dll;
-		this.handle = handle : rget(2,dll.core_Mat_new1({ptr p})).p
+		var tArg = type(arg)
+		if(tArg == type.pointer){
+			this.handle = arg
+		}
+		elseif(tArg == type.null){
+			err,ret = dll.core_Mat_new1({ptr p})
+			this.handle = ret.p
+		}
+		//bitmap传入
+		elseif(tArg == type.table && arg[["pBitmap"]]){
+			var data = arg.lockData()
+			err,ret = dll.core_Mat_new8(arg.height,arg.width,16,data.Scan0,data.Stride,{ptr value})
+			this.handle = ret.value
+			arg.unlockData(data)
+		}	
 		..table.gc( this,"delete" )
 	};
 	
@@ -74,12 +89,14 @@ class mat{
 	
 	zeros = function(rows,cols,tp){
 		var err,ret = dll.core_Mat_zeros1(rows,cols,tp,{pointer p})
-		return ret.p; 
+		var matHandle = ..cv2.matExpr(ret.p).toMat()
+		return ..cv2.mat(matExpr.ptr); 
 	}
 	
 	ones = function(rows,cols,tp){
 		var err,ret = dll.core_Mat_ones1(rows,cols,tp,{pointer p})
-		return ret.p; 
+		var m = ..cv2.matExpr(ret.p)
+		return m; 
 	}
 	
 	convertTo = function(rtype,alpha=1,beta=0){
@@ -99,14 +116,16 @@ class mat{
 }
 
 namespace mat {
-    import cv2.matExpr
     var dll = ..cv2._dll;
-    core_Mat_convertTo= dll.api("core_Mat_convertTo","INT(pointer self, pointer m, int rtype, double alpha, double beta)")
+    core_Mat_convertTo = dll.api("core_Mat_convertTo","INT(pointer self, pointer m, int rtype, double alpha, double beta)")
+	core_Mat_mul = dll.api("core_Mat_mul","INT(pointer self, pointer m,double scale,struct ret)")
+	core_Mat_operatorMultiply_MatDouble = dll.api("core_Mat_operatorMultiply_MatDouble","INT(pointer self,double s,pointer ret)")
 	_metaProperty = ..util.metaProperty(
 		_topointer = function(){
 			return owner.handle; 
 		}
-		
+		_type = "mat";
+			
 		data = {
 			_get = function(){
 				var err,stu = dll.core_Mat_data(owner.handle,{ptr buffer})

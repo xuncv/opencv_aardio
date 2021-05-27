@@ -89,7 +89,7 @@ canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
 	return dst; 	
 }
 
-f2i = function(p){
+var f2i = function(p){
     return ::POINT(p.x,p.y); 
 }
 
@@ -255,6 +255,32 @@ boxPoints = function(box){
     return ref.value;
 }
 
+//图像运算
+subtract = function(src1,src2,mask,dtype){
+    var dst = ..cv2.mat();
+	dll.core_subtract_InputArray2(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
+	return dst; 
+}
+
+matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
+    var dst = ..cv2.mat()
+	var err = dll.imgproc_matchTemplate(src.cvPtr,temp.cvPtr,dst.cvPtr,mode,mask)
+	return dst; 
+}
+
+minMaxLoc = function(src){
+    minLoc0 = ::POINT();
+    maxLoc0 = ::POINT();
+	var err,minVal,maxVal = core_minMaxLoc2(src.cvPtr,0,0,minLoc0,maxLoc0,null)
+	return minLoc0,maxLoc0; 
+}
+
+
+
+
+
+
+
 
 // todo
 videoCapture = function(index,apiPreference=0){
@@ -272,6 +298,10 @@ imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,
 imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
 imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
+
+core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,double& maxVal,struct& minLoc,struct& maxLoc,pointer mask)")
+
+
 namespace cv2{
     //import cv2.videoCapture
     import fsys

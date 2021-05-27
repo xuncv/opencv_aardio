@@ -14,6 +14,9 @@ winform.trackbar.pos = 127
 //拖动滑块,修改二值化阈值
 import cv2
 var img = cv2.imread( "./images/Lena.jpg",0/*_CV2_IMREAD_GRAYSCALE*/ )
+img = cv2.gaussianBlur( img,::SIZE(3,3) )
+//k = cv2.getStructuringElement(,::SIZE(3,3))
+//img = cv2.dilate( img,k,2)
 var bmp,err = img.toBitmap()
 winform.plus.setForeground(bmp)
 winform.trackbar.oncommand = function(id,event,pos){
@@ -21,7 +24,7 @@ winform.trackbar.oncommand = function(id,event,pos){
 		if(winform.radiobutton.checked){
 			winform.text = winform.trackbar.pos
 			var thresh = winform.trackbar.pos
-			var dst = cv2.threshold( img,thresh,255 )
+			var dst = cv2.threshold( img,thresh,255)
 			bmp,err = dst.toBitmap()
 			winform.plus.setForeground(bmp)
 			winform.plus.redraw()			

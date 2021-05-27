@@ -1,10 +1,55 @@
-﻿
+﻿import util.metaProperty
 namespace cv2
-
+import console
 class matExpr{
 	ctor( ptr ){
+		var dll = ..cv2._dll;
+		if(!ptr){
+			err,ret = dll.core_MatExpr_new1({pointer value})
+			this.ptr = ret.value
+		}else {
+			this.ptr = ptr
+		}
 		
 	};
 	
+	toMat = function(){
+		var dst = ..cv2.mat()
+		var err,ret  = dll.core_MatExpr_toMat(this.ptr,dst.handle)
+		return dst;
+	}
+	@_meta;
+}
+
+namespace matExpr{
+    import cv2.mat
+    var dll = ..cv2._dll;
+    core_operatorMultiply_MatExprDouble = dll.api("core_operatorMultiply_MatExprDouble","INT(pointer src,double scale,pointer& ret)")
+    core_MatExpr_toMat = dll.api("core_MatExpr_toMat","INT(pointer MatExpr,pointer Mat)")
+    _meta = ..util.metaProperty(
+		_type = "matExpr";
+		// *
+    	_mul = function(scale){
+    		var err,ref = core_operatorMultiply_MatExprDouble(owner.ptr,scale,null)
+    		return ..cv2.matExpr(ref); 
+    	}
+    	// +
+    	_add = function(rt){
+    		var err,ret = dll.core_operatorAdd_MatExprMat(owner.ptr,rt.handle,{pointer value})
+    		return ..cv2.matExpr(ret.value); 
+    	}
+    	// -
+    	_sub = function(rt){
+    		var err,ret = dll.core_operatorSubtract_MatExprMat(owner.ptr,rt.handle,{pointer value})
+    		return ..cv2.matExpr(ret.value); 
+    	}
+    	// /
+    	_div = function(rt){
+			var err,ret = dll.core_operatorDivide_MatExprMat(owner.ptr,rt.handle,{pointer value})
+    		return ..cv2.matExpr(ret.value); 	
+    	}    	
+    )
+    
+    
 	
 }

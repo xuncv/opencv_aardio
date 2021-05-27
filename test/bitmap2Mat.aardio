@@ -1,0 +1,8 @@
+import console; 
+import cv2
+//import cv2.mat
+import gdip
+bitmap = gdip.bitmap("./images/Lena.jpg")
+m = cv2.mat(bitmap)
+cv2.imshow("m",m)
+cv2.waitKey()
