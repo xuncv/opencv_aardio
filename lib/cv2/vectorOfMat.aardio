@@ -7,10 +7,13 @@ class vectorOfMat
 		
 		if type(arg)== type.number {
 			this.handle = dll.vector_Mat_new2P(arg)
-		}elseif(!arg){
+		}elseif(type(arg)== type.table){
+			this.handle = dll.vector_Mat_new3P(arg,#arg)
+		}
+		elseif(!arg){
 			this.handle = dll.vector_Mat_new1P()
 		}
-		..table.gc( this,"free" )
+		..table.gc( this,"release" )
 	};
 	
 	toArray = function(){
@@ -26,7 +29,7 @@ class vectorOfMat
 		return dstPtr;
 	}
 	
-	free = function(){
+	release = function(){
 		dll.vector_Mat_delete(this.handle)
 	}
 	

@@ -17,14 +17,17 @@ var img = cv2.imread( "./images/Lena.jpg",0/*_CV2_IMREAD_GRAYSCALE*/ )
 img = cv2.gaussianBlur( img,::SIZE(3,3) )
 //k = cv2.getStructuringElement(,::SIZE(3,3))
 //img = cv2.dilate( img,k,2)
+
 var bmp,err = img.toBitmap()
+
 winform.plus.setForeground(bmp)
 winform.trackbar.oncommand = function(id,event,pos){
 	if( event == 8/*_SB_ENDSCROLL*/ ){
 		if(winform.radiobutton.checked){
 			winform.text = winform.trackbar.pos
 			var thresh = winform.trackbar.pos
-			var dst = cv2.threshold( img,thresh,255)
+			src = img.clone()
+			var dst = cv2.threshold( src,thresh,255)
 			bmp,err = dst.toBitmap()
 			winform.plus.setForeground(bmp)
 			winform.plus.redraw()			
@@ -34,8 +37,9 @@ winform.trackbar.oncommand = function(id,event,pos){
 
 winform.radiobutton2.oncommand = function(id,event){
 	if(winform.radiobutton2.checked){
-		var dst = cv2.adaptiveThreshold( img,255,1/*_CV2_AdaptiveThresholdTypes_ADAPTIVE_THRESH_GAUSSIAN_C*/,
-			0x0/*_CV2_THRESH_BINARY*/,5,5)
+		src = img.clone()
+		var dst = cv2.adaptiveThreshold( src,255,1/*_CV2_ADAPTIVE_THRESH_GAUSSIAN_C*/,
+			0x0/*_CV2_THRESH_BINARY*/,85,0.0)
 		bmp,err = dst.toBitmap()
 		winform.plus.setForeground(bmp)
 		winform.plus.redraw()
@@ -46,7 +50,8 @@ winform.radiobutton.oncommand = function(id,event){
 	if(owner.checked){
 		winform.text = winform.trackbar.pos
 		var thresh = winform.trackbar.pos
-		var dst = cv2.threshold( img,thresh,255 )
+		src = img.clone()
+		var dst = cv2.threshold( src,thresh,255 )
 		bmp,err = dst.toBitmap()
 		winform.plus.setForeground(bmp)
 		winform.plus.redraw()		

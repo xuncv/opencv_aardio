@@ -12,8 +12,8 @@ cv2.imshow( "canny",edge )
 img = cv2.threshold(src,180,255)
 cv2.imshow( "threshold",img )
 
-kernel = cv2.getStructuringElement(0/*_CV2_MorphShapes_MORPH_RECT*/,::SIZE(5,5) )
-img = cv2.morphologyEx(img,0/*_CV2_MorphTypes_MORPH_ERODE*/,kernel)
+kernel = cv2.getStructuringElement(0/*_CV2_MORPH_RECT*/,::SIZE(5,5) )
+img = cv2.morphologyEx(img,0/*_CV2_MORPH_ERODE*/,kernel)
 cv2.imshow( "morphologyEx",img )
 
 img = cv2.dilate( img,kernel,1 )

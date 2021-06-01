@@ -2,7 +2,6 @@ import console;
 import cv2
 
 var path = ..io.fullpath("./images/Lena.jpg")
-console.log("main",path)
 img = cv2.imread(path,1)
 if !img.empty() {
 	console.varDump("depth:",img.shape)
@@ -18,10 +17,22 @@ bmp,err = gdip.bitmap( data )
 gdip.bitmap(
 console.log(bmp,err)
 */
-
 bmp = img.toBitmap()
-bmp.save("out.jpg",100)
-console.log("w",bmp.width,bmp.height)
-console.log( bmp.getPixel(10,10) )
-console.log(bmp,err)
+bmp.save("out.jpg",100);
+//console.log("type",type(img))
+//console.log("typeretc",type(::RECT()))
+cv2.imshow("tttt",img)
+//从感兴趣(ROI)区域创建Mat，类似截图
+roi = cv2.mat(img,::RECT(100,100,200,200))
+cv2.imshow("roi",roi)
+
+r,g,b = ..table.unpack( cv2.split(roi) )
+console.log(  "unpack",..table.unpack( cv2.split(roi) ) )
+cv2.imshow("r",r)
+cv2.imshow("g",g)
+cv2.imshow("b",b)
+merge = cv2.merge({r;g;b})
+..console.log("r",r,"g",g,"b",b)
+cv2.imshow("merge",merge)
+cv2.waitKey(0)
 console.pause(true);

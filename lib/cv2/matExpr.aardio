@@ -1,6 +1,6 @@
 ﻿import util.metaProperty
 namespace cv2
-import console
+
 class matExpr{
 	ctor( ptr ){
 		var dll = ..cv2._dll;
@@ -10,7 +10,7 @@ class matExpr{
 		}else {
 			this.ptr = ptr
 		}
-		
+		..table.gc(this,"release")
 	};
 	
 	toMat = function(){
@@ -18,6 +18,11 @@ class matExpr{
 		var err,ret  = dll.core_MatExpr_toMat(this.ptr,dst.handle)
 		return dst;
 	}
+	
+	release = function(){
+		dll.core_MatExpr_delete(this.ptr)
+	}
+	
 	@_meta;
 }
 
@@ -49,7 +54,4 @@ namespace matExpr{
     		return ..cv2.matExpr(ret.value); 	
     	}    	
     )
-    
-    
-	
 }

@@ -1,6 +1,12 @@
 ﻿namespace cv2
 import console
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
+
+var f2i = function(p){
+    return ::POINT(p.x,p.y); 
+}
+
+/*imgcodecs{{*/
 imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
     var path = ..io.fullpath(path)
 	if(..io.exist(path)){
@@ -10,6 +16,14 @@ imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
 	return null;
 }
 
+imwrite = function(filename,img){
+	dll.imgcodecs_imwrite(filename,img,null,null)
+}
+
+
+/*}}*/
+
+/*highgui{{*/
 imshow = function(winName="",matHandle){
     var winName = ..string.fromto( winName )
 	dll.highgui_imshow(winName,matHandle)
@@ -24,156 +38,22 @@ waitKey = function(code=0){
 	return stu.val
 }
 
+namedWindow = function(winName,flag=1/*_CV2_WINDOW_AUTOSIZE*/){
+	var err = dll.highgui_namedWindow(winName,flag)
+	return err; 
+}
+
+cvGetWindowHandle = function(name){
+	var err,ret = dll.highgui_cvGetWindowHandle(name,{int value})
+	return ret.value; 
+}
+
+
+/*}}*/
+
+/*core{{*/
 getTickCount = function(){
 	return dll.core_getTickCountL(); 
-}
-
-imwrite = function(filename,img){
-	dll.imgcodecs_imwrite(filename,img,null,null)
-}
-
-resize = function(src,dsize,fx=1.0,fy=1.0,interpolation=1/*_CV2_INTER_LINEAR*/){
-	var dst = ..cv2.mat()
-	var err = imgproc_resize(src.cvPtr,dst.cvPtr,dsize,fx,fy,interpolation)
-	return dst; 
-}
-
-cvtColor = function(src,code,dstCn=0){
-    var dst = ..cv2.mat()
-	var err = dll.imgproc_cvtColor(src.cvPtr,dst.cvPtr,code,dstCn)
-	assert(!err,"转换失败!")
-	return dst;
-}
-
-medianBlur = function(srcMat,ksize){
-    var dstMat = ..cv2.mat()
-	var err = dll.imgproc_medianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize)
-	return dstMat; 
-}
-
-gaussianBlur = function(srcMat,ksize,sigmaX=0,sigmaY=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
-    var dstMat = ..cv2.mat()
-    err = imgproc_GaussianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize,sigmaX,sigmaY,borderType)
-    return dstMat; 
-}
-
-blur = function(srcMat,ksize,anchor,borderType=4/*_CV2_BORDER_DEFAULT*/){
-	var dstMat = ..cv2.mat()
-	anchor = anchor : ::POINT(-1,-1)
-	var err = dll.imgproc_blur(srcMat.cvPtr,dstMat.cvPtr,ksize,anchor,borderType)
-	return dstMat; 
-}
-
-boxFilter = function(srcMat,ddepth=-1,ksize,anchor,normalize=true,borderType=4/*_CV2_BORDER_DEFAULT*/){
-	var dstMat = ..cv2.mat()
-	anchor = anchor : ::POINT(-1,-1)
-	var err = dll.imgproc_boxFilter(srcMat.cvPtr,dstMat.cvPtr,ddepth,ksize,anchor,normalize,borderType)
-	return dstMat; 
-}
-
-threshold = function(src,thresh,maxVal=255,thresholdType=0x0/*_CV2_THRESH_BINARY*/){
-	var dst = ..cv2.mat();
-	var err,ret = imgproc_threshold(src.cvPtr,dst.cvPtr,thresh,maxVal,thresholdType,0)
-	return dst
-}
-
-adaptiveThreshold = function(src,maxValue,adaptiveMethod=1/*_CV2_AdaptiveThresholdTypes_ADAPTIVE_THRESH_GAUSSIAN_C*/,thresholdType=0x0/*_CV2_THRESH_BINARY*/,blockSize,C){
-	var dst = ..cv2.mat();
-	imgproc_adaptiveThreshold(src.cvPtr,dst.cvPtr,maxValue,adaptiveMethod,thresholdType,blockSize,C);
-	return dst; 	
-}
-
-canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
-	var dst = ..cv2.mat()
-	imgproc_Canny1(src.cvPtr,dst.cvPtr,threshold1,threshold2,apertureSize,L2gradient)
-	return dst; 	
-}
-
-var f2i = function(p){
-    return ::POINT(p.x,p.y); 
-}
-
-line = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0,tipLength=0.1){
-    var err = dll.imgproc_line(src.cvPtr,f2i(from),f2i(to),scalar,thickness,lineType,shift)
-	return src; 
-}
-
-arrowedLine = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0,tipLength=0.1){
-	var err = imgproc_arrowedLine(src.cvPtr,from,to,scalar,thickness,lineType,shift,tipLength)
-	return src; 
-}
-
-rectangle = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0){
-	var err = dll.imgproc_rectangle_InputOutputArray_Point(src.cvPtr,from,to,scalar,thickness,lineType,shift);
-	return src; 
-}
-
-circle = function(src,center,radius,scalar,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0){
-    var err = dll.imgproc_circle(src.cvPtr,center,radius,scalar,thickness,lineType,shift)
-	return src; 
-}
-
-ellipse = function(src,center,axes,angle,startAngle,endAngle,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,shift=0){
-	var err = imgproc_ellipse1(src.cvPtr,center,axes,angle,startAngle,endAngle,color,thickness,lineType,shift)
-	return src; 
-}
-
-drawMarker = function(src,position,color,markerType,markerSize=20,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
-    var err = dll.imgproc_drawMarker(src.cvPtr,position,color,markerType,markerSize,thickness,lineType)
-    return src; 
-}
-
-putText = function(src,text,position,font=0/*_CV2_HersheyFonts_FONT_HERSHEY_SIMPLEX*/,fontSize=1,color,thickness=1){
-    if !color color = ::Scalar(255,255,255)
-	var err = imgproc_putText(src.cvPtr,text,position,font,fontSize,color,thickness,0x10/*_CV2_LineTypes_LINE_AA*/,0)
-	return src; 
-}
-
-getStructuringElement = function(shape=0/*_CV2_MorphShapes_MORPH_RECT*/,ksize,anchor){
-	anchor = anchor : ::POINT(-1,-1)
-	var ref = {pointer p};
-	var err,ret = dll.imgproc_getStructuringElement(shape,ksize,anchor,ref);
-	return ..cv2.mat(ref.p); 
-}
-
-morphologyEx = function(src,op,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
-    anchor = anchor : ::POINT(-1,-1)
-    var dst = ..cv2.mat()
-	if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !borderValue){
-    	borderValue = ::Scalar(0,0,0)
-    }
-    var err = dll.imgproc_morphologyEx(src.cvPtr,dst.cvPtr,op,kernel.cvPtr,anchor,iterations,borderType,borderValue);
-    return dst; 
-}
-
-morphologyEx = function(src,op,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
-    anchor = anchor : ::POINT(-1,-1)
-    var dst = ..cv2.mat()
-	if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !borderValue){
-    	borderValue = ::Scalar(0,0,0)
-    }
-    var err = dll.imgproc_morphologyEx(src.cvPtr,dst.cvPtr,op,kernel.cvPtr,anchor,iterations,borderType,borderValue);
-    return dst; 
-}
-
-erode = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
-	anchor = anchor : ::POINT(-1,-1)
-	var dst = ..cv2.mat()
-	if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !borderValue){
-    	borderValue = ::Scalar(0,0,0)
-    } 
-	var err = dll.imgproc_erode(src.cvPtr,dst.cvPtr,kernel.cvPtr,anchor,iterations,borderType,borderValue);
-    return dst; 
-}
-
-dilate = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
-	anchor = anchor : ::POINT(-1,-1)
-	var dst = ..cv2.mat()
-	if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !borderValue){
-    	borderValue = ::Scalar(0,0,0)
-    } 
-	var err = dll.imgproc_dilate(src.cvPtr,dst.cvPtr,kernel.cvPtr,anchor,iterations,borderType,borderValue);
-    return dst; 
 }
 
 copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTypes_BORDER_CONSTANT*/,color){
@@ -204,28 +84,173 @@ bitwise_xor = function(src1,src2){
 }
 
 bitwise_not = function(src){
+	var err = dll.core_bitwise_not(src.cvPtr,src.cvPtr,null)
+	return src; 
+}
+
+core_normalize= dll.api("core_normalize","INT(pointer src,pointer dst,double alpha,double beta,int normType,int dtype,pointer mask)")
+normalize = function(src,alpha,beta,normType=0x20/*_CV2_NormTypes_NORM_MINMAX*/,dtype=-1,mask){
+	//mask = mask : ..cv2.mat().cvPtr
+	var err = core_normalize(src.cvPtr,src.cvPtr,alpha,beta,normType,dtype,topointer(0))
+	return src; 
+}
+
+split = function(src){
+    var vecMat = ..cv2.vectorOfMat()
+    var err,ret = dll.core_split(src,vecMat.handle);
+	return ..table.map(vecMat.toArray(),function(v,k,result){
+			return ..cv2.mat(v); 
+	})
+}
+
+merge = function(srcs){
+    //var vecMat = ..cv2.vectorOfMat(srcs)
     var dst = ..cv2.mat();
-	var err = dll.core_bitwise_not(src.cvPtr,dst.cvPtr,null)
+	dll.core_merge({ ptr p[] = srcs },#srcs,dst);
 	return dst; 
 }
 
-//距离变换函数
+/*}}*/
+
+/*imgproc{{*/
+resize = function(src,dsize,fx=1.0,fy=1.0,interpolation=1/*_CV2_INTER_LINEAR*/){
+	var dst = ..cv2.mat();
+	dsize = dsize : ::SIZE()
+	var err = imgproc_resize(src.cvPtr,dst.cvPtr,dsize,fx,fy,interpolation)
+	return dst; 
+}
+
+cvtColor = function(src,code,dstCn=0){
+    var dst = ..cv2.mat();
+	var err = dll.imgproc_cvtColor(src.cvPtr,dst.cvPtr,code,dstCn)
+	assert(!err,"转换失败!")
+	return dst;
+}
+
+medianBlur = function(src,ksize){
+    var dst = ..cv2.mat()
+	var err = dll.imgproc_medianBlur(src.cvPtr,dst.cvPtr,ksize)
+	return dst; 
+}
+
+gaussianBlur = function(srcMat,ksize,sigmaX=0,sigmaY=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
+    var dstMat = ..cv2.mat()
+    err = imgproc_GaussianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize,sigmaX,sigmaY,borderType)
+    return dstMat; 
+}
+
+blur = function(srcMat,ksize,anchor,borderType=4/*_CV2_BORDER_DEFAULT*/){
+	var dstMat = ..cv2.mat()
+	anchor = anchor : ::POINT(-1,-1)
+	var err = dll.imgproc_blur(srcMat.cvPtr,dstMat.cvPtr,ksize,anchor,borderType)
+	return dstMat; 
+}
+
+boxFilter = function(srcMat,ddepth=-1,ksize,anchor,normalize=true,borderType=4/*_CV2_BORDER_DEFAULT*/){
+	anchor = anchor : ::POINT(-1,-1)
+	var dst = ..cv2.mat()
+	var err = dll.imgproc_boxFilter(srcMat.cvPtr,dst.cvPtr,ddepth,ksize,anchor,normalize,borderType)
+	return dst; 
+}
+
+threshold = function(src,thresh,maxVal=255,thresholdType=0x0/*_CV2_THRESH_BINARY*/){
+	var dst = ..cv2.mat()
+	var err,ret = imgproc_threshold(src.cvPtr,dst.cvPtr,thresh,maxVal,thresholdType,0)
+	return dst
+}
+
+adaptiveThreshold = function(src,maxValue,adaptiveMethod=1/*_CV2_ADAPTIVE_THRESH_GAUSSIAN_C*/,thresholdType=0x0/*_CV2_THRESH_BINARY*/,blockSize,C){
+	var dst = ..cv2.mat()
+	var err = imgproc_adaptiveThreshold(src.cvPtr,dst.cvPtr,maxValue,adaptiveMethod,thresholdType,blockSize,C);
+	return dst; 	
+}
+
+canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
+	var dst = ..cv2.mat()
+	imgproc_Canny1(src.cvPtr,dst.cvPtr,threshold1,threshold2,apertureSize,L2gradient)
+	return dst; 	
+}
+
+line = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0,tipLength=0.1){
+    var err = dll.imgproc_line(src.cvPtr,f2i(from),f2i(to),scalar,thickness,lineType,shift)
+	return src; 
+}
+
+arrowedLine = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0,tipLength=0.1){
+	var err = imgproc_arrowedLine(src.cvPtr,from,to,scalar,thickness,lineType,shift,tipLength)
+	return src; 
+}
+
+rectangle = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0){
+	var err = dll.imgproc_rectangle_InputOutputArray_Point(src.cvPtr,from,to,scalar,thickness,lineType,shift);
+	return src; 
+}
+
+circle = function(src,center,radius,scalar,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0){
+    var err = dll.imgproc_circle(src.cvPtr,center,radius,scalar,thickness,lineType,shift)
+	return src; 
+}
+
+ellipse = function(src,center,axes,angle,startAngle,endAngle,color,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0){
+	var err = imgproc_ellipse1(src.cvPtr,center,axes,angle,startAngle,endAngle,color,thickness,lineType,shift)
+	return src; 
+}
+
+drawMarker = function(src,position,color,markerType,markerSize=20,thickness=1,lineType=0x10/*_CV2_LINE_AA*/){
+    var err = dll.imgproc_drawMarker(src.cvPtr,position,color,markerType,markerSize,thickness,lineType)
+    return src; 
+}
+
+putText = function(src,text,position,font=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontSize=1,color,thickness=1){
+    if !color color = ::Scalar(255,255,255)
+	var err = imgproc_putText(src.cvPtr,text,position,font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
+	return src; 
+}
+
+getStructuringElement = function(shape=0/*_CV2_MORPH_RECT*/,ksize,anchor){
+	anchor = anchor : ::POINT(-1,-1)
+	var ref = {pointer p};
+	var err,ret = dll.imgproc_getStructuringElement(shape,ksize,anchor,ref);
+	return ..cv2.mat(ref.p); 
+}
+
+morphologyEx = function(src,op,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
+    anchor = anchor : ::POINT(-1,-1)
+    var dst = ..cv2.mat()
+	if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !borderValue){
+    	borderValue = ::Scalar(0,0,0)
+    }
+    var err = dll.imgproc_morphologyEx(src.cvPtr,dst.cvPtr,op,kernel.cvPtr,anchor,iterations,borderType,borderValue);
+    return dst; 
+}
+
+erode = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
+	anchor = anchor : ::POINT(-1,-1)
+	var dst = ..cv2.mat()
+	if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !borderValue){
+    	borderValue = ::Scalar(0,0,0)
+    } 
+	var err = dll.imgproc_erode(src.cvPtr,dst.cvPtr,kernel.cvPtr,anchor,iterations,borderType,borderValue);
+    return dst; 
+}
+
+dilate = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
+	anchor = anchor : ::POINT(-1,-1)
+	var dst = ..cv2.mat()
+	if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !borderValue){
+    	borderValue = ::Scalar(0,0,0)
+    } 
+	var err = dll.imgproc_dilate(src.cvPtr,dst.cvPtr,kernel.cvPtr,anchor,iterations,borderType,borderValue);
+    return dst; 
+}
+
 distanceTransform = function(src,distanceType,maskSize){
 	var dst = ..cv2.mat();
 	var err = dll.imgproc_distanceTransform(src.cvPtr,dst.cvPtr,distanceType,maskSize,null);
 	return dst; 
 }
 
-core_normalize= dll.api("core_normalize","INT(pointer src,pointer dst,double alpha,double beta,int normType,int dtype,pointer mask)")
-normalize = function(src,alpha,beta,normType=0x20/*_CV2_NormTypes_NORM_MINMAX*/,dtype=-1,mask){
-	var dst = ..cv2.mat();
-	//mask = mask : ..cv2.mat().cvPtr
-	var err = core_normalize(src.cvPtr,dst.cvPtr,alpha,beta,normType,dtype,topointer(0))
-	return dst; 
-}
-
-
-findContours = function(src,mode=3/*_CV2_RetrievalModes_RETR_TREE*/,method=2/*_CV2_ContourApproximationModes_CHAIN_APPROX_SIMPLE*/){
+findContours = function(src,mode=3/*_CV2_RETR_TREE*/,method=2/*_CV2_CHAIN_APPROX_SIMPLE*/){
     var contours = ..cv2.vectorOfMat()
     var hierarchy = ..cv2.mat()
 	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
@@ -255,38 +280,69 @@ boxPoints = function(box){
     return ref.value;
 }
 
-//图像运算
+/*}}*/
+
+/*videoio{{*/
+class videoCapture{
+	ctor( index,apiPreference=0 ){
+		//dll = ..cv2._dll;
+		var err,ret = dll.videoio_VideoCapture_new1({pointer p})
+		this.ptr = ret.p
+		var tArg = type(index)
+		if(tArg==type.string && #index < 0x410/*_MAX_PATH_U8*/){
+			err,ret = dll.videoio_VideoCapture_open1(this.ptr,index,apiPreference,{int value})
+		}elseif(tArg==type.number){
+			err,ret = dll.videoio_VideoCapture_open2(this.ptr,index,apiPreference,{int value})
+		}
+	};
+	
+	isOpened = function(){
+		var err,ret = dll.videoio_VideoWriter_isOpened(this.ptr,{int op})
+		return ret.op==1; 
+	}
+	
+	read = function(){
+		var dst = ..cv2.mat()
+		var err,ret = dll.videoio_VideoCapture_read_OutputArray(this.ptr,dst.cvPtr,{int value})	
+		return ret.value==1,dst
+	}
+	
+	get = function(propId){
+		var err,ret = ..cv2.videoio_VideoCapture_get(this.ptr,propId,0)
+		return ret;
+	}
+	
+	set = function(propId,value){
+		var err,ret = ..cv2.videoio_VideoCapture_set(this.ptr,propId,value,0)
+		return ret==1; 
+	}
+	
+	release = function(){
+		dll.videoio_VideoCapture_delete(this.ptr)
+	}
+}
+
+/*}}*/
+
+
+//图像运算 待智能提示
 subtract = function(src1,src2,mask,dtype){
     var dst = ..cv2.mat();
 	dll.core_subtract_InputArray2(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
-	return dst; 
+	return dst;
 }
-
+//待智能提示
 matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
     var dst = ..cv2.mat()
 	var err = dll.imgproc_matchTemplate(src.cvPtr,temp.cvPtr,dst.cvPtr,mode,mask)
 	return dst; 
 }
-
+//待智能提示
 minMaxLoc = function(src){
     minLoc0 = ::POINT();
     maxLoc0 = ::POINT();
 	var err,minVal,maxVal = core_minMaxLoc2(src.cvPtr,0,0,minLoc0,maxLoc0,null)
 	return minLoc0,maxLoc0; 
-}
-
-
-
-
-
-
-
-
-// todo
-videoCapture = function(index,apiPreference=0){
-    var err,ret = dll.videoio_VideoCapture_new3(index,apiPreference,{pointer p})
-    //ret.p
-	return ..cv2.videoCapture(ret.p) 
 }
 
 _dll = dll
@@ -298,14 +354,12 @@ imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,
 imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
 imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
-
 core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,double& maxVal,struct& minLoc,struct& maxLoc,pointer mask)")
+videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer capture,int propId,double& ret)")
+videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
 
-
-namespace cv2{
-    //import cv2.videoCapture
+namespace cv2{   
     import fsys
-    
 	import cv2.mat
 	import cv2.vectorOfMat
 	import cv2.types
@@ -316,7 +370,10 @@ imread() = !matObject.
 imread(.(图片路径,载入模式) = 读取图片
 imshow(.(窗口标题,显示内容) = 弹出窗口,显示图片
 destroyAllWindows() = 销毁所有cv2窗体
-waitKey() = 窗口等待键盘指令,返回按键代码
+waitKey(0) = 窗口等待键盘指令,返回键位码
+waitKey(.(延时 单位毫秒) = 窗口延时等待
+namedWindow(.(窗口标题,缩放类型_CV2_WINDOW) = 设置cv窗口
+cvGetWindowHandle(.(窗口标题) = 根据窗口标题获取cv窗口句柄
 threshold(.(灰度图,起始值,最大值,二值化算法-默认THRESH_BINARY) = 图像阈值处理
 adaptiveThreshold(.(灰度化图像,最大灰度值,自适应阈值算法,二值化方法,区域大小,常数 可为负数) = 自适应阈值二值化
 medianBlur(.(源数据,核大小) = 中值滤波
@@ -348,6 +405,18 @@ findContours(.(输入图像,轮廓检索模式,轮廓近似方法) = 轮廓检�
 drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
 minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
 boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
+getTickCount() = 获取当前系统启动时间，单位毫秒
+end intellisense**/
+
+/**intellisense()
+cv2.videoCapture() = 视频或摄像头解析对象
+cv2.videoCapture( = 创建视频解析对象
+cv2.videoCapture(.(摄像头编号或视频路径) = 创建视频解析对象
+cv2.videoCapture() = !cap.
+!cap.read() = 读取视频下一帧，返回读取状态,mat对象
+!cap.isOpened = 检测视频或摄像头是否打开，注意：视频有时候并不准确
+!cap.get(.(_CV2_CAP_PROP_) = 获取videoCapture对象参数
+!cap.set(.(_CV2_CAP_PROP_) = 设置videoCapture对象参数
 end intellisense**/
 
 /**intellisense(!matObject)

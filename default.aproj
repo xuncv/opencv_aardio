@@ -8,18 +8,20 @@
 		<file name="api.aardio" path="tools\api.aardio" comment="tools\api.aardio"/>
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
-		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
-		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
+		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
 		<file name="blur.aardio" path="test\blur.aardio" comment="test\blur.aardio"/>
 		<file name="common.aardio" path="test\common.aardio" comment="test\common.aardio"/>
-		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
-		<file name="morphology.aardio" path="test\morphology.aardio" comment="test\morphology.aardio"/>
 		<file name="contour.aardio" path="test\contour.aardio" comment="test\contour.aardio"/>
-		<file name="video.aardio" path="test\video.aardio" comment="test\vedio.aardio"/>
-		<file name="expr.aardio" path="test\expr.aardio" comment="test\expr.aardio"/>
-		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
+		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
+		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
+		<file name="morphology.aardio" path="test\morphology.aardio" comment="test\morphology.aardio"/>
+		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
+		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
+		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
 	</folder>
 	<folder name="samples" path="samples" embed="true" comment="目录" local="false" ignored="false">
 		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>
+		<file name="matchTemplate.aardio" path="samples\matchTemplate.aardio" comment="samples\expr.aardio"/>
+		<file name="sss.aardio" path="samples\sss.aardio" comment="samples\sss.aardio"/>
 	</folder>
 </project>
