@@ -1,0 +1,35 @@
+import console; 
+import cv2
+//相关模型至https://github.com/WeChatCV/opencv_3rdparty下载
+detector = cv2.wechat_qrcode_WeChatQRCode("./model/detect.prototxt",
+								"./model/detect.caffemodel",
+								"./model/sr.prototxt",
+								"./model/sr.caffemodel")					
+img = cv2.imread("./images/qr.png")
+var list,points = detector.detectAndDecode(img)
+console.dumpJson(list)
+
+//以下代码可体验摄像头实时识别效果
+/**
+var cap = cv2.videoCapture(0)
+while(sleep(1)){
+	var ok,img = cap.read()
+	if ok {
+		cv2.imshow("QR-detectAndDecode",img)
+		cv2.waitKey(1)
+		var list,points = detector.detectAndDecode(img);
+		if(#list){
+			for(i=1;#list;1){
+				console.log(list[i])
+				img = cv2.putText( img,list[i],::POINT(35,35) )
+				cv2.imshow("QR-detectAndDecode",img)
+				cv2.waitKey(10)
+			}	
+		}
+		points.release();
+		img.release();
+	}
+}
+**/
+detector.release()
+console.pause(true);

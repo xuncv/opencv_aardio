@@ -26,13 +26,12 @@ cv2.imshow("tttt",img)
 roi = cv2.mat(img,::RECT(100,100,200,200))
 cv2.imshow("roi",roi)
 
-r,g,b = ..table.unpack( cv2.split(roi) )
-console.log(  "unpack",..table.unpack( cv2.split(roi) ) )
-cv2.imshow("r",r)
-cv2.imshow("g",g)
+b,g,r = cv2.split(roi)
+
 cv2.imshow("b",b)
-merge = cv2.merge({r;g;b})
-..console.log("r",r,"g",g,"b",b)
+cv2.imshow("g",g)
+cv2.imshow("r",r)
+merge = cv2.merge({b;g;r})
 cv2.imshow("merge",merge)
 cv2.waitKey(0)
 console.pause(true);

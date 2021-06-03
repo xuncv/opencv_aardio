@@ -1,5 +1,4 @@
 import cv2
-import console
 smallImg = cv2.imread("./images/small.jpg");
 normalImg = cv2.imread( "./images/normal.jpg",0 )
 smallImg = cv2.cvtColor( smallImg,6/*_CV2_COLOR_BGR2GRAY*/)
@@ -12,7 +11,7 @@ smallImg = cv2.subtract(smallImg,mask)
 
 //cv2.imshow("smallImg",smallImg)
 match = cv2.matchTemplate(normalImg,smallImg)
-var minLoc,maxLoc = cv2.minMaxLoc(match)
+var minVal,maxVal,minLoc,maxLoc = cv2.minMaxLoc(match)
 normalImg = cv2.rectangle( normalImg,::POINT(maxLoc.x,maxLoc.y),::POINT(maxLoc.x+smallImg.cols,maxLoc.y+smallImg.rows),::Scalar(0,0,0),3 )
 cv2.imshow("result",normalImg )
 cv2.waitKey();

@@ -20,7 +20,10 @@ class matExpr{
 	}
 	
 	release = function(){
-		dll.core_MatExpr_delete(this.ptr)
+		if this[["ptr"]] {
+			dll.core_MatExpr_delete(this.ptr)
+		}
+		this[["ptr"]] = null
 	}
 	
 	@_meta;

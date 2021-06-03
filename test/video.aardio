@@ -16,20 +16,32 @@ hwnd = cv2.cvGetWindowHandle(guid);
 hParent  = win.getParent(hwnd)
 win.show(hParent,false)
 win.setParent(hwnd,winform.custom.hwnd)
+import console
+var camera
 winform.button.oncommand = function(id,event){
     winform.text = "open camera"
 	camera = cv2.videoCapture(0)
 	winform.text = "opened camera"
-	var fps = camera.get(5/*_CV2_CAP_PROP_FPS*/)
+	//var fps = camera.get(5/*_CV2_CAP_PROP_FPS*/)
 	while(win.delay(1)){
 		winform.text = tostring(time())
 		var ok,m = camera.read();
 		if ok{
-			cv2.imshow( guid,m )
+			gauss = cv2.gaussianBlur(m,::SIZE(3,3))
+			canny = cv2.canny(gauss,30,50)
+			cv2.imshow( guid,canny )
+			cv2.waitKey(1)
+			//手动释放mat,防止自动回收不及时导致内存暴涨
+			m.release()
+			gauss.release()
+			canny.release()
 		}
-		//手动释放mat,防止自动回收不及时导致内存暴涨
-		m.release()
 	}
+}
+
+winform.onClose = function(hwnd,message,wParam,lParam){
+    camera.release()
+    cv2.destroyAllWindows()
 }
 
 winform.show();

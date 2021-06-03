@@ -10,7 +10,7 @@ var f2i = function(p){
 imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
     var path = ..io.fullpath(path)
 	if(..io.exist(path)){
-		var err,ret = dll.imgcodecs_imread(path,mode,{ptr p})
+		var err,ret = dll.imgcodecs_imread(..string.fromto(path),mode,{ptr p})
 		return ..cv2.mat(ret.p)
 	}
 	return null;
@@ -53,7 +53,8 @@ cvGetWindowHandle = function(name){
 
 /*core{{*/
 getTickCount = function(){
-	return dll.core_getTickCountL(); 
+    var err,ret = dll.core_getTickCount({LONG value});
+	return ret.value
 }
 
 copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTypes_BORDER_CONSTANT*/,color){
@@ -98,15 +99,55 @@ normalize = function(src,alpha,beta,normType=0x20/*_CV2_NormTypes_NORM_MINMAX*/,
 split = function(src){
     var vecMat = ..cv2.vectorOfMat()
     var err,ret = dll.core_split(src,vecMat.handle);
-	return ..table.map(vecMat.toArray(),function(v,k,result){
+    var result = ..table.map(vecMat.toArray(),function(v,k,result){
 			return ..cv2.mat(v); 
 	})
+	return ..table.unpack(result)
 }
 
 merge = function(srcs){
     //var vecMat = ..cv2.vectorOfMat(srcs)
     var dst = ..cv2.mat();
 	dll.core_merge({ ptr p[] = srcs },#srcs,dst);
+	return dst; 
+}
+
+flip = function(src,flipCode){
+    var dst = ..cv2.mat();
+	var err = dll.core_flip(src.cvPtr,dst.cvPtr,flipCode)
+	return dst; 
+}
+
+subtract = function(src1,src2,mask,dtype){
+    var dst = ..cv2.mat();
+    mask = mask ? mask.cvPtr
+	var err = dll.core_subtract_InputArray2(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
+	return dst;
+}
+
+add = function(src1,src2,mask,dtype){
+	var dst = ..cv2.mat();
+	mask = mask ? mask.cvPtr
+	var  err = dll.core_add(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
+	return dst; 
+}
+
+addWeighted = function(src1,alpha,src2,beta,gamma=0,dtype=-1){
+    var dst = ..cv2.mat();
+    var err = core_addWeighted(src1.cvPtr,alpha,src2.cvPtr,beta,gamma,dst.cvPtr,dtype);
+    return dst; 
+}
+
+minMaxLoc = function(src){
+    minLoc0 = ::POINT();
+    maxLoc0 = ::POINT();
+	var err,minVal,maxVal = core_minMaxLoc2(src.cvPtr,0,0,minLoc0,maxLoc0,null)
+	return minVal,maxVal,minLoc0,maxLoc0; 
+}
+
+rotate = function(src,rotateCode){
+	var dst = ..cv2.mat();
+	var err = dll.core_rotate(src.cvPtr,dst.cvPtr,rotateCode);
 	return dst; 
 }
 
@@ -280,6 +321,12 @@ boxPoints = function(box){
     return ref.value;
 }
 
+matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
+    var dst = ..cv2.mat()
+	var err = dll.imgproc_matchTemplate(src.cvPtr,temp.cvPtr,dst.cvPtr,mode,mask)
+	return dst; 
+}
+
 /*}}*/
 
 /*videoio{{*/
@@ -307,6 +354,17 @@ class videoCapture{
 		return ret.value==1,dst
 	}
 	
+	grab = function(){
+		var err,ret = dll.videoio_VideoCapture_grab(this.ptr,{int value});
+		return ret.value==1; 
+	}
+	
+	retrieve = function(flag=0){
+		var dst = ..cv2.mat();
+		var err,ret = dll.videoio_VideoCapture_retrieve_OutputArray(this.ptr,dst.cvPtr,flag,{int value})
+		return ret==1,dst; 
+	}
+	
 	get = function(propId){
 		var err,ret = ..cv2.videoio_VideoCapture_get(this.ptr,propId,0)
 		return ret;
@@ -317,6 +375,12 @@ class videoCapture{
 		return ret==1; 
 	}
 	
+	getBackendName = function(){
+		var buf = ..raw.buffer(255);
+		var err = dll.videoio_VideoCapture_getBackendName(this.ptr,buf)
+		return ..raw.str(buf)
+	}
+	
 	release = function(){
 		dll.videoio_VideoCapture_delete(this.ptr)
 	}
@@ -324,25 +388,36 @@ class videoCapture{
 
 /*}}*/
 
-
-//图像运算 待智能提示
-subtract = function(src1,src2,mask,dtype){
-    var dst = ..cv2.mat();
-	dll.core_subtract_InputArray2(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
-	return dst;
-}
-//待智能提示
-matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
-    var dst = ..cv2.mat()
-	var err = dll.imgproc_matchTemplate(src.cvPtr,temp.cvPtr,dst.cvPtr,mode,mask)
-	return dst; 
-}
-//待智能提示
-minMaxLoc = function(src){
-    minLoc0 = ::POINT();
-    maxLoc0 = ::POINT();
-	var err,minVal,maxVal = core_minMaxLoc2(src.cvPtr,0,0,minLoc0,maxLoc0,null)
-	return minLoc0,maxLoc0; 
+//以下为第三方库，按需封装
+class wechat_qrcode_WeChatQRCode{
+	ctor( detector_prototxt_path,detector_caffe_model_path,super_resolution_prototxt_path,super_resolution_caffe_model_path){
+		var err,ret = dll.wechat_qrcode_WeChatQRCode_new(detector_prototxt_path,
+		detector_caffe_model_path,
+		super_resolution_prototxt_path,
+		super_resolution_caffe_model_path,{pointer value})
+		this.ptr = ret.value
+		..table.gc( this,"release" )
+	};
+	
+	detectAndDecode = function(img){
+		var points = ..cv2.vectorOfMat()
+		var err,ret1,ret2 = dll.wechat_qrcode_WeChatQRCode_detectAndDecode(this.ptr,img.cvPtr,points,{ptr vecValue},{int len=0});
+		var res = ..table.array(ret2.len,"");
+		res = ..table.map(res,function(v,k,result){
+			var buffer = ..raw.buffer(1024)
+			dll.wechat_qrcode_extractResult(ret1.vecValue,k-1,buffer);
+			return ..raw.str(buffer);
+		})
+		dll.wechat_qrcode_deleteResult(ret1.vecValue);
+		return res,points;
+	}
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.wechat_qrcode_WeChatQRCode_delete(this.ptr);
+			this[["ptr"]] = null
+		}
+	}
 }
 
 _dll = dll
@@ -355,6 +430,7 @@ imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,str
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
 imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
 core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,double& maxVal,struct& minLoc,struct& maxLoc,pointer mask)")
+core_addWeighted= dll.api("core_addWeighted","INT(pointer src1,double alpha,pointer &src2,double beta,double gamma,pointer dst,int dtype)")
 videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer capture,int propId,double& ret)")
 videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
 
@@ -400,6 +476,15 @@ bitwise_and(.(输入图像1,输入图像2) = 对图像的每一个像素值进�
 bitwise_or(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑或操作
 bitwise_xor(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑异或操作
 bitwise_not(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑非操作
+split(.(输入图像) = 将图像拆分成BGR通道图像,返回B G R 3个mat对象
+merge(.(BGR通道图像数组)) = 将BGR通道图像合并
+flip(.(输入图像,翻转码 1水平翻转 0垂直翻转 -1水平垂直翻转) = 图像翻转
+rotate(.(输入图像,旋转码 _CV2_ROTATE_) = 将2D图像矩阵旋转90度的倍数
+subtract(.(输入图像1,输入图像2,图像掩码 可选,输出图像深度 可选) = 图像减法运算
+add(.(输入图像1,输入图像2,图像掩码 可选,输出图像深度 可选) = 图像加法运算
+addWeighted(.(输入图像1,图像1权重,输入图像2,图像2权重,偏移量 缺省为0,深度 缺省-1) = 图像融合
+matchTemplate(.(待搜索图像,模板图像,匹配模式 默认5,图像腌膜 可选) = 模板匹配
+minMaxLoc(.(输入矩阵) = 返回输入矩阵的最小值,最大值,最小值索引,最大值索引
 distanceTransform(.(输入图像,距离算法类型,距离变换腌膜大小) = 距离变换
 findContours(.(输入图像,轮廓检索模式,轮廓近似方法) = 轮廓检测
 drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
@@ -417,7 +502,21 @@ cv2.videoCapture() = !cap.
 !cap.isOpened = 检测视频或摄像头是否打开，注意：视频有时候并不准确
 !cap.get(.(_CV2_CAP_PROP_) = 获取videoCapture对象参数
 !cap.set(.(_CV2_CAP_PROP_) = 设置videoCapture对象参数
+!cap.grab() = 从视频文件或捕获设备中获取下一帧
+!cap.retrieve() = 解码并返回抓取的视频帧,返回mat对象
+!cap.getBackendName() = 获取API后端名称
+!cap.release() = 释放videoCapture对象,解除视频文件或摄像头占用
 end intellisense**/
+
+/**intellisense()
+cv2.wechat_qrcode_WeChatQRCode() = 微信QRCode解码对象,相关模型至https://github.com/WeChatCV/opencv_3rdparty下载
+cv2.wechat_qrcode_WeChatQRCode( = 创建微信QRCode解码对象
+cv2.wechat_qrcode_WeChatQRCode(.(detect网络,detect权重,sr网络,sr权重) = 创建微信QRCode解码对象
+cv2.wechat_qrcode_WeChatQRCode() = !QRCode.
+!QRCode.detectAndDecode(.(输入图像) = 定位并解码二维码
+!QRCode.release() = 释放微信QRCode解码对象,可自动回收
+end intellisense**/
+
 
 /**intellisense(!matObject)
 type() = 图片类型

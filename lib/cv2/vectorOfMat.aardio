@@ -30,7 +30,10 @@ class vectorOfMat
 	}
 	
 	release = function(){
-		dll.vector_Mat_delete(this.handle)
+		if(this[["handle"]]){
+			dll.vector_Mat_delete(this.handle)
+		}
+		this[["handle"]] = null
 	}
 	
 	@_meta;	

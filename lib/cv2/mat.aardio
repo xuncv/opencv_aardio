@@ -119,8 +119,12 @@ class mat{
 	}
 	
 	release = function(){
-		dll.core_InputArray_delete(this.cvPtr)
-		dll.core_Mat_delete(this)
+		if(this[["handle"]] && this[["cvPtr"]]){
+			dll.core_InputArray_delete(this.cvPtr)
+			dll.core_Mat_delete(this)
+			this[["handle"]] = null;
+			this[["cvPtr"]] = null	
+		}
 	}
 	@_metaProperty;
 }
