@@ -7,10 +7,23 @@ detector = cv2.wechat_qrcode_WeChatQRCode("./model/detect.prototxt",
 								"./model/sr.caffemodel")					
 img = cv2.imread("./images/qr.png")
 var list,points = detector.detectAndDecode(img)
+console.dumpJson(points)
+for(i=1;#points;1){
+	var ps = points[i]
+	cv2.line( img,ps[1],ps[2],::Scalar(0,255,0),1)
+	cv2.line( img,ps[2],ps[3],::Scalar(0,255,0),1)
+	cv2.line( img,ps[3],ps[4],::Scalar(0,255,0),1)
+	cv2.line( img,ps[4],ps[1],::Scalar(0,255,0),1)
+	cv2.putText( img,list[i],ps[1],,1,::Scalar(0,255,0))
+}
+
 console.dumpJson(list)
+cv2.imshow("QR-detectAndDecode",img)
+cv2.waitKey(0)
 
 //以下代码可体验摄像头实时识别效果
-/**
+
+/*
 var cap = cv2.videoCapture(0)
 while(sleep(1)){
 	var ok,img = cap.read()
@@ -20,16 +33,24 @@ while(sleep(1)){
 		var list,points = detector.detectAndDecode(img);
 		if(#list){
 			for(i=1;#list;1){
-				console.log(list[i])
-				img = cv2.putText( img,list[i],::POINT(35,35) )
-				cv2.imshow("QR-detectAndDecode",img)
-				cv2.waitKey(10)
-			}	
+				var ps = points[i]
+				cv2.line( img,ps[1],ps[2],::Scalar(0,255,0),1)
+				cv2.line( img,ps[2],ps[3],::Scalar(0,255,0),1)
+				cv2.line( img,ps[3],ps[4],::Scalar(0,255,0),1)
+				cv2.line( img,ps[4],ps[1],::Scalar(0,255,0),1)
+				cv2.putText( img,list[i],ps[1],,1,::Scalar(0,255,0))
+			}
+			cv2.imshow("QR-detectAndDecode",img)
+			cv2.waitKey(10)
+			//console.dumpJson(list)	
 		}
-		points.release();
 		img.release();
 	}
 }
-**/
+cap.release()
+*/
+
+
 detector.release()
+
 console.pause(true);

@@ -3,7 +3,7 @@ import console
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
 
 var f2i = function(p){
-    return ::POINT(p.x,p.y); 
+    return ::POINT(..math.round(p.x),..math.round(p.y)); 
 }
 
 /*imgcodecs{{*/
@@ -244,7 +244,7 @@ drawMarker = function(src,position,color,markerType,markerSize=20,thickness=1,li
 
 putText = function(src,text,position,font=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontSize=1,color,thickness=1){
     if !color color = ::Scalar(255,255,255)
-	var err = imgproc_putText(src.cvPtr,text,position,font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
+	var err = imgproc_putText(src.cvPtr,text,f2i(position),font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
 	return src; 
 }
 
@@ -306,7 +306,9 @@ drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x
 }
 
 minAreaRect = function(points){
-    var err,ret = dll.imgproc_minAreaRect_InputArray(..cv2.mat(points).cvPtr,::RotatedRect( ::POINTF(),::POINTF(),0 ))
+    //var mp = ..cv2.mat(points)
+    var err,ret = dll.imgproc_minAreaRect_InputArray(points.cvPtr,::RotatedRect( ::POINTF(),::POINTF(),0 ))
+	//mp.release()
 	return ret; 
 }
 
@@ -389,6 +391,9 @@ class videoCapture{
 /*}}*/
 
 //以下为第三方库，按需封装
+
+/*WeChatQRCode{{*/
+
 class wechat_qrcode_WeChatQRCode{
 	ctor( detector_prototxt_path,detector_caffe_model_path,super_resolution_prototxt_path,super_resolution_caffe_model_path){
 		var err,ret = dll.wechat_qrcode_WeChatQRCode_new(detector_prototxt_path,
@@ -403,13 +408,21 @@ class wechat_qrcode_WeChatQRCode{
 		var points = ..cv2.vectorOfMat()
 		var err,ret1,ret2 = dll.wechat_qrcode_WeChatQRCode_detectAndDecode(this.ptr,img.cvPtr,points,{ptr vecValue},{int len=0});
 		var res = ..table.array(ret2.len,"");
+		var mats = points.toArray();
+		var resPoints = {}
 		res = ..table.map(res,function(v,k,result){
 			var buffer = ..raw.buffer(1024)
 			dll.wechat_qrcode_extractResult(ret1.vecValue,k-1,buffer);
+			
+			var minRect = ..cv2.minAreaRect(mats[k]);
+			var minRectPoints = ..cv2.boxPoints(minRect)
+			resPoints[k] = minRectPoints
+			mats[k].release()
 			return ..raw.str(buffer);
 		})
+		points.release();
 		dll.wechat_qrcode_deleteResult(ret1.vecValue);
-		return res,points;
+		return res,resPoints;
 	}
 	
 	release = function(){
@@ -419,6 +432,7 @@ class wechat_qrcode_WeChatQRCode{
 		}
 	}
 }
+/*}}*/
 
 _dll = dll
 imgproc_GaussianBlur = dll.api("imgproc_GaussianBlur","int(pointer src,pointer dst,struct ksize,double sigmaX, double sigmaY, int borderType)")

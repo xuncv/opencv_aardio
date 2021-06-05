@@ -76,6 +76,20 @@ class mat{
 		return ret.value; 
 	}
 	
+	at = function(...){
+		var params = {...};
+		var paramsLen = #params
+		var ref = {BYTE value }
+		if(paramsLen==1){
+			dll.core_Mat_ptr1d(this.handle,params[1],ref);
+		}elseif(paramsLen==2){
+			dll.core_Mat_ptr2d(this.handle,params[1],params[2],ref);
+		}elseif(paramsLen==3){
+			dll.core_Mat_ptr3d(this.handle,params[1],params[2],params[3],ref);
+		}
+		return ref.value; 
+	}
+	
 	isContinuous = function(){
 		var err,ret = dll.core_Mat_isContinuous(this,{int value})
 		return ret.value != 0; 
