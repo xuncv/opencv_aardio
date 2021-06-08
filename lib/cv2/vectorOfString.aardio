@@ -1,0 +1,48 @@
+﻿namespace cv2
+import util.metaProperty
+class vectorOfString{
+	ctor( size ){
+		if(!size){
+			this.ptr = dll.vector_string_new1P()
+		}else {
+			assert(size>=0,"size应当大于等于0")
+			this.ptr = dll.vector_string_new2P(size)
+		}
+		..table.gc(this,"release")
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		var strArray = {}
+		var v,ret,ret2 = dll.vector_string_getElements(this.ptr,{pointer cPtrs[]={length=size}},{int lens[]={length=size}})
+		for(i=1;#(ret.cPtr);1){
+			var s = ..raw.tostring(ret.cPtrs[i],1,ret2.lens[i])
+			..table.push( strArray,s )
+		}
+		return strArray; 
+	}
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_string_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace vectorOfString{
+	dll = ..cv2._dll;
+	
+	_meta = ..util.metaProperty(
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		
+		size = {
+			_get = function(){ 
+				return dll.vector_string_getSize(owner.ptr); 
+			}
+		};
+	)
+}

@@ -1,0 +1,26 @@
+import console; 
+import cv2
+import cv2.vectorOfString
+vecString = cv2.vectorOfString()
+net = cv2.dnn_DetectionModel("./test/assets/yolov4-tiny.cfg","./test/assets/yolov4-tiny.weights");
+outLayersNames = net.getUnconnectedOutLayersNames()
+console.dumpTable(outLayersNames)
+layerNames = net.getLayerNames()
+console.dumpTable(layerNames)
+net.setInputSize(512, 512)
+net.setInputScale(1.0 / 255)
+net.setInputSwapRB(true)
+
+src = cv2.imread("./images/tower.jpg")
+
+dst = net.blobFromImage(src)
+input = net.setInput(dst)
+net.forward()
+console.log(input)
+//console.log(dst,dst.cvPtr)
+/*
+cv2.imshow("dst",dst)
+cv2.waitKey(0)
+*/
+
+console.pause(true);

@@ -390,10 +390,65 @@ class videoCapture{
 
 /*}}*/
 
+//dnn 深度神经网络
+class dnn_DetectionModel{
+	ctor( cfg,weights,backend=2/*_CV2_DNN_BACKEND_INFERENCE_ENGINE*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
+		err,ret = dll.dnn_readNetFromDarknet(cfg,weights,{pointer value});
+		if(!err){
+			this.ptr = ret.value
+			dll.dnn_Net_setPreferableBackend(this.ptr,backend);
+			dll.dnn_Net_setPreferableTarget(this.ptr,target)
+		}
+	};
+	
+	getUnconnectedOutLayersNames = function(){
+		var vecString = ..cv2.vectorOfString()
+		dll.dnn_Net_getUnconnectedOutLayersNames(this.ptr,vecString)
+		return vecString.toArray(); 
+	}
+	
+	getLayerNames = function(){
+		var vecString = ..cv2.vectorOfString()
+		dll.dnn_Net_getLayerNames(this.ptr,vecString);
+		return vecString.toArray(); 
+	}
+
+	setInputSize = function(w,h){
+		this.size = ::SIZE(w,h)
+	}
+	
+	setInputScale = function(scale){
+		this.scale = scale : (1.0/255)
+	}
+	
+	setInputSwapRB = function(swap=true){
+		this.swap = swap
+	}
+	
+	blobFromImage = function(src){
+		//var p = topointer(0)
+		var mean = ::Scalar(0,0,0,0)
+		var ret,ret2,ret3 = ..cv2.dnn_blobFromImage(src,this.scale,this.size,mean,1,0,null)
+		..console.log("blobFromImage",ret,ret2,ret3)
+		return ret2
+	}
+	
+	setInput = function(blob){
+		dll.dnn_Net_setInput(this.ptr,blob,null)
+	}
+	
+	forward = function(){
+		var outs = ..cv2.vectorOfMat()	
+		dll.dnn_Net_forward2(this.ptr,outs,1,null)
+	}
+	
+	
+}
+
+
 //以下为第三方库，按需封装
 
 /*WeChatQRCode{{*/
-
 class wechat_qrcode_WeChatQRCode{
 	ctor( detector_prototxt_path,detector_caffe_model_path,super_resolution_prototxt_path,super_resolution_caffe_model_path){
 		var err,ret = dll.wechat_qrcode_WeChatQRCode_new(detector_prototxt_path,
@@ -447,11 +502,12 @@ core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,doub
 core_addWeighted= dll.api("core_addWeighted","INT(pointer src1,double alpha,pointer &src2,double beta,double gamma,pointer dst,int dtype)")
 videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer capture,int propId,double& ret)")
 videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
-
+dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefactor,struct size,struct mean,int swapRB,int crop,pointer& returnValue)")
 namespace cv2{   
     import fsys
 	import cv2.mat
 	import cv2.vectorOfMat
+	import cv2.vectorOfString
 	import cv2.types
 }
 
@@ -527,7 +583,7 @@ cv2.wechat_qrcode_WeChatQRCode() = 微信QRCode解码对象,相关模型至https
 cv2.wechat_qrcode_WeChatQRCode( = 创建微信QRCode解码对象
 cv2.wechat_qrcode_WeChatQRCode(.(detect网络,detect权重,sr网络,sr权重) = 创建微信QRCode解码对象
 cv2.wechat_qrcode_WeChatQRCode() = !QRCode.
-!QRCode.detectAndDecode(.(输入图像) = 定位并解码二维码
+!QRCode.detectAndDecode(.(输入图像) = 定位并解码二维码,返回 识别字符串数组,最小外接矩形四角POINT数组
 !QRCode.release() = 释放微信QRCode解码对象,可自动回收
 end intellisense**/
 
