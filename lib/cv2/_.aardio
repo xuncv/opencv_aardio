@@ -1,6 +1,6 @@
 ﻿namespace cv2
 import console
-var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","cv2","cdecl")
+var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
 
 var f2i = function(p){
     return ::POINT(..math.round(p.x),..math.round(p.y)); 
@@ -292,14 +292,19 @@ distanceTransform = function(src,distanceType,maskSize){
 }
 
 findContours = function(src,mode=3/*_CV2_RETR_TREE*/,method=2/*_CV2_CHAIN_APPROX_SIMPLE*/){
-    var contours = ..cv2.vectorOfMat()
+    var contours = ..cv2.vector.mat()
     var hierarchy = ..cv2.mat()
 	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
-	return src,contours.toArray(),hierarchy; 
+	return src,contours,hierarchy; 
 }
 
 drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
-    var contoursLength = #contours  
+    var cType = type.rget(contours);
+    if(cType=="vectorOfMat"){
+    	contours = contours.toArray()
+    }
+    var contoursLength = #contours
+    
     color = color : (::Scalar(0,255,0))
     var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
 	return src; 
@@ -392,7 +397,7 @@ class videoCapture{
 
 //dnn 深度神经网络
 class dnn_DetectionModel{
-	ctor( cfg,weights,backend=2/*_CV2_DNN_BACKEND_INFERENCE_ENGINE*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
+	ctor( cfg,weights,backend=3/*_CV2_DNN_BACKEND_OPENCV*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
 		err,ret = dll.dnn_readNetFromDarknet(cfg,weights,{pointer value});
 		if(!err){
 			this.ptr = ret.value
@@ -401,18 +406,28 @@ class dnn_DetectionModel{
 		}
 	};
 	
+	getUnconnectedOutLayers = function(){
+		var vecInt32 = ..cv2.vector.int32();
+		dll.dnn_Net_getUnconnectedOutLayers(this.ptr,vecInt32)
+		return vecInt32.toArray(); ; 
+	}
+	
 	getUnconnectedOutLayersNames = function(){
-		var vecString = ..cv2.vectorOfString()
+		var vecString = ..cv2.vector.string();
 		dll.dnn_Net_getUnconnectedOutLayersNames(this.ptr,vecString)
 		return vecString.toArray(); 
 	}
 	
 	getLayerNames = function(){
-		var vecString = ..cv2.vectorOfString()
+		var vecString = ..cv2.vector.string()
 		dll.dnn_Net_getLayerNames(this.ptr,vecString);
 		return vecString.toArray(); 
 	}
-
+	
+	getOutputsNames = function(){
+		
+	}
+	
 	setInputSize = function(w,h){
 		this.size = ::SIZE(w,h)
 	}
@@ -426,28 +441,52 @@ class dnn_DetectionModel{
 	}
 	
 	blobFromImage = function(src){
-		//var p = topointer(0)
-		var mean = ::Scalar(0,0,0,0)
+		var mean = ::Scalar(0,0,0)
 		var ret,ret2,ret3 = ..cv2.dnn_blobFromImage(src,this.scale,this.size,mean,1,0,null)
-		..console.log("blobFromImage",ret,ret2,ret3)
 		return ret2
 	}
 	
 	setInput = function(blob){
-		dll.dnn_Net_setInput(this.ptr,blob,null)
+		dll.dnn_Net_setInput(this.ptr,blob,"data")
 	}
 	
-	forward = function(){
-		var outs = ..cv2.vectorOfMat()	
-		dll.dnn_Net_forward2(this.ptr,outs,1,null)
+	forward = function(names){
+		var outs = ..cv2.vector.mat(1)
+		var cvPtrs = ..table.map(outs.toArray(),function(v,k,result){
+			return v.handle; 
+		})
+		var err,ret = dll.dnn_Net_forward3(this.ptr,{pointer value[]=cvPtrs},1,{string s[]=names},#names)
+		var vmat = ..cv2.vector.mat(ret.value)
+		var mats = vmat.toArray();
+		
+		var confidences = ..cv2.vector.float()
+		
+		for(i=1;#mats;1){
+			var data = mats[i].data;
+			var fdata = ..raw.convertArray(data,4,"float")
+			for(j=1;mats[i].rows;1){
+				var scores = mats[i].row(j-1).colRange(5,mats[i].cols);
+				var minVal,maxVal,minLoc0,maxLoc0 = ..cv2.minMaxLoc(scores)
+				if(maxVal>0.5){
+					centerX = fdata[1] * this.size.cx
+					centerY = fdata[2] * this.size.cy
+					width = fdata[3] * this.size.cx
+					height = fdata[4] * this.size.cy
+					//data += mats[i].cols
+					//..raw.convert(
+					..console.log("convert pre",mats[i].cols )
+					data = topointer(tonumber( data ) + mats[i].cols)
+					..console.log("convert:",data)
+					fdata = ..raw.convertArray(data,4,"float")
+					..console.log("loop in data:",centerX,centerY,width,height)
+				}
+			
+			}
+		}
 	}
-	
-	
 }
 
-
 //以下为第三方库，按需封装
-
 /*WeChatQRCode{{*/
 class wechat_qrcode_WeChatQRCode{
 	ctor( detector_prototxt_path,detector_caffe_model_path,super_resolution_prototxt_path,super_resolution_caffe_model_path){
@@ -460,24 +499,20 @@ class wechat_qrcode_WeChatQRCode{
 	};
 	
 	detectAndDecode = function(img){
-		var points = ..cv2.vectorOfMat()
-		var err,ret1,ret2 = dll.wechat_qrcode_WeChatQRCode_detectAndDecode(this.ptr,img.cvPtr,points,{ptr vecValue},{int len=0});
-		var res = ..table.array(ret2.len,"");
+		var points = ..cv2.vector.mat()
+		var lists = ..cv2.vector.string();
+		var err = dll.wechat_qrcode_WeChatQRCode_detectAndDecode(this.ptr,img.cvPtr,points,lists);
 		var mats = points.toArray();
-		var resPoints = {}
-		res = ..table.map(res,function(v,k,result){
-			var buffer = ..raw.buffer(1024)
-			dll.wechat_qrcode_extractResult(ret1.vecValue,k-1,buffer);
-			
-			var minRect = ..cv2.minAreaRect(mats[k]);
+		resPoints = ..table.map(mats,function(v,k,result){
+			var minRect = ..cv2.minAreaRect(v);
 			var minRectPoints = ..cv2.boxPoints(minRect)
-			resPoints[k] = minRectPoints
-			mats[k].release()
-			return ..raw.str(buffer);
+			v.release()
+			return minRectPoints;
 		})
+		var reLists = lists.toArray()
 		points.release();
-		dll.wechat_qrcode_deleteResult(ret1.vecValue);
-		return res,resPoints;
+		lists.release()
+		return reLists,resPoints;
 	}
 	
 	release = function(){
@@ -506,9 +541,8 @@ dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefa
 namespace cv2{   
     import fsys
 	import cv2.mat
-	import cv2.vectorOfMat
-	import cv2.vectorOfString
 	import cv2.types
+	import cv2.vector
 }
 
 /**intellisense(cv2)

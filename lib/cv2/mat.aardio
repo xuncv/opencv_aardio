@@ -13,6 +13,9 @@ class mat{
 			err,ret = dll.core_Mat_new1({ptr p})
 			this.handle = ret.p
 		}
+		elseif( tArg== type.table && type.rget(arg)=="CvSlice" ){
+			//todo
+		}
 		//bitmap传入
 		elseif(tArg == type.table && arg[["pBitmap"]]){
 			var data = arg.lockData()
@@ -90,6 +93,31 @@ class mat{
 		return ref.value; 
 	}
 	
+	row = function(y){
+		var err,ret = dll.core_Mat_row(this,y,{pointer value})
+		return ..cv2.mat(ret.value); 
+	}
+	
+	col = function(x){
+		var err,ret = dll.core_Mat_col(this,x,{pointer value})
+		return ..cv2.mat(ret.value); 
+	}
+	
+	rowRange = function(startRow,endRow){
+		var err,ret = dll.core_Mat_rowRange(this,startRow,endRow,{pointer value})
+		return ..cv2.mat(ret.value); 
+	}
+	
+	colRange = function(startCol,endCol){
+		var err,ret = dll.core_Mat_colRange(this,startCol,endCol,{pointer value})
+		return ..cv2.mat(ret.value); 
+	}
+	
+	diag = function(d){
+		var err,ret = dll.core_Mat_diag(this,d,{pointer value})
+		return ..cv2.mat(ret.value); 
+	}
+	
 	isContinuous = function(){
 		var err,ret = dll.core_Mat_isContinuous(this,{int value})
 		return ret.value != 0; 
@@ -131,6 +159,11 @@ class mat{
 		var err = core_Mat_convertTo(this,this.cvPtr,rtype,alpha,beta)
 		return this;
 	}
+	
+	reshape = function(){
+		//core_Mat_reshape1
+	}
+	
 	
 	release = function(){
 		if(this[["handle"]] && this[["cvPtr"]]){

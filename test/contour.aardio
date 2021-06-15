@@ -7,8 +7,7 @@ img,contours,hierarchy = cv2.findContours(img)
 
 src = cv2.imread( "./images/contour.png",1 ) //读入彩色图像,便于标记
 img = cv2.drawContours(src,contours,-1,::Scalar(0,255,0),5)
-
-for(i=1;#contours;1){
+for(i=1;contours.size;1){
 	var ret = cv2.minAreaRect(contours[i])
 	var points = cv2.boxPoints(ret)
 	cv2.line( img,points[1],points[2],::Scalar(255,127,0),3)

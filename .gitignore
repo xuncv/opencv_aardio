@@ -33,4 +33,7 @@
 *.dll
 *.txt
 
-*weights
+*.weights
+*.txt
+*.cfg
+*.names

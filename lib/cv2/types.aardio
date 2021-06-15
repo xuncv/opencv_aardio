@@ -24,3 +24,13 @@ class ::RotatedRect{ //RotatedRect
 	struct size;
 	float angle;
 }
+
+class ::CvSlice{
+	ctor( s=0,e=0 ){
+		this.s = s;
+		this.e = e;
+	};
+	int s;
+	int e;
+	@{ _type="CvSlice" }
+}
