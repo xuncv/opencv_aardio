@@ -155,9 +155,9 @@ class mat{
 	}
 	
 	convertTo = function(rtype,alpha=1,beta=0){
-		//var dst = ..cv2.mat();
-		var err = core_Mat_convertTo(this,this.cvPtr,rtype,alpha,beta)
-		return this;
+		var dst = ..cv2.mat();
+		var err = core_Mat_convertTo(this,dst.cvPtr,rtype,alpha,beta)
+		return dst;
 	}
 	
 	reshape = function(){

@@ -40,7 +40,9 @@ winform.button.oncommand = function(id,event){
 }
 
 winform.onClose = function(hwnd,message,wParam,lParam){
-    camera.release()
+    if(camera){
+    	camera.release()	
+    }
     cv2.destroyAllWindows()
 }
 

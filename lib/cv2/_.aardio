@@ -194,6 +194,12 @@ boxFilter = function(srcMat,ddepth=-1,ksize,anchor,normalize=true,borderType=4/*
 	return dst; 
 }
 
+bilateralFilter = function(src,d,sigmaColor,sigmaSpace,borderType=4/*_CV2_BORDER_DEFAULT*/){
+	var dst = ..cv2.mat()
+	var err = imgproc_bilateralFilter(src.cvPtr,dst.cvPtr,d,sigmaColor,sigmaSpace,borderType)
+	return dst; 
+}
+
 threshold = function(src,thresh,maxVal=255,thresholdType=0x0/*_CV2_THRESH_BINARY*/){
 	var dst = ..cv2.mat()
 	var err,ret = imgproc_threshold(src.cvPtr,dst.cvPtr,thresh,maxVal,thresholdType,0)
@@ -395,7 +401,7 @@ class videoCapture{
 
 /*}}*/
 
-//dnn 深度神经网络
+/*dnn{{*/
 class dnn_DetectionModel{
 	ctor( cfg,weights,backend=3/*_CV2_DNN_BACKEND_OPENCV*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
 		err,ret = dll.dnn_readNetFromDarknet(cfg,weights,{pointer value});
@@ -485,6 +491,7 @@ class dnn_DetectionModel{
 		}
 	}
 }
+/*}}*/
 
 //以下为第三方库，按需封装
 /*WeChatQRCode{{*/
@@ -526,6 +533,7 @@ class wechat_qrcode_WeChatQRCode{
 
 _dll = dll
 imgproc_GaussianBlur = dll.api("imgproc_GaussianBlur","int(pointer src,pointer dst,struct ksize,double sigmaX, double sigmaY, int borderType)")
+imgproc_bilateralFilter= dll.api("imgproc_bilateralFilter","INT(pointer src,pointer dst,int d,double sigmaColor,double sigmaSpace,int borderType)")
 imgproc_resize = dll.api("imgproc_resize","pointer(pointer,pointer,struct,double,double,int)")
 imgproc_threshold = dll.api("imgproc_threshold","int(pointer src,pointer dst,double thresh,double maxVal, int type, double& returnValue)")
 imgproc_Canny1 = dll.api("imgproc_Canny1","int(pointer src,pointer edges,double threshold1,double threshold2,int apertureSize, bool L2gradient)" )
@@ -554,43 +562,80 @@ waitKey(0) = 窗口等待键盘指令,返回键位码
 waitKey(.(延时 单位毫秒) = 窗口延时等待
 namedWindow(.(窗口标题,缩放类型_CV2_WINDOW) = 设置cv窗口
 cvGetWindowHandle(.(窗口标题) = 根据窗口标题获取cv窗口句柄
+threshold() = !matObject.
 threshold(.(灰度图,起始值,最大值,二值化算法-默认THRESH_BINARY) = 图像阈值处理
+adaptiveThreshold() = !matObject.
 adaptiveThreshold(.(灰度化图像,最大灰度值,自适应阈值算法,二值化方法,区域大小,常数 可为负数) = 自适应阈值二值化
+medianBlur() = !matObject.
 medianBlur(.(源数据,核大小) = 中值滤波
+resize() = !matObject.
 resize(.(源数据,::SIZE对象,x轴缩放倍数,y轴缩放倍数,插值方式) = 调整图片大小
+gaussianBlur() = !matObject.
 gaussianBlur(.(输入图像,::SIZE对象 高斯核大小,X方向上的高斯核标准偏差, Y方向上的高斯核标准差,边缘模式) = 高斯滤波
+blur() = !matObject.
 blur(.(输入图像,::SIZE对象 核大小) = 均值滤波,对于椒盐噪声的滤除效果比较好。
+boxFilter() = !matObject.
 boxFilter(.(输入图像,输出图像深度 默认-1 与输入图像相同,::SIZE对象 核大小,是否标准化 默认true 为false时与blur函数相同,边缘模式) = 方块滤波
+bilateralFilter() = !matObject.
+bilateralFilter(.(输入图像,邻域直径范围,颜色空间过滤器的sigma值,坐标空间中滤波器的sigma值,边缘模式) = 双边滤波
+cvtColor() = !matObject.
 cvtColor(.(输入图像,颜色空间代码) = 转换颜色空间
+canny() = !matObject.
 canny(.(输入图像,阈值1,阈值2,Sobel算子大小 默认3,是否使用L2范数 默认true) = 边缘检测
+line() = !matObject.
 line(.(输入图像,起点POINT对象,终点POINT对象,颜色Scalar对象BGRA,线条宽度 默认1像素,线条类型 可选 ) = 在输入图像上画线段
+arrowedLine() = !matObject.
 arrowedLine(.(输入图像,起点POINT对象,终点POINT对象,颜色Scalar对象BGRA,线条宽度 默认1像素 ,线条类型 可选,箭头笔尖的长度 默认0.1 ) = 在输入图像上画箭头线段
+rectangle() = !matObject.
 rectangle(.(输入图像,起点POINT对象,终点POINT对象,颜色Scalar对象BGRA,线条宽度 默认1像素 为-1时填充闭合区域,线条类型 可选) = 在输入图像上画矩形
+circle() = !matObject.
 circle(.(输入图像,中心点坐标 POINT对象,圆半径,线条颜色 Scalar对象BGRA,线条宽度 默认1像素 为-1时填充闭合区域,线条类型 可选) = 在输入图像上画圆形
+ellipse() = !matObject.
 ellipse(.(输入图像,椭圆中心坐标 POINT对象,椭圆长轴短轴 SIZE对象,椭圆旋转角度以度为单位,椭圆弧的起始角度以度为单位,椭圆弧的终止角度以度为单位,线条颜色 Scalar对象BGRA,线条宽度 默认1像素 为-1时填充闭合区域,线条类型 可选) = 在输入图像上画椭圆
+drawMarker() = !matObject.
 drawMarker(.(输入图像,图案坐标,图案描边颜色,图案类型,图案尺寸 默认20,线条宽带 默认1像素,线条类型 可选) = 在输入图像上画图案
+putText() = !matObject.
 putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,颜色Scalar对象BGRA 可选,字体粗细 可选) = 在输入图像上写文字
+copyMakeBorder() = !matObject.
 copyMakeBorder(.(输入图像,上边宽度,下边宽度,左边宽度,右边宽度,边界类型 可选,边框类型为0时,可设置边框颜色 默认黑色) = 扩充图像边框,返回新图像
+getStructuringElement() = !matObject.
 getStructuringElement(.(元素形状 默认矩形,元素大小 ::SIZE对象,锚点位置 默认中心点) = 返回指定形状和尺寸的内核矩阵 
+morphologyEx() = !matObject.
 morphologyEx(.(输入图像,形态学类别,结构内核,迭代次数 默认为1) = 通用形态学变换,可作用在输入图像上
+erode() = !matObject.
 erode(.(输入图像,结构内核,迭代次数 默认为1) = 腐蚀操作
+dilate() = !matObject.
 dilate(.(输入图像,结构内核,迭代次数 默认为1) = 膨胀操作
+normalize() = !matObject.
 normalize(.(输入图像,alpha值,beta值) = 图像归一化
+bitwise_and() = !matObject.
 bitwise_and(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑与操作
+bitwise_or() = !matObject.
 bitwise_or(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑或操作
+bitwise_xor() = !matObject.
 bitwise_xor(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑异或操作
+bitwise_not() = !matObject.
 bitwise_not(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑非操作
 split(.(输入图像) = 将图像拆分成BGR通道图像,返回B G R 3个mat对象
+merge() = !matObject.
 merge(.(BGR通道图像数组)) = 将BGR通道图像合并
+flip() = !matObject.
 flip(.(输入图像,翻转码 1水平翻转 0垂直翻转 -1水平垂直翻转) = 图像翻转
+rotate() = !matObject.
 rotate(.(输入图像,旋转码 _CV2_ROTATE_) = 将2D图像矩阵旋转90度的倍数
+subtract() = !matObject.
 subtract(.(输入图像1,输入图像2,图像掩码 可选,输出图像深度 可选) = 图像减法运算
+add() = !matObject.
 add(.(输入图像1,输入图像2,图像掩码 可选,输出图像深度 可选) = 图像加法运算
+addWeighted() = !matObject.
 addWeighted(.(输入图像1,图像1权重,输入图像2,图像2权重,偏移量 缺省为0,深度 缺省-1) = 图像融合
+matchTemplate() = !matObject.
 matchTemplate(.(待搜索图像,模板图像,匹配模式 默认5,图像腌膜 可选) = 模板匹配
 minMaxLoc(.(输入矩阵) = 返回输入矩阵的最小值,最大值,最小值索引,最大值索引
+distanceTransform() = !matObject.
 distanceTransform(.(输入图像,距离算法类型,距离变换腌膜大小) = 距离变换
 findContours(.(输入图像,轮廓检索模式,轮廓近似方法) = 轮廓检测
+drawContours() = !matObject.
 drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
 minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
 boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
@@ -621,6 +666,14 @@ cv2.wechat_qrcode_WeChatQRCode() = !QRCode.
 !QRCode.release() = 释放微信QRCode解码对象,可自动回收
 end intellisense**/
 
+/**intellisense()
+cv2.mat() = 创建Mat矩阵对象\n!matObject.
+cv2.mat() = 创建一个空Mat矩阵
+cv2.mat(.(Mat指针) = 由Mat指针创建Mat矩阵
+cv2.mat(.(bitmap对象) = 由bitmap指针创建Mat矩阵
+cv2.mat(.(输入Mat矩阵,::RECT对象) = 从感兴趣区域中创建Mat对象
+
+end intellisense**/
 
 /**intellisense(!matObject)
 type() = 图片类型
@@ -631,5 +684,27 @@ depth() = 图片深度
 shape = 图片形状，包括高度、宽度、通道数
 empty() = 判断是否图像是否为空
 size() = 获取图片尺寸,返回::SIZE结构体
+data = Mat对象data内存指针
+cvPtr = Mat对象输入输出指针,一般作为api参数被调用
+elemSize = 元素尺寸
 toBitmap() = 转换为bitmap对象,返回bitmap对象
+clone() = 深拷贝Mat矩阵\n!matObject.
+ones() = !matObject.
+ones(.(行数,列数,矩阵类型) = 生成所有元素为1的Mat对象
+zeros() = !matObject.
+zeros(.(行数,列数,矩阵类型) = 生成所有元素为0的Mat对象
+release() = 释放Mat对象,Mat占用内存较大时,需手动调用该函数
+convertTo() = !matObject.
+convertTo(.(转换类型_CV_,缩放因子,偏移因子) = 转换矩阵类型
+at(.(...) = 获取矩阵中某点的值,支持1-3维参数
+row() = !matObject.
+row(.(行号) = 获取矩阵中的某行矩阵对象
+col() = !matObject.
+col(.(行号) = 获取矩阵中的某列矩阵对象
+rowRange() = !matObject.
+rowRange(.(起行,止行) = 为矩阵的指定行区间创建一个矩阵头.索引从0开始,且左开右闭
+colRange() = !matObject.
+colRange(.(起列,止列) = 为矩阵的指定列区间创建一个矩阵头.索引从0开始,且左开右闭
+diag() = 以一维数组的形式返回矩阵的对角线(或非对角线)元素\n!matObject.
+isContinuous() = 矩阵是否连续
 end intellisense**/
