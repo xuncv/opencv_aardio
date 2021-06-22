@@ -406,19 +406,35 @@ class videoCapture{
 
 /*dnn{{*/
 class dnn_DetectionModel{
-	ctor( cfg,weights,backend=3/*_CV2_DNN_BACKEND_OPENCV*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
-		err,ret = dll.dnn_readNetFromDarknet(cfg,weights,{pointer value});
+	ctor( model,cfg,backend=3/*_CV2_DNN_BACKEND_OPENCV*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
+		err,ret = dll.dnn_readNet(model,cfg,"",{pointer value});
 		if(!err){
 			this.ptr = ret.value
 			dll.dnn_Net_setPreferableBackend(this.ptr,backend);
 			dll.dnn_Net_setPreferableTarget(this.ptr,target)
 		}
+		this.swap = true
+		this.scale = 1.0/255
+		//this.mean = ::Scalar(110,135,158)
+		this.mean = ::Scalar(0,0,0)
+		this.$config = {
+			confThreshold = 0.5; //分类置信度
+			nmsThreshold = 0.4; //nms置信度
+		}
 	};
+	
+	setConfig = function(config){
+		..table.assign( this.$config,config)
+	}
+	
+	setMean = function(b,g,r){
+		this.mean = ::Scalar(b,g,r)
+	}
 	
 	getUnconnectedOutLayers = function(){
 		var vecInt32 = ..cv2.vector.int32();
 		dll.dnn_Net_getUnconnectedOutLayers(this.ptr,vecInt32)
-		return vecInt32.toArray(); ; 
+		return vecInt32.toArray();
 	}
 	
 	getUnconnectedOutLayersNames = function(){
@@ -432,11 +448,6 @@ class dnn_DetectionModel{
 		dll.dnn_Net_getLayerNames(this.ptr,vecString);
 		return vecString.toArray(); 
 	}
-	
-	getOutputsNames = function(){
-		
-	}
-	
 	setInputSize = function(w,h){
 		this.size = ::SIZE(w,h)
 	}
@@ -444,15 +455,13 @@ class dnn_DetectionModel{
 	setInputScale = function(scale){
 		this.scale = scale : (1.0/255)
 	}
-	
+	// bgr to rgb
 	setInputSwapRB = function(swap=true){
 		this.swap = swap
 	}
 	
 	blobFromImage = function(src){
-		var mean = ::Scalar(0,0,0)
-		this.srcSize = src.size()
-		var ret,ret2,ret3 = ..cv2.dnn_blobFromImage(src,this.scale,this.size,mean,1,0,null)
+		var ret,ret2,ret3 = ..cv2.dnn_blobFromImage(src,this.scale,this.size,this.mean,1,0,null)
 		return ret2
 	}
 	
@@ -460,16 +469,45 @@ class dnn_DetectionModel{
 		dll.dnn_Net_setInput(this.ptr,blob,"data")
 	}
 	
+	nmsBoxesRect = function(boxes,confidences,classIds){
+		if(!#boxes){
+			return; 
+		}
+		vConfidences = ..cv2.vector.float(confidences)
+		vBoxes = ..cv2.vector.rect(boxes)
+		vIndices = ..cv2.vector.int32();
+		var err,ret = ..cv2.dnn_NMSBoxes_Rect(vBoxes,vConfidences,this.$config.confThreshold,this.$config.nmsThreshold,vIndices,1.0,0)
+		var boxes = {}
+		var scores = {}
+		var ids = {}
+
+		var boxesArray = vBoxes.toArray()
+		vIndicesArray = vIndices.toArray()
+		vConfidencesArray = vConfidences.toArray()
+		for(i=1;vIndices.size;1){
+			var idx = vIndicesArray[i];
+			var rect = boxesArray[idx+1]
+			..table.push( boxes,rect )
+			..table.push( scores,vConfidencesArray[idx+1] )
+			..table.push( ids,classIds[idx+1]+1)
+		}
+		//还原回0-1的浮点矩阵
+		boxes = ..table.map(boxes,function(v,k,result){
+			return ::RECTF(	v.left/this.size.cx,
+							v.top/this.size.cy,
+							v.right/this.size.cx,
+							v.bottom/this.size.cy
+							); 
+		})
+		return boxes,scores,ids; 
+	}
+	
 	forward = function(names){
 		var mats = ..cv2.vector.mat(#names).toArray()
-		/*var cvPtrs = ..table.map(outs.toArray(),function(v,k,result){
-			return v.handle; 
-		})*/
 		var err,ret = dll.dnn_Net_forward3(this.ptr,{pointer value[]=mats},#names,{string s[]=names},#names)
-		//var vmat = ..cv2.vector.mat(ret.value)
-		//var mats = outs.toArray();//vmat.toArray();
 		var confidences = {}
 		var boxes = {}
+		var classIds = {}
 		var floatSize = ..raw.sizeof({float v}) 
 		//loop start
 		for(i=1;#mats;1){
@@ -478,35 +516,23 @@ class dnn_DetectionModel{
 				var scores = mats[i].row(j-1).colRange(5,mats[i].cols);
 				var minVal,maxVal,minLoc0,maxLoc0 = ..cv2.minMaxLoc(scores)
 				var floatArray = ..raw.convert(data,{float value[4]}, mats[i].cols*(j-1)*floatSize).value
-				if(maxVal>0.5){
-					centerX = ..math.floor( floatArray[1] * this.srcSize.cx )
-					centerY = ..math.floor( floatArray[2] * this.srcSize.cy )
-					width = ..math.floor(floatArray[3] * this.srcSize.cx)
-					height = ..math.floor(floatArray[4] * this.srcSize.cy)
+				if(maxVal>this.$config.confThreshold){
+					centerX = ..math.floor( floatArray[1] * this.size.cx )
+					centerY = ..math.floor( floatArray[2] * this.size.cy )
+					width = ..math.floor(floatArray[3] * this.size.cx)
+					height = ..math.floor(floatArray[4] * this.size.cy)
 					left = ( centerX - ..math.floor(width/2) )
 					top = ( centerY - ..math.floor(height/2) )
 					..table.push( boxes,::RECT(left,top,width,height) )
+					//..table.push( boxes,::RECT(floatArray[1],floatArray[2],floatArray[3],floatArray[4]) )
 					..table.push( confidences,maxVal )
+					..table.push(classIds,maxLoc0.x)
 				}
 			}
 		}
 		//loop end
-		if(!#confidences){
-			return {}; 
-		}
-		vConfidences = ..cv2.vector.float(confidences)
-		vBoxes = ..cv2.vector.rect(boxes)
-		vIndices = ..cv2.vector.int32()
-		var err,ret = ..cv2.dnn_NMSBoxes_Rect(vBoxes.ptr,vConfidences.ptr,0.5,0.4,vIndices,1.0,0)
-		var reBoxes = {}
-		var outvBoxes = vBoxes.toArray()
-		vIndicesArray = vIndices.toArray()
-		for(i=1;vIndices.size;1){
-			var idx = vIndicesArray[i];
-			var rect = outvBoxes[idx+1]
-			..table.push(reBoxes,rect)
-		}
-		return reBoxes; 
+		return this.nmsBoxesRect(boxes,confidences,classIds); 
+		
 	}
 }
 /*}}*/
@@ -576,6 +602,7 @@ namespace cv2{
 /**intellisense(cv2)
 imread() = !matObject.
 imread(.(图片路径,载入模式) = 读取图片
+imwrite(.(路径,输入图像) = 保存图片至本地路径
 imshow(.(窗口标题,显示内容) = 弹出窗口,显示图片
 destroyAllWindows() = 销毁所有cv2窗体
 waitKey(0) = 窗口等待键盘指令,返回键位码
@@ -677,14 +704,25 @@ cv2.videoCapture() = !cap.
 !cap.release() = 释放videoCapture对象,解除视频文件或摄像头占用
 end intellisense**/
 
-/**intellisense()
-cv2.wechat_qrcode_WeChatQRCode() = 微信QRCode解码对象,相关模型至https://github.com/WeChatCV/opencv_3rdparty下载
-cv2.wechat_qrcode_WeChatQRCode( = 创建微信QRCode解码对象
-cv2.wechat_qrcode_WeChatQRCode(.(detect网络,detect权重,sr网络,sr权重) = 创建微信QRCode解码对象
-cv2.wechat_qrcode_WeChatQRCode() = !QRCode.
-!QRCode.detectAndDecode(.(输入图像) = 定位并解码二维码,返回 识别字符串数组,最小外接矩形四角POINT数组
-!QRCode.release() = 释放微信QRCode解码对象,可自动回收
-end intellisense**/
+/*intellisense()
+cv2.dnn_DetectionModel() = 基于深度学习的目标检测推理模块,支持TensorFlow Pytorch Torch Caffe DarkNet ONNX框架模型\n!dnnDetection.
+cv2.dnn_DetectionModel( = 创建目标检测推理对象,支持yolo ssd等常见网络
+cv2.dnn_DetectionModel(.(权重文件,网络结构文件,推理引擎 缺省为opencv,运行载体 缺省为CPU) = 创建目标检测推理对象
+!dnnDetection.getUnconnectedOutLayersNames() = 获取输出层名称,返回字符串数组
+!dnnDetection.setInputSize(.(高,宽) = 设置输入大小
+!dnnDetection.setInputScale(1.0/255) = 设置缩放比例
+!dnnDetection.setInputSwapRB(true) = 设置是否交换RB通道
+!dnnDetection.blobFromImage(.(图像矩阵) = 返回一个4通道N维数组,结构为NCHW,用于神经网络输入
+!dnnDetection.setConfig( 参数表 ) = @.setConfig({
+	confThreshold = 0.5; //分类置信度\n
+	nmsThreshold = 0.4; //nms置信度\n
+})
+
+!dnnDetection.setInput(.(blob) = 将数据输入到网路中
+!dnnDetection.forward(.(输出层数组) = 前向推理,返回boxes scores classIds 
+!dnnDetection.setMean(.(b,g,r) = 设置各通道均值,默认为0 0 0
+/*end intellisense*/
+
 
 /**intellisense()
 cv2.mat() = 创建Mat矩阵对象\n!matObject.
@@ -729,4 +767,14 @@ colRange() = !matObject.
 colRange(.(起列,止列) = 为矩阵的指定列区间创建一个矩阵头.索引从0开始,且左开右闭
 diag() = 以一维数组的形式返回矩阵的对角线(或非对角线)元素\n!matObject.
 isContinuous() = 矩阵是否连续
+end intellisense**/
+
+//第三方库
+/**intellisense()
+cv2.wechat_qrcode_WeChatQRCode() = 微信QRCode解码对象,相关模型至https://github.com/WeChatCV/opencv_3rdparty下载
+cv2.wechat_qrcode_WeChatQRCode( = 创建微信QRCode解码对象
+cv2.wechat_qrcode_WeChatQRCode(.(detect网络,detect权重,sr网络,sr权重) = 创建微信QRCode解码对象
+cv2.wechat_qrcode_WeChatQRCode() = !QRCode.
+!QRCode.detectAndDecode(.(输入图像) = 定位并解码二维码,返回 识别字符串数组,最小外接矩形四角POINT数组
+!QRCode.release() = 释放微信QRCode解码对象,可自动回收
 end intellisense**/

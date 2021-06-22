@@ -25,5 +25,6 @@
 		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>
 		<file name="matchTemplate.aardio" path="samples\matchTemplate.aardio" comment="samples\expr.aardio"/>
 		<file name="scanQR.aardio" path="samples\scanQR.aardio" comment="samples\scanQR.aardio"/>
+		<file name="yolov4.aardio" path="samples\yolov4.aardio" comment="samples\yolov4.aardio"/>
 	</folder>
 </project>

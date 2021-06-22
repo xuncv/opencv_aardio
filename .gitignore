@@ -38,5 +38,4 @@
 *.cfg
 *.names
 
-images/
-test/
+model/

@@ -1,0 +1,41 @@
+import cv2
+
+classes = {"person";"bicycle";"car";"motorbike";"aeroplane";"bus";"train";"truck";"boat";"traffic light";"fire hydrant";"stop sign";
+"parking meter";"bench";"bird";"cat";"dog";"horse";"sheep";"cow";"elephant";"bear";"zebra";
+"giraffe";"backpack";"umbrella";"handbag";"tie";"suitcase";"frisbee";"skis";"snowboard";"sports ball";
+"kite";"baseball bat";"baseball glove";"skateboard";"surfboard";"tennis racket";"bottle";"wine glass";
+"cup";"fork";"knife";"spoon";"bowl";"banana";"apple";"sandwich";"orange";"broccoli";"carrot";"hot dog";
+"pizza";"donut";"cake";"chair";"sofa";"pottedplant";"bed";"diningtable";"toilet";"tvmonitor";"laptop";
+"mouse";"remote";"keyboard";"cell phone";"microwave";"oven";"toaster";"sink";"refrigerator";"book";"clock";
+"vase";"scissors";"teddy bear";"hair drier";"toothbrush";
+}
+
+//模型下载 https://github.com/AlexeyAB/darknet/wiki/YOLOv4-model-zoo
+// 或到https://github.com/xuncv/opencv_aardio/releases/tag/0.0.1 下载测试用模型
+detect = cv2.dnn_DetectionModel("./model/yolo-fastest-xl.weights","./model/yolo-fastest-xl.cfg");
+detect.setConfig({
+	confThreshold = 0.5; 
+	nmsThreshold = 0.4; 
+})
+
+names = detect.getUnconnectedOutLayersNames()
+detect.setInputSize(320,320)
+src = cv2.imread( "./images/bus.jpg" )
+blob = detect.blobFromImage(src)
+detect.setInput(blob);
+boxes,scores,classIds = detect.forward(names)
+
+var h,w,c = ..table.unpack(src.shape)
+table.map(boxes,function(v,k,result){
+    var x = v.x*w
+    var y = v.y*h
+    var x2 = (v.x+v.width)*w
+    var y2 = (v.y+v.height)*h
+	cv2.rectangle(src,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
+	var text = string.format("%s %.6f",classes[classIds[k]],scores[k] )
+	cv2.putText( src,text,::POINT(x,y) )
+})
+
+//cv2.imwrite("./images/detect.jpg",src)
+cv2.imshow("detect",src)
+cv2.waitKey(0)

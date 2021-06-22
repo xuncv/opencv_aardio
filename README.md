@@ -27,6 +27,12 @@ cv2.waitKey(0)
 
 ![](./images/result.jpg)
 
+
+
+##### YOLO
+
+![](./images/detect.jpg)
+
 #### 期望解决的问题：
 
 1. 充分融合aardio的胶水特性，增强aardio图像处理能力。
