@@ -202,7 +202,28 @@ namespace mat {
 				return stu.buffer;	
 			}
 		}
+		
+		datastart = {
+			_get = function(){
+				var err,stu = dll.core_Mat_datastart(owner.handle,{ptr buffer})
+				return stu.buffer;	
+			}
+		}		
 	
+		dataend = {
+			_get = function(){
+				var err,stu = dll.core_Mat_dataend(owner.handle,{ptr buffer})
+				return stu.buffer;	
+			}
+		}
+	
+		datalimit = {
+			_get = function(){
+				var err,stu = dll.core_Mat_datalimit(owner.handle,{ptr buffer})
+				return stu.buffer;	
+			}
+		}	
+			
 		cols = {
 			_get = function(){
 				var err,stu = dll.core_Mat_cols(owner.handle,{int value}); 

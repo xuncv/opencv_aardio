@@ -20,11 +20,11 @@ class mat
 	toArray = function(){
 		var dst = {}
 		var size = this.size;
-		var dstPtr = {}
+		//var dstPtr = {}
 		for(i=1;size;1){
 			var m = ..cv2.mat()
 			..table.push( dst, m );
-			..table.push( dstPtr,m.cvPtr )
+			//..table.push( dstPtr,m.cvPtr )
 		}
 		if(size){
 			var re = dll.vector_Mat_assignToArray(this.handle,{ptr p[] = dst;})
@@ -84,10 +84,12 @@ class string{
 	toArray = function(){
 		var size = this.size;
 		var strArray = {}
-		var v,ret,ret2 = dll.vector_string_getElements(this.ptr,{pointer cPtrs[]={length=size}},{int lens[]={length=size}})
-		for(i=1;size;1){
-			var s = ..raw.tostring(ret.cPtrs[i],1,ret2.lens[i])
-			..table.push( strArray,s )
+		if(size){
+			var v,ret,ret2 = dll.vector_string_getElements(this.ptr,{pointer cPtrs[]={length=size}},{int lens[]={length=size}})
+			for(i=1;size;1){
+				var s = ..raw.tostring(ret.cPtrs[i],1,ret2.lens[i])
+				..table.push( strArray,s )
+			}			
 		}
 		return strArray; 
 	}
@@ -129,8 +131,10 @@ class int32{
 	
 	toArray = function(){
 		var size = this.size;
-		var ret = ..raw.convert( this.elemPtr,{int v[]={length=size}});
-		return ret.v; 
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{int v[]={length=size}});
+			return ret.v; 			
+		}
 	}
 	
 	release = function(){
@@ -165,15 +169,22 @@ class float{
 	ctor( arg,dataLength ){
 		if(!arg){
 			this.ptr = dll.vector_float_new1P(arg)
-		}elseif(type(arg)==type.number){
+		}
+		elseif(type(arg)==type.number){
 			this.ptr = dll.vector_float_new2P(arg)
 		}
+		elseif(type(arg)==type.table){
+			this.ptr = dll.vector_float_new3P({float arr[]=arg},#arg)
+		}
+		
 	};
 	
 	toArray = function(){
 		var size = this.size;
-		var ret = ..raw.convert( this.elemPtr,{float v[]={length=size}});
-		return ret.v; 
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{float v[]={length=size}});
+			return ret.v; 			
+		}
 	}
 	
 	release = function(){
@@ -215,8 +226,10 @@ class double{
 	
 	toArray = function(){
 		var size = this.size;
-		var ret = ..raw.convert( this.elemPtr,{double v[]={length=size}});
-		return ret.v; 
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{double v[]={length=size}});
+			return ret.v; 			
+		}
 	}
 	
 	release = function(){
@@ -246,3 +259,117 @@ namespace double{
 		}
     )
 }
+
+class rect{
+	ctor( arg,size ){
+		tArg = type(arg);
+		if(tArg==type.null){
+			this.ptr = dll.vector_Rect_new1P()
+		}
+		elseif(tArg==type.number){
+			this.ptr = dll.vector_Rect_new2P(arg)
+		}
+		elseif(tArg==type.table){
+			this.ptr = dll.vector_Rect_new3P({struct rects[]=arg},#arg)
+		}
+		..table.gc(this,"release")
+		
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+				length=size;
+				::RECT();
+				}
+			});
+		return ret.v; 			
+		}
+	}
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Rect_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace rect{
+	_meta = ..util.metaProperty( 
+		_type = "vectorOfRect";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+    	size = {
+    		_get = function(){ 
+    			return dll.vector_Rect_getSize(owner.ptr); 
+    		}
+    	};
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Rect_getPointerP(owner.ptr)
+			}
+		}
+    )
+}
+
+
+
+
+/**intellisense(cv2.vector)
+cv2.vector = opencv api动态数组库
+end intellisense**/
+
+/**intellisense()
+cv2.vector.mat() = 创建空白mat容器,一般作为API参数使用\n!vectorMat.
+cv2.vector.mat(.(容器大小) = 创建指定大小的空白mat容器
+cv2.vector.mat(.(mat数组) = 用mat数组创建mat容器
+!vectorMat.toArray() = 转成mat数组
+!vectorMat.release() = 释放资源
+!vectorMat.size = mat容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.string() = 创建空白字符串容器,一般作为API参数使用\n!vectorString.
+cv2.vector.string(.(容器大小) = 创建指定大小的空白string容器
+!vectorString.toArray() = 转成string数组
+!vectorString.release() = 释放资源
+!vectorString.size = string容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.int32() = 创建空白int32容器,一般作为API参数使用\n!vectorInt32.
+cv2.vector.int32(.(容器大小) = 创建指定大小的空白int32容器
+!vectorInt32.toArray() = 转成int32数组
+!vectorInt32.release() = 释放资源
+!vectorInt32.size = int32容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.float() = 创建空白float容器,一般作为API参数使用\n!vectorFloat.
+cv2.vector.float(.(容器大小) = 创建指定大小的空白float容器
+cv2.vector.float(.(aardio数值数组) = 从aardio数值数组创建float容器
+!vectorFloat.toArray() = 转成float数组
+!vectorFloat.release() = 释放资源
+!vectorFloat.size = float容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.double() = 创建空白double容器,一般作为API参数使用\n!vectorDouble.
+cv2.vector.double(.(容器大小) = 创建指定大小的空白double容器
+!vectorDouble.toArray() = 转成double数组
+!vectorDouble.release() = 释放资源
+!vectorDouble.size = double容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.mat() = 创建空白mat容器,一般作为API参数使用\n!vectorMat.
+cv2.vector.mat(.(容器大小) = 创建指定大小的空白mat容器
+cv2.vector.mat(.(mat对象数组) = 从mat对象数组创建mat容器
+!vectorMat.toArray() = 转成mat对象数组
+!vectorMat.release() = 释放资源
+!vectorMat.size = mat容器大小
+end intellisense**/

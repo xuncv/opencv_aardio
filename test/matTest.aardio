@@ -27,7 +27,7 @@ roi = cv2.mat(img,::RECT(100,100,200,200))
 cv2.imshow("roi",roi)
 
 b,g,r = cv2.split(roi)
-
+console.log(b,g,r)
 cv2.imshow("b",b)
 cv2.imshow("g",g)
 cv2.imshow("r",r)

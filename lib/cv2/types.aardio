@@ -34,3 +34,5 @@ class ::CvSlice{
 	int e;
 	@{ _type="CvSlice" }
 }
+
+//::RECT(  opencv中RECT的后两项成员为宽度和高度

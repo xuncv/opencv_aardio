@@ -44,6 +44,7 @@ class yolo():
                 classId = np.argmax(scores)
                 confidence = scores[classId]
                 if confidence > self.confThreshold:
+                    print(detection[0],detection[1],detection[2],detection[3])
                     center_x = int(detection[0] * frameWidth)
                     center_y = int(detection[1] * frameHeight)
                     width = int(detection[2] * frameWidth)

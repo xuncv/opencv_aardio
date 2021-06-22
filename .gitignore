@@ -37,3 +37,6 @@
 *.txt
 *.cfg
 *.names
+
+images/
+test/

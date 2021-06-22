@@ -1,5 +1,5 @@
 # opencv_aardio
-**opencv_aardio**是使用aardio封装的OpenCv开源计算机视觉库.接口实现上尽量接近[opencv-python](https://pypi.org/project/opencv-python/)风格,以降低学习成本.
+**opencv_aardio**是使用aardio封装的OpenCv开源计算机视觉库.接口实现上尽量接近[opencv-python](https://pypi.org/project/opencv-python/)风格,以降低学习成本.本库适配最新OpenCv 4.5.2
 
 #### 依赖项目:
 

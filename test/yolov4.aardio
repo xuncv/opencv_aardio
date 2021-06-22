@@ -8,16 +8,27 @@ net.setInputSize(320, 320)
 net.setInputScale(1.0 / 255)
 net.setInputSwapRB(true)
 
-src = cv2.imread("./images/dog.jpg")
-//cv2.imshow("src",src)
-//cv2.waitKey(0)
+src = cv2.imread("./images/bus.jpg")
+//src = cv2.resize(src,,0.3,0.3)
+//src = cv2.imread("D:\workspace\github.com\cpp\opencv_cmd\person.jpg")
 dst = net.blobFromImage(src)
 ..console.log("net.blobFromImage(src)",dst)
 input = net.setInput(dst)
-..console.varDump(outLayersNames)
-net.forward(outLayersNames)
+//..console.varDump(outLayersNames)
+tk = time.tick()
+result = net.forward(outLayersNames)
+console.log(time.tick() - tk)
 console.log(input)
-//console.log(dst,dst.cvPtr)
+
+for(i=1;#result;1){
+    s = result[i]
+    ..console.log(s.left,s.top,s.right,s.bottom)
+	src = cv2.rectangle(src,::POINT(s.left,s.top),::POINT(s.right+s.left,s.bottom+s.top),::Scalar(0,255,0))
+}
+
+cv2.imshow("aa",src)
+cv2.waitKey(0)
+//console.log (dst,dst.cvPtr)
 /*
 cv2.imshow("dst",dst)
 cv2.waitKey(0)
