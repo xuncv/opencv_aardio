@@ -18,8 +18,8 @@
 		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
 		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
 		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
-		<file name="yolov4.aardio" path="test\yolov4.aardio" comment="test\yolov4.aardio"/>
 		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
+		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
 	</folder>
 	<folder name="samples" path="samples" embed="true" comment="目录" local="false" ignored="false">
 		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>

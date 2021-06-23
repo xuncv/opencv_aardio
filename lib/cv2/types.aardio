@@ -12,6 +12,7 @@ class ::Scalar{
 	double g;
 	double r;
 	double a;
+	@{ _type="Scalar" }
 }
 
 class ::RotatedRect{ //RotatedRect
@@ -23,6 +24,7 @@ class ::RotatedRect{ //RotatedRect
 	struct center;
 	struct size;
 	float angle;
+	@{ _type="RotatedRect" }
 }
 
 class ::CvSlice{
@@ -34,5 +36,11 @@ class ::CvSlice{
 	int e;
 	@{ _type="CvSlice" }
 }
+
+/**intellisense()
+::Scalar( = 四维标量
+::Scalar(.(b,g,r,a) = 创建四维标量结构体,所有参数可选
+end intellisense**/
+
 
 //::RECT(  opencv中RECT的后两项成员为宽度和高度

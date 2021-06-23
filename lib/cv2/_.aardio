@@ -66,9 +66,10 @@ copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTyp
 	return dst; 
 }
 
-bitwise_and = function(src1,src2){
-    var dst = ..cv2.mat();
-	var err = dll.core_bitwise_and(src1.cvPtr,src2.cvPtr.dst.cvPtr,null);
+bitwise_and = function(src1,src2,mask){
+    var dst = ..cv2.mat();  
+    mask = mask ? (mask.cvPtr)
+	var err = dll.core_bitwise_and(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask);
 	return dst; 
 }
 
@@ -151,6 +152,20 @@ rotate = function(src,rotateCode){
 	var err = dll.core_rotate(src.cvPtr,dst.cvPtr,rotateCode);
 	return dst; 
 }
+
+inRange = function(src,lower,upper){
+   	var tLower = type.rget(lower)
+   	var tUpper = type.rget(upper)
+   	var dst = ..cv2.mat()
+   	if(tLower=="mat" and tUpper=="mat"){
+   		err = dll.core_inRange_InputArray(src.cvPtr,lower.cvPtr,upper.cvPtr,dst.cvPtr)
+   	}
+   	elseif(tLower=="Scalar" and tUpper=="Scalar"){
+   		err = dll.core_inRange_Scalar(src.cvPtr,lower,upper,dst.cvPtr)
+   	}
+	return dst; 
+}
+
 
 /*}}*/
 
@@ -491,6 +506,7 @@ class dnn_DetectionModel{
 			..table.push( scores,vConfidencesArray[idx+1] )
 			..table.push( ids,classIds[idx+1]+1)
 		}
+
 		//还原回0-1的浮点矩阵
 		boxes = ..table.map(boxes,function(v,k,result){
 			return ::RECTF(	v.left/this.size.cx,
@@ -656,7 +672,7 @@ dilate(.(输入图像,结构内核,迭代次数 默认为1) = 膨胀操作
 normalize() = !matObject.
 normalize(.(输入图像,alpha值,beta值) = 图像归一化
 bitwise_and() = !matObject.
-bitwise_and(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑与操作
+bitwise_and(.(输入图像1,输入图像2,mask腌膜 可选) = 对图像的每一个像素值进行逻辑与操作
 bitwise_or() = !matObject.
 bitwise_or(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑或操作
 bitwise_xor() = !matObject.
@@ -687,6 +703,7 @@ drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线�
 minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
 boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
 getTickCount() = 获取当前系统启动时间，单位毫秒
+inRange(.(输入图像,包含下边界的数组或标量,包含上边界数组或标量) = 多通道阈值二值化
 end intellisense**/
 
 /**intellisense()

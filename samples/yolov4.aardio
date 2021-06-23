@@ -12,18 +12,18 @@ classes = {"person";"bicycle";"car";"motorbike";"aeroplane";"bus";"train";"truck
 
 //模型下载 https://github.com/AlexeyAB/darknet/wiki/YOLOv4-model-zoo
 // 或到https://github.com/xuncv/opencv_aardio/releases/tag/0.0.1 下载测试用模型
-detect = cv2.dnn_DetectionModel("./model/yolo-fastest-xl.weights","./model/yolo-fastest-xl.cfg");
-detect.setConfig({
+detector = cv2.dnn_DetectionModel("./model/yolo-fastest-xl.weights","./model/yolo-fastest-xl.cfg");
+detector.setConfig({
 	confThreshold = 0.5; 
 	nmsThreshold = 0.4; 
 })
 
-names = detect.getUnconnectedOutLayersNames()
-detect.setInputSize(320,320)
+names = detector.getUnconnectedOutLayersNames()
+detector.setInputSize(320,320)
 src = cv2.imread( "./images/bus.jpg" )
-blob = detect.blobFromImage(src)
-detect.setInput(blob);
-boxes,scores,classIds = detect.forward(names)
+blob = detector.blobFromImage(src)
+detector.setInput(blob);
+boxes,scores,classIds = detector.forward(names)
 
 var h,w,c = ..table.unpack(src.shape)
 table.map(boxes,function(v,k,result){
