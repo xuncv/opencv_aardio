@@ -20,21 +20,28 @@ import console
 var camera
 winform.button.oncommand = function(id,event){
     winform.text = "open camera"
-	camera = cv2.videoCapture(0)
+	camera = cv2.videoCapture(1)
 	winform.text = "opened camera"
 	//var fps = camera.get(5/*_CV2_CAP_PROP_FPS*/)
 	while(win.delay(1)){
 		winform.text = tostring(time())
 		var ok,m = camera.read();
 		if ok{
-			gauss = cv2.gaussianBlur(m,::SIZE(3,3))
-			canny = cv2.canny(gauss,30,50)
-			cv2.imshow( guid,canny )
+			//gauss = cv2.gaussianBlur(m,::SIZE(3,3))
+			//canny = cv2.canny(gauss,30,50)
+			//hsv = cv2.cvtColor(m,0x28/*_CV2_COLOR_BGR2HSV*/)
+			//（色调（H），饱和度（S），明度（V））
+			//mask = cv2.inRange(hsv,::Scalar(0,50,20),::Scalar(50,255,255))
+			//result = cv2.bitwise_and(m,m,mask)
+			
+			cv2.imshow( guid,m )
 			cv2.waitKey(1)
 			//手动释放mat,防止自动回收不及时导致内存暴涨
 			m.release()
-			gauss.release()
-			canny.release()
+			//hsv.release()
+			//mask.release();
+			//gauss.release()
+			//canny.release()
 		}
 	}
 }

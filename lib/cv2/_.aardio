@@ -73,20 +73,23 @@ bitwise_and = function(src1,src2,mask){
 	return dst; 
 }
 
-bitwise_or = function(src1,src2){
+bitwise_or = function(src1,src2,mask){
     var dst = ..cv2.mat();
+    mask = mask ? (mask.cvPtr)
 	var err = dll.core_bitwise_or(src1.cvPtr,src2.cvPtr.dst.cvPtr,null);
 	return dst; 
 }
 
-bitwise_xor = function(src1,src2){
+bitwise_xor = function(src1,src2,mask){
     var dst = ..cv2.mat();
+    mask = mask ? (mask.cvPtr)
 	var err = dll.core_bitwise_xor(src.cvPtr,src2.cvPtr,dst.cvPtr,null)
 	return dst; 
 }
 
-bitwise_not = function(src){
-	var err = dll.core_bitwise_not(src.cvPtr,src.cvPtr,null)
+bitwise_not = function(src,mask){
+    mask = mask ? (mask.cvPtr)
+	var err = dll.core_bitwise_not(src.cvPtr,src.cvPtr,mask)
 	return src; 
 }
 
@@ -163,6 +166,12 @@ inRange = function(src,lower,upper){
    	elseif(tLower=="Scalar" and tUpper=="Scalar"){
    		err = dll.core_inRange_Scalar(src.cvPtr,lower,upper,dst.cvPtr)
    	}
+	return dst; 
+}
+
+compare = function(src1,src2,cmpop){
+    var dst = ..cv2.mat()
+	dll.core_compare(src1.cvPtr,src2.cvPtr,dst.cvPtr,cmpop)
 	return dst; 
 }
 
@@ -356,7 +365,12 @@ matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
 	return dst; 
 }
 
-
+filter2D = function(src,ddepth=-1,kernel,anchor,delta=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
+	var dst = ..cv2.mat()
+	anchor = anchor : (::POINT(-1,-1))
+	var err = imgproc_filter2D(src.cvPtr,dst.cvPtr,ddepth,kernel.cvPtr,anchor,delta,borderType)
+	return dst; 
+}
 
 /*}}*/
 
@@ -416,6 +430,47 @@ class videoCapture{
 		dll.videoio_VideoCapture_delete(this.ptr)
 	}
 }
+
+VideoWriter_fourcc = function(c1,c2,c3,c4){
+	var err,ret = dll.videoio_VideoWriter_fourcc(c1,c2,c3,c4,{int value})
+	return ret.value; 
+}
+
+videoio_VideoWriter_new2 = dll.api("videoio_VideoWriter_new2","int(string filename,int fourcc, double fps,struct frameSize,int isColor,pointer value" )
+videoio_VideoWriter_new3 = dll.api("videoio_VideoWriter_new3","int(string filename,int apiPreference,int fourcc, double fps,struct frameSize,int isColor,pointer value)" )
+
+class VideoWriter{
+	ctor( arg,... ){
+		tArg = type(arg)
+		if(tArg==type.null){
+			var err,ret = dll.videoio_VideoWriter_new1({pointer value})
+			this.ptr = ret.value
+		}
+		elseif(tArg==type.string){
+			var params = {...}
+			if(#params==4){
+				var err,ret = videoio_VideoWriter_new2(arg,...)
+				this.ptr = ret.value
+			}
+			elseif(#params==5){
+				var err,ret = videoio_VideoWriter_new3(arg,...)
+				this.ptr = ret.value
+			}
+		}
+		
+	};
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.videoio_VideoWriter_delete(this.this[["ptr"]])
+			this[["ptr"]] = null
+		}
+	}
+	
+
+}
+
+
 
 /*}}*/
 
@@ -607,6 +662,7 @@ videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer captu
 videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
 dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefactor,struct size,struct mean,int swapRB,int crop,pointer& returnValue)")
 dnn_NMSBoxes_Rect = dll.api("dnn_NMSBoxes_Rect","INT(pointer bboxes,pointer scores,float score_threshold,float nms_threshold,pointer indices,float eta,int top_k)" )
+imgproc_filter2D= dll.api("imgproc_filter2D","INT(pointer src,pointer dst,int ddepth,pointer kernel,struct anchor,double delta,int borderType)")
 
 namespace cv2{   
     import fsys
@@ -640,7 +696,7 @@ blur(.(输入图像,::SIZE对象 核大小) = 均值滤波,对于椒盐噪声的
 boxFilter() = !matObject.
 boxFilter(.(输入图像,输出图像深度 默认-1 与输入图像相同,::SIZE对象 核大小,是否标准化 默认true 为false时与blur函数相同,边缘模式) = 方块滤波
 bilateralFilter() = !matObject.
-bilateralFilter(.(输入图像,邻域直径范围,颜色空间过滤器的sigma值,坐标空间中滤波器的sigma值,边缘模式) = 双边滤波
+bilateralFilter(.(输入图像,邻域直径范围,颜色空间过滤器的sigma值,坐标空间中滤波器的sigma值,边缘模式) = 双边滤波,此函数运行较慢
 cvtColor() = !matObject.
 cvtColor(.(输入图像,颜色空间代码) = 转换颜色空间
 canny() = !matObject.
@@ -674,11 +730,11 @@ normalize(.(输入图像,alpha值,beta值) = 图像归一化
 bitwise_and() = !matObject.
 bitwise_and(.(输入图像1,输入图像2,mask腌膜 可选) = 对图像的每一个像素值进行逻辑与操作
 bitwise_or() = !matObject.
-bitwise_or(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑或操作
+bitwise_or(.(输入图像1,输入图像2,腌膜 可选) = 对图像的每一个像素值进行逻辑或操作
 bitwise_xor() = !matObject.
-bitwise_xor(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑异或操作
+bitwise_xor(.(输入图像1,输入图像2,腌膜 可选) = 对图像的每一个像素值进行逻辑异或操作
 bitwise_not() = !matObject.
-bitwise_not(.(输入图像1,输入图像2) = 对图像的每一个像素值进行逻辑非操作
+bitwise_not(.(输入图像1,输入图像2,腌膜 可选) = 对图像的每一个像素值进行逻辑非操作
 split(.(输入图像) = 将图像拆分成BGR通道图像,返回B G R 3个mat对象
 merge() = !matObject.
 merge(.(BGR通道图像数组)) = 将BGR通道图像合并
@@ -697,19 +753,24 @@ matchTemplate(.(待搜索图像,模板图像,匹配模式 默认5,图像腌膜 �
 minMaxLoc(.(输入矩阵) = 返回输入矩阵的最小值,最大值,最小值索引,最大值索引
 distanceTransform() = !matObject.
 distanceTransform(.(输入图像,距离算法类型,距离变换腌膜大小) = 距离变换
+inRange() = !matObject.
+inRange(.(输入图像,包含下边界的数组或标量,包含上边界数组或标量) = 多通道阈值二值化
 findContours(.(输入图像,轮廓检索模式,轮廓近似方法) = 轮廓检测
 drawContours() = !matObject.
 drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
 minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
 boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
 getTickCount() = 获取当前系统启动时间，单位毫秒
-inRange(.(输入图像,包含下边界的数组或标量,包含上边界数组或标量) = 多通道阈值二值化
+compare() = !matObject.
+compare(.(输入矩阵1,输入矩阵2,比较符_CV2_CMP) = 比较2个矩阵,返回结果矩阵,匹配像素标记为255 不匹配标记返回0
+filter2D() = !matObject.
+filter2D(.(输入图像,目标深度 默认-1,卷积核 由getStructuringElement函数构建,内核锚点 缺省为中心点,偏置值 缺省为0,外推法 可选) = 任意线性滤波器卷积
 end intellisense**/
 
 /**intellisense()
 cv2.videoCapture() = 视频或摄像头解析对象
 cv2.videoCapture( = 创建视频解析对象
-cv2.videoCapture(.(摄像头编号或视频路径) = 创建视频解析对象
+cv2.videoCapture(.(摄像头编号或视频路径) = 创建视频解析对象,视频为非avi mpg格式时需opencv_videoio_ffmpeg452.dll
 cv2.videoCapture() = !cap.
 !cap.read() = 读取视频下一帧，返回读取状态,mat对象
 !cap.isOpened = 检测视频或摄像头是否打开，注意：视频有时候并不准确
@@ -751,7 +812,9 @@ end intellisense**/
 
 /**intellisense(!matObject)
 type() = 图片类型
+cols = 图片列数
 width = 图片宽度
+rows = 图片行数
 height = 图片高度
 channels() = 图片通道数
 depth() = 图片深度
@@ -784,6 +847,10 @@ colRange() = !matObject.
 colRange(.(起列,止列) = 为矩阵的指定列区间创建一个矩阵头.索引从0开始,且左开右闭
 diag() = 以一维数组的形式返回矩阵的对角线(或非对角线)元素\n!matObject.
 isContinuous() = 矩阵是否连续
+exp() = !matObject.
+exp() = 返回所有元素的指数,返回新矩阵
+log() = !matObject.
+log() = 返回所有元素的自然对数,返回新矩阵.当源像素<=0,返回的像素上会被标记为一个大的负数
 end intellisense**/
 
 //第三方库

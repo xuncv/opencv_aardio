@@ -1,0 +1,20 @@
+import console
+import cv2
+src1 = cv2.imread("./images/Lena.jpg")
+src2 =src1.clone()
+cv2.putText(src1,"Lena",::POINT(20,20))
+//src2 = cv2.imread("./images/result.jpg")
+dst = cv2.compare(src1,src2,0/*_CV2_CMP_EQ*/)
+//打印矩阵
+..console.log(dst.rows)
+/*
+for(i=1;dst.rows;1){
+	for(j=1;dst.cols;1){
+		v = dst.at(j,i,1)
+		console.log(v)
+	}
+}
+*/
+
+cv2.imshow("dst",dst)
+cv2.waitKey(0)

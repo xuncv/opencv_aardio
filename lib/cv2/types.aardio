@@ -40,6 +40,9 @@ class ::CvSlice{
 /**intellisense()
 ::Scalar( = 四维标量
 ::Scalar(.(b,g,r,a) = 创建四维标量结构体,所有参数可选
+::RotatedRect( = 非轴对称矩形
+::RotatedRect(.(中心点POINT,尺寸SIZE,角度FLOAT) = 非轴对称矩形
+
 end intellisense**/
 
 
