@@ -481,4 +481,6 @@ _CV2_CMP_GE=@2/*_CV2_CMP_GE*/
 _CV2_CMP_LT=@3/*_CV2_CMP_LT*/
 _CV2_CMP_LE=@4/*_CV2_CMP_LE*/
 _CV2_CMP_NE=@5/*_CV2_CMP_NE*/
+
+_CV_MAX_ARR=@0xA/*_CV_MAX_ARR*/
 end intellisense**/

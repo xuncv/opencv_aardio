@@ -89,7 +89,9 @@ class mat{
 	at = function(...){
 		var params = {...};
 		var paramsLen = #params
-		var ref = {BYTE value }
+		//var ref = {string value }
+		var ref = {ptr value}
+		//var buffer = ..raw.buffer(0xA/*_CV_MAX_ARR*/)
 		if(paramsLen==1){
 			dll.core_Mat_ptr1d(this.handle,params[1],ref);
 		}elseif(paramsLen==2){
@@ -97,7 +99,9 @@ class mat{
 		}elseif(paramsLen==3){
 			dll.core_Mat_ptr3d(this.handle,params[1],params[2],params[3],ref);
 		}
-		return ref.value; 
+		//return buffer; 
+		var ret = ..raw.convert(ref.value,{BYTE value[0xA/*_CV_MAX_ARR*/]})
+		return ret.value;
 	}
 	
 	row = function(y){

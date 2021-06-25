@@ -764,7 +764,7 @@ getTickCount() = 获取当前系统启动时间，单位毫秒
 compare() = !matObject.
 compare(.(输入矩阵1,输入矩阵2,比较符_CV2_CMP) = 比较2个矩阵,返回结果矩阵,匹配像素标记为255 不匹配标记返回0
 filter2D() = !matObject.
-filter2D(.(输入图像,目标深度 默认-1,卷积核 由getStructuringElement函数构建,内核锚点 缺省为中心点,偏置值 缺省为0,外推法 可选) = 任意线性滤波器卷积
+filter2D(.(输入图像,目标深度 默认-1,卷积核 由getStructuringElement函数构建,内核锚点 缺省为中心点,偏置值 缺省为0,外推法 可选) = 任意线性滤波器卷积\n如果锚点坐标为中心点,卷积核大小可以为偶数
 end intellisense**/
 
 /**intellisense()
@@ -836,7 +836,7 @@ zeros(.(行数,列数,矩阵类型) = 生成所有元素为0的Mat对象
 release() = 释放Mat对象,Mat占用内存较大时,需手动调用该函数
 convertTo() = !matObject.
 convertTo(.(转换类型_CV_,缩放因子,偏移因子) = 转换矩阵类型
-at(.(...) = 获取矩阵中某点的值,支持1-3维参数
+at(.(...) = 获取矩阵中某点的值,支持1-3维参数,返回最大10个索引的数组
 row() = !matObject.
 row(.(行号) = 获取矩阵中的某行矩阵对象
 col() = !matObject.
@@ -846,7 +846,7 @@ rowRange(.(起行,止行) = 为矩阵的指定行区间创建一个矩阵头.索
 colRange() = !matObject.
 colRange(.(起列,止列) = 为矩阵的指定列区间创建一个矩阵头.索引从0开始,且左开右闭
 diag() = 以一维数组的形式返回矩阵的对角线(或非对角线)元素\n!matObject.
-isContinuous() = 矩阵是否连续
+isContinuous() = 矩阵成员是否连续
 exp() = !matObject.
 exp() = 返回所有元素的指数,返回新矩阵
 log() = !matObject.
