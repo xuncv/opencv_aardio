@@ -1,4 +1,5 @@
-﻿import util.metaProperty
+﻿//mat 矩阵类
+import util.metaProperty
 import gdip
 import cv2.matExpr
 import console
@@ -32,7 +33,7 @@ class mat{
 		}
 		elseif(tArg==type.number){
 			var params = {...} // rows cols type data step 
-			..console.log(arg,params[1],params[2],params[3],params[4],params[5])
+			//..console.log(arg,params[1],params[2],params[3],params[4],params[5])
 			err,ret = dll.core_Mat_new8(arg,params[1],params[2],params[3],params[4],params[5],{pointer value})
 			this.handle = ret.value
 		}
@@ -89,9 +90,7 @@ class mat{
 	at = function(...){
 		var params = {...};
 		var paramsLen = #params
-		//var ref = {string value }
 		var ref = {ptr value}
-		//var buffer = ..raw.buffer(0xA/*_CV_MAX_ARR*/)
 		if(paramsLen==1){
 			dll.core_Mat_ptr1d(this.handle,params[1],ref);
 		}elseif(paramsLen==2){
@@ -99,9 +98,10 @@ class mat{
 		}elseif(paramsLen==3){
 			dll.core_Mat_ptr3d(this.handle,params[1],params[2],params[3],ref);
 		}
-		//return buffer; 
-		var ret = ..raw.convert(ref.value,{BYTE value[0xA/*_CV_MAX_ARR*/]})
-		return ret.value;
+		var buffer = ..raw.buffer(0xA/*_CV_MAX_ARR*/,ref.value)
+		return buffer;
+		//var ret = ..raw.convert(ref.value,{BYTE value[0xA/*_CV_MAX_ARR*/]})
+		//return ret.value;
 	}
 	
 	row = function(y){
@@ -165,6 +165,18 @@ class mat{
 		return m; 
 	}
 	
+	eye = function(rows,cols,tp){
+		var err,ret = dll.core_Mat_eye(rows,cols,tp,{pointer p})
+		var m = ..cv2.matExpr(ret.p)
+		return m; 
+	}
+	
+	t = function(){
+		var err,ret = dll.core_Mat_t(this,{pointer p})
+		var m = ..cv2.matExpr(ret.p)
+		return m; 
+	}
+	
 	convertTo = function(rtype,alpha=1,beta=0){
 		var dst = ..cv2.mat();
 		var err = core_Mat_convertTo(this,dst.cvPtr,rtype,alpha,beta)
@@ -208,6 +220,12 @@ namespace mat {
 			return owner.handle; 
 		}
 		_type = "mat";
+		
+		_call = function(x,y,w,h){
+			var r = ::RECT(x,y,w,h)
+			return ..cv2.mat(owner,r); 
+		}
+		
 
 /*
 		cvPtr = {
@@ -284,5 +302,14 @@ namespace mat {
 				return stu.value; 
 			}
 		}
+		
+		elemSize1 = {
+			_get = function(){
+				var err,stu = dll.core_Mat_elemSize1(owner.handle,{int value})
+				return stu.value; 
+			}
+		}
+		
+		
 	)
 }

@@ -4,5 +4,14 @@ src2 =src1.clone()
 cv2.putText(src1,"Lena",::POINT(20,20))
 //src2 = cv2.imread("./images/result.jpg")
 dst = cv2.compare(src1,src2,0/*_CV2_CMP_EQ*/)
+/*
+var v
+for(i=1;src1.rows;1){
+	for(j=1;src1.cols;1){
+		v = src1.at(i,j,0)
+		//console.log(v[1],v[2],v[3])
+	}
+}
+*/
 cv2.imshow("dst",dst)
 cv2.waitKey(0)

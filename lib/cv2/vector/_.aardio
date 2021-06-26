@@ -1,4 +1,5 @@
-﻿import util.metaProperty
+﻿//vector 动态数组库
+import util.metaProperty
 namespace cv2.vector
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
 class mat
@@ -315,9 +316,6 @@ namespace rect{
 		}
     )
 }
-
-
-
 
 /**intellisense(cv2.vector)
 cv2.vector = opencv api动态数组库

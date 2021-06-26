@@ -1,6 +1,6 @@
-﻿namespace cv2.define{}
+﻿//cv2 常量表
+namespace cv2.define{}
 
-//cv2 常量表
 /**intellisense()
 _CV2_THRESH_BINARY=@0x0/*_CV2_THRESH_BINARY*/
 _CV2_THRESH_BINARY_INV=@0x1/*_CV2_THRESH_BINARY_INV*/

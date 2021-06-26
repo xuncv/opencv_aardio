@@ -59,7 +59,7 @@ getTickCount = function(){
 
 copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTypes_BORDER_CONSTANT*/,color){
     var dst = ..cv2.mat();
-    if(borderType==0/*_CV2_BorderTypes_BORDER_CONSTANT*/ or !color){
+    if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !color){
     	color = ::Scalar(0,0,0)
     }
 	var err = dll.core_copyMakeBorder(src.cvPtr,dst.cvPtr,top,bottom,left,right,borderType,color)
@@ -113,7 +113,9 @@ split = function(src){
 merge = function(srcs){
     //var vecMat = ..cv2.vectorOfMat(srcs)
     var dst = ..cv2.mat();
-	dll.core_merge({ ptr p[] = srcs },#srcs,dst);
+    if(#srcs){
+ 		dll.core_merge({ ptr p[] = srcs },#srcs,dst);   	
+    }
 	return dst; 
 }
 
@@ -335,7 +337,9 @@ drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x
     	contours = contours.toArray()
     }
     var contoursLength = #contours
-    
+    if(contoursLength==0){
+    	return ; 
+    }
     color = color : (::Scalar(0,255,0))
     var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
 	return src; 
@@ -811,6 +815,8 @@ cv2.mat(.(输入Mat矩阵,::RECT对象) = 从感兴趣区域(ROI)中创建Mat对
 end intellisense**/
 
 /**intellisense(!matObject)
+!matObject() = !matObject.
+!matObject(.(x,y,w,h) = 截取矩阵,返回新矩阵
 type() = 图片类型
 cols = 图片列数
 width = 图片宽度
@@ -826,14 +832,17 @@ datastart =
 dataend = 
 datalimit = 
 cvPtr = Mat对象输入输出指针,一般作为api参数被调用
-elemSize = 元素尺寸
+elemSize = 矩阵一个元素占用的字节数
+elemSize1 = 矩阵元素一个通道占用的字节数
 toBitmap() = 转换为bitmap对象,返回bitmap对象
 clone() = 深拷贝Mat矩阵\n!matObject.
 ones() = !matObject.
 ones(.(行数,列数,矩阵类型) = 生成所有元素为1的Mat对象
 zeros() = !matObject.
 zeros(.(行数,列数,矩阵类型) = 生成所有元素为0的Mat对象
-release() = 释放Mat对象,Mat占用内存较大时,需手动调用该函数
+eye() = !matObject.
+eye(.(行数,列数,矩阵类型) = 返回一个恒等指定大小和类型矩阵
+t() = 转置矩阵\n!matObject.
 convertTo() = !matObject.
 convertTo(.(转换类型_CV_,缩放因子,偏移因子) = 转换矩阵类型
 at(.(...) = 获取矩阵中某点的值,支持1-3维参数,返回最大10个索引的数组
@@ -851,6 +860,7 @@ exp() = !matObject.
 exp() = 返回所有元素的指数,返回新矩阵
 log() = !matObject.
 log() = 返回所有元素的自然对数,返回新矩阵.当源像素<=0,返回的像素上会被标记为一个大的负数
+release() = 释放Mat对象,Mat占用内存较大时,需手动调用该函数
 end intellisense**/
 
 //第三方库

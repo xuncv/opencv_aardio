@@ -1,0 +1,9 @@
+import console; 
+import cv2
+
+src = cv2.imread("./images/Lena.jpg")
+cv2.imshow("src",src)
+dst = src(0,200,20,200)
+cv2.imshow("dst",dst)
+cv2.waitKey(0)
+console.pause(true);
