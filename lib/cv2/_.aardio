@@ -412,6 +412,31 @@ getAffineTransform = function(src,dst){
 	return ..cv2.mat(ref.value); 
 }
 
+getPerspectiveTransform = function(src,dst){
+    if(#src!=4 and #dst!=4){
+    	error("POINTF数组长度只能为4")
+    	return ; 
+    }
+    var ref = {pointer value}
+    dll.imgproc_getPerspectiveTransform1({struct s[]=src},{struct d[]=dst},ref)
+    return ..cv2.mat(ref.value); 
+}
+
+warpPerspective = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_CV2_BORDER_CONSTANT*/,borderValue=0){
+    var dst = ..cv2.mat()
+    if(!sz){
+    	sz = ::SIZE(src.cols,src.rows)
+    }
+    if(type.rget(sz)!=type.rget(::SIZE())){
+    	sz = ::SIZE(sz[1],sz[2])
+    }
+    if(borderValue==0){
+    	borderValue = ::Scalar()
+    }
+	var ret = dll.imgproc_warpPerspective_MisInputArray(src.cvPtr,dst.cvPtr,M.cvPtr,sz,flags,borderMode,borderValue)
+	return dst;
+}
+
 /*}}*/
 
 /*videoio{{*/
@@ -788,7 +813,10 @@ getAffineTransform() = !matObject.
 getAffineTransform(.(3个元素的::POINTF输入数组,3个元素的::POINTF输出数组) = 由2组3个点数组创建2x3的旋转矩阵
 warpAffine() = !matObject.
 warpAffine(.(输入图像,2x3的旋转矩阵,输出图像尺寸 可选 缺省时与源图相同,插值方法 可选,像素边界外推方法 可选,填充边界使用数值 可选) = 仿射变换
-
+getPerspectiveTransform() = !matObject.
+getPerspectiveTransform(.(4个元素的::POINTF输入数组,4个元素的::POINTF输出数组) = 由2组4个点数组创建2x4的透视矩阵
+warpPerspective() = !matObject.
+warpPerspective(.(输入图像,2x4的透视矩阵,输出图像尺寸 可选 缺省时与源图相同,插值方法 可选,像素边界外推方法 可选,填充边界使用数值 可选) = 透视变换
 end intellisense**/
 
 /**intellisense()

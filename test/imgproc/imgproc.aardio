@@ -24,4 +24,26 @@ pDst = {
 M2 = cv2.getAffineTransform(pSrc,pDst)
 dst2 = cv2.warpAffine(src,M2)
 cv2.imshow("dst2",dst2)
+
+//3. 透视变换
+//源图4个点坐标
+pSrc = {
+	::POINTF(114,6);
+	::POINTF(14,570);
+	::POINTF(484,22);
+	::POINTF(569,558);
+}
+//对应源图的,生成目标图上的4个点坐标
+pDst = {
+	::POINTF(0,0);
+	::POINTF(0,571);
+	::POINTF(586,0);
+	::POINTF(571,586);
+}
+
+M3 = cv2.getPerspectiveTransform(pSrc,pDst)
+kindle = cv2.imread("./images/kindle.png")
+cv2.imshow("透明变换前",kindle)
+kindle2 = cv2.warpPerspective(kindle,M3,{571,586})
+cv2.imshow("透明变换后",kindle2)
 cv2.waitKey(0)

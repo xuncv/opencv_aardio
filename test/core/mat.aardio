@@ -1,7 +1,7 @@
 import console; 
 import cv2
 //从数组创建mat
-data = {0.1,0,0,0,0.1,0,0,0,0.1};
+data = {{0.1,0,0},{0,0.1,0},{0,0,0.1}};
 m = cv2.mat(3,3,0x10/*_CV_8UC3*/,data)
 console.log(m.rows)
 //m = cv2.resize(m,,20,20)
