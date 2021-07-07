@@ -8,23 +8,32 @@
 		<file name="api.aardio" path="tools\api.aardio" comment="tools\api.aardio"/>
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
+		<file name="aardio2.aardio" path="test\aardio2.aardio" comment="test\aardio2.aardio"/>
+		<file name="ar.aardio" path="test\ar.aardio" comment="test\ar.aardio"/>
 		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
+		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
+		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
 		<file name="common.aardio" path="test\common.aardio" comment="test\common.aardio"/>
+		<file name="compare.aardio" path="test\compare.aardio" comment="test\compare.aardio"/>
+		<file name="compare.py" path="test\compare.py" comment="test\compare.py"/>
 		<file name="contour.aardio" path="test\contour.aardio" comment="test\contour.aardio"/>
 		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
+		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
 		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
 		<file name="morphology.aardio" path="test\morphology.aardio" comment="test\morphology.aardio"/>
 		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
 		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
-		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
-		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
-		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
-		<file name="compare.aardio" path="test\compare.aardio" comment="test\compare.aardio"/>
-		<folder name="core" path="test\core" embed="true" comment="目录" local="false" ignored="false"/>
+		<folder name="core" path="test\core" comment="test\core" local="false" embed="false" ignored="false">
+			<file name="mat.aardio" path="test\core\mat.aardio" comment="test\core\mat.aardio"/>
+		</folder>
+		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
+			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
+		</folder>
 	</folder>
 	<folder name="samples" path="samples" embed="true" comment="目录" local="false" ignored="false">
 		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>
-		<file name="matchTemplate.aardio" path="samples\matchTemplate.aardio" comment="samples\expr.aardio"/>
+		<file name="faceMaskDetection.aardio" path="samples\faceMaskDetection.aardio" comment="samples\faceMaskDetection.aardio"/>
+		<file name="matchTemplate.aardio" path="samples\matchTemplate.aardio" comment="samples\matchTemplate.aardio"/>
 		<file name="scanQR.aardio" path="samples\scanQR.aardio" comment="samples\scanQR.aardio"/>
 		<file name="yolov4.aardio" path="samples\yolov4.aardio" comment="samples\yolov4.aardio"/>
 	</folder>

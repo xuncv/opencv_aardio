@@ -57,6 +57,12 @@ getTickCount = function(){
 	return ret.value
 }
 
+core_getTickFrequency = dll.api("core_getTickFrequency","int(double& v)" ,"cdecl")
+getTickFrequency = function(){
+	var ret,v = core_getTickFrequency(0)
+	return v; 
+}
+
 copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTypes_BORDER_CONSTANT*/,color){
     var dst = ..cv2.mat();
     if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !color){
@@ -376,6 +382,36 @@ filter2D = function(src,ddepth=-1,kernel,anchor,delta=0,borderType=4/*_CV2_BORDE
 	return dst; 
 }
 
+getRotationMatrix2D = function(center,angle,scale=1){
+    var ret,p = imgproc_getRotationMatrix2D(center,angle,scale,null)
+    return ..cv2.mat(p);
+}
+
+warpAffine = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_CV2_BORDER_CONSTANT*/,borderValue=0){
+    var dst = ..cv2.mat()
+    if(!sz){
+    	sz = ::SIZE(src.cols,src.rows)
+    }
+    if(type.rget(sz)!=type.rget(::SIZE())){
+    	sz = ::SIZE(sz[1],sz[2])
+    }
+    if(borderValue==0){
+    	borderValue = ::Scalar()
+    }
+	var ret = dll.imgproc_warpAffine(src.cvPtr,dst.cvPtr,M.cvPtr,sz,flags,borderMode,borderValue)
+	return dst; 
+}
+
+getAffineTransform = function(src,dst){
+    if(#src!=3 and #dst!=3){
+    	error("POINTF数组长度只能为3")
+    	return ; 
+    }
+    var ref = {pointer value}
+	dll.imgproc_getAffineTransform1({struct s[]=src},{struct d[]=dst},ref)
+	return ..cv2.mat(ref.value); 
+}
+
 /*}}*/
 
 /*videoio{{*/
@@ -470,12 +506,7 @@ class VideoWriter{
 			this[["ptr"]] = null
 		}
 	}
-	
-
 }
-
-
-
 /*}}*/
 
 /*dnn{{*/
@@ -523,7 +554,13 @@ class dnn_DetectionModel{
 		return vecString.toArray(); 
 	}
 	setInputSize = function(w,h){
-		this.size = ::SIZE(w,h)
+		if(type(w)==type.table and w[["cx"]] and w[["cy"]])
+		{
+			this.size = w
+		}
+		elseif(!!w and !!h){
+			this.size = ::SIZE(w,h)
+		}
 	}
 	
 	setInputScale = function(scale){
@@ -534,13 +571,15 @@ class dnn_DetectionModel{
 		this.swap = swap
 	}
 	
-	blobFromImage = function(src){
+	blobFromImage = function(src,scale,size){
+		if scale this.setInputScale(scale)
+		if size this.setInputSize(size)
 		var ret,ret2,ret3 = ..cv2.dnn_blobFromImage(src,this.scale,this.size,this.mean,1,0,null)
-		return ret2
+		return ..cv2.mat(ret2)
 	}
 	
-	setInput = function(blob){
-		dll.dnn_Net_setInput(this.ptr,blob,"data")
+	setInput = function(blob,name){
+		dll.dnn_Net_setInput(this.ptr,blob,name)
 	}
 	
 	nmsBoxesRect = function(boxes,confidences,classIds){
@@ -580,34 +619,7 @@ class dnn_DetectionModel{
 	forward = function(names){
 		var mats = ..cv2.vector.mat(#names).toArray()
 		var err,ret = dll.dnn_Net_forward3(this.ptr,{pointer value[]=mats},#names,{string s[]=names},#names)
-		var confidences = {}
-		var boxes = {}
-		var classIds = {}
-		var floatSize = ..raw.sizeof({float v}) 
-		//loop start
-		for(i=1;#mats;1){
-			var data = mats[i].data;
-			for(j=1;mats[i].rows;1){
-				var scores = mats[i].row(j-1).colRange(5,mats[i].cols);
-				var minVal,maxVal,minLoc0,maxLoc0 = ..cv2.minMaxLoc(scores)
-				var floatArray = ..raw.convert(data,{float value[4]}, mats[i].cols*(j-1)*floatSize).value
-				if(maxVal>this.$config.confThreshold){
-					centerX = ..math.floor( floatArray[1] * this.size.cx )
-					centerY = ..math.floor( floatArray[2] * this.size.cy )
-					width = ..math.floor(floatArray[3] * this.size.cx)
-					height = ..math.floor(floatArray[4] * this.size.cy)
-					left = ( centerX - ..math.floor(width/2) )
-					top = ( centerY - ..math.floor(height/2) )
-					..table.push( boxes,::RECT(left,top,width,height) )
-					//..table.push( boxes,::RECT(floatArray[1],floatArray[2],floatArray[3],floatArray[4]) )
-					..table.push( confidences,maxVal )
-					..table.push(classIds,maxLoc0.x)
-				}
-			}
-		}
-		//loop end
-		return this.nmsBoxesRect(boxes,confidences,classIds); 
-		
+		return mats; 
 	}
 }
 /*}}*/
@@ -667,7 +679,7 @@ videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer captu
 dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefactor,struct size,struct mean,int swapRB,int crop,pointer& returnValue)")
 dnn_NMSBoxes_Rect = dll.api("dnn_NMSBoxes_Rect","INT(pointer bboxes,pointer scores,float score_threshold,float nms_threshold,pointer indices,float eta,int top_k)" )
 imgproc_filter2D= dll.api("imgproc_filter2D","INT(pointer src,pointer dst,int ddepth,pointer kernel,struct anchor,double delta,int borderType)")
-
+imgproc_getRotationMatrix2D = dll.api("imgproc_getRotationMatrix2D","INT(struct pf,double angle,double scale,pointer& returnValue)")
 namespace cv2{   
     import fsys
 	import cv2.mat
@@ -765,10 +777,18 @@ drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线�
 minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
 boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
 getTickCount() = 获取当前系统启动时间，单位毫秒
+getTickFrequency() = 用于返回CPU的频率
 compare() = !matObject.
-compare(.(输入矩阵1,输入矩阵2,比较符_CV2_CMP) = 比较2个矩阵,返回结果矩阵,匹配像素标记为255 不匹配标记返回0
+compare(.(输入矩阵1,输入矩阵2,比较符_CV2_CMP) = 比较2个矩阵,返回结果矩阵,匹配像素标记为255 不匹配标记为0
 filter2D() = !matObject.
 filter2D(.(输入图像,目标深度 默认-1,卷积核 由getStructuringElement函数构建,内核锚点 缺省为中心点,偏置值 缺省为0,外推法 可选) = 任意线性滤波器卷积\n如果锚点坐标为中心点,卷积核大小可以为偶数
+getRotationMatrix2D() = !matObject.
+getRotationMatrix2D(.(图像旋转的中心位置,图像旋转的角度 单位为度 正值为逆时针旋转,两个轴的比例因子 可以实现旋转过程中的图像缩放 可选 缺省为不缩放) = 生成旋转矩阵,返回一个2x3的Mat对象
+getAffineTransform() = !matObject.
+getAffineTransform(.(3个元素的::POINTF输入数组,3个元素的::POINTF输出数组) = 由2组3个点数组创建2x3的旋转矩阵
+warpAffine() = !matObject.
+warpAffine(.(输入图像,2x3的旋转矩阵,输出图像尺寸 可选 缺省时与源图相同,插值方法 可选,像素边界外推方法 可选,填充边界使用数值 可选) = 仿射变换
+
 end intellisense**/
 
 /**intellisense()
@@ -792,6 +812,7 @@ cv2.dnn_DetectionModel( = 创建目标检测推理对象,支持yolo ssd等常见
 cv2.dnn_DetectionModel(.(权重文件,网络结构文件,推理引擎 缺省为opencv,运行载体 缺省为CPU) = 创建目标检测推理对象
 !dnnDetection.getUnconnectedOutLayersNames() = 获取输出层名称,返回字符串数组
 !dnnDetection.setInputSize(.(高,宽) = 设置输入大小
+!dnnDetection.setInputSize(.(::SIZE对象) = 设置输入大小
 !dnnDetection.setInputScale(1.0/255) = 设置缩放比例
 !dnnDetection.setInputSwapRB(true) = 设置是否交换RB通道
 !dnnDetection.blobFromImage(.(图像矩阵) = 返回一个4通道N维数组,结构为NCHW,用于神经网络输入
@@ -800,8 +821,8 @@ cv2.dnn_DetectionModel(.(权重文件,网络结构文件,推理引擎 缺省为o
 	nmsThreshold = 0.4; //nms置信度\n
 })
 
-!dnnDetection.setInput(.(blob) = 将数据输入到网路中
-!dnnDetection.forward(.(输出层数组) = 前向推理,返回boxes scores classIds 
+!dnnDetection.setInput(.(blob) = 将数据输入到网络中
+!dnnDetection.forward(.(输出层数组) = 前向推理,返回输出矩阵数组
 !dnnDetection.setMean(.(b,g,r) = 设置各通道均值,默认为0 0 0
 /*end intellisense*/
 
@@ -812,14 +833,19 @@ cv2.mat() = 创建一个空Mat矩阵
 cv2.mat(.(Mat指针) = 由Mat指针创建Mat矩阵
 cv2.mat(.(bitmap对象) = 由bitmap对象创建Mat矩阵
 cv2.mat(.(输入Mat矩阵,::RECT对象) = 从感兴趣区域(ROI)中创建Mat对象
+cv2.mat(.(行数,列数,矩阵类型_CV_,数组,步长 缺省时为自动步长) = 由数值数组创建Mat矩阵对象
+end intellisense**/
+
+/**intellisense()
+!matObject() = !matObject.
+!matObject(.(x,y,w,h) = 截取矩阵,返回新矩阵
 end intellisense**/
 
 /**intellisense(!matObject)
-!matObject() = !matObject.
-!matObject(.(x,y,w,h) = 截取矩阵,返回新矩阵
 type() = 图片类型
 cols = 图片列数
 width = 图片宽度
+dims = 维度
 rows = 图片行数
 height = 图片高度
 channels() = 图片通道数
@@ -845,6 +871,9 @@ eye(.(行数,列数,矩阵类型) = 返回一个恒等指定大小和类型矩�
 t() = 转置矩阵\n!matObject.
 convertTo() = !matObject.
 convertTo(.(转换类型_CV_,缩放因子,偏移因子) = 转换矩阵类型
+reshape() = !matObject.
+reshape(.(通道数,行数) = 重置矩阵形状\n通道数为0时,保持通道数不变\n行数为0时,保持行数不变
+reserve(.(行数) = 保留指定数量的行空间,成功返回true
 at(.(...) = 获取矩阵中某点的值,支持1-3维参数,返回最大10个索引的数组
 row() = !matObject.
 row(.(行号) = 获取矩阵中的某行矩阵对象
@@ -854,7 +883,7 @@ rowRange() = !matObject.
 rowRange(.(起行,止行) = 为矩阵的指定行区间创建一个矩阵头.索引从0开始,且左开右闭
 colRange() = !matObject.
 colRange(.(起列,止列) = 为矩阵的指定列区间创建一个矩阵头.索引从0开始,且左开右闭
-diag() = 以一维数组的形式返回矩阵的对角线(或非对角线)元素\n!matObject.
+diag() = 以一维数组的形式返回矩阵的对角线(或非对角线)元素,仅限方形矩阵\n!matObject.
 isContinuous() = 矩阵成员是否连续
 exp() = !matObject.
 exp() = 返回所有元素的指数,返回新矩阵

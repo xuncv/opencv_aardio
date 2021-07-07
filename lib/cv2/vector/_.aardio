@@ -364,10 +364,10 @@ cv2.vector.double(.(容器大小) = 创建指定大小的空白double容器
 end intellisense**/
 
 /**intellisense()
-cv2.vector.mat() = 创建空白mat容器,一般作为API参数使用\n!vectorMat.
-cv2.vector.mat(.(容器大小) = 创建指定大小的空白mat容器
-cv2.vector.mat(.(mat对象数组) = 从mat对象数组创建mat容器
-!vectorMat.toArray() = 转成mat对象数组
-!vectorMat.release() = 释放资源
-!vectorMat.size = mat容器大小
+cv2.vector.rect() = 创建空白rect容器,一般作为API参数使用\n!vectorRect.
+cv2.vector.rect(.(容器大小) = 创建指定大小的空白rect容器
+cv2.vector.rect(.(rect对象数组) = 从rect对象数组创建mat容器
+!vectorRect.toArray() = 转成rect对象数组
+!vectorRect.release() = 释放资源
+!vectorRect.size = rect容器大小
 end intellisense**/

@@ -1,0 +1,27 @@
+import cv2
+
+src = cv2.imread("./images/Lena.jpg")
+
+//1.常用图像旋转
+var center = ::POINTF(src.cols/2,src.rows/2)
+M = cv2.getRotationMatrix2D(center,30,1)
+dst = cv2.warpAffine(src,M)
+cv2.imshow("dst",dst)
+
+//2.高级仿射变换,可实现多种变换
+pSrc = {
+	::POINTF(0,0);
+	::POINTF(0,src.cols-1);
+	::POINTF(src.rows-1,src.cols-1);
+}
+
+pDst = {
+	::POINTF(src.rows*0.11,src.cols*0.20);
+	::POINTF(src.rows*0.15,src.cols*0.70);
+	::POINTF(src.rows*0.81,src.cols*0.85);
+}
+
+M2 = cv2.getAffineTransform(pSrc,pDst)
+dst2 = cv2.warpAffine(src,M2)
+cv2.imshow("dst2",dst2)
+cv2.waitKey(0)

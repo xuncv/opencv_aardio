@@ -1,0 +1,82 @@
+import cv2
+
+class faceMask{
+	ctor( confThresh=0.5,iouThresh=0.4  ){
+		this.featureMapSizes = {{33, 33}, {17, 17}, {9, 9}, {5, 5}, {3, 3}};
+		this.anchorSizes = {{0.04, 0.056}, {0.08, 0.11}, {0.16, 0.22}, {0.32, 0.45}, {0.64, 0.72}};
+		this.anchorRatios =  {1, 0.62, 0.42};
+		this.variances = {0.1, 0.1, 0.2, 0.2};
+		this.targetShape = ::SIZE(260,260)
+		this.numPrior = 5972
+		this.priorData = ..table.array(5972*4,0)
+	};
+	
+	generatePriors = function(){
+		featureMapHeight = this.featureMapSizes
+	}
+	
+}
+
+
+
+
+
+faceMaskDetector = cv2.dnn_DetectionModel("./model/face_mask_detection.caffemodel","./model/face_mask_detection.prototxt")
+
+src = cv2.imread("./images/faceMask.jpg")
+src = cv2.cvtColor(src,4/*_CV2_COLOR_BGR2RGB*/)
+blob = faceMaskDetector.blobFromImage(src,1/255,::SIZE(260,260))
+faceMaskDetector.setInput(blob)
+names = faceMaskDetector.getUnconnectedOutLayersNames()
+outs = faceMaskDetector.forward(names)
+..console.log("#outs",#outs)
+
+num_prior = 5972
+prior_data = table.array(num_prior*4)
+variances = {0.1, 0.1, 0.2, 0.2};
+
+decode = function(loc,conf,boxes,confidences,classIds,srcimg_h,srcimg_w){
+    var floatSize = ..raw.sizeof({float v})
+    if(loc.dims==3){
+    	loc = loc.reshape(0,num_prior)
+    }
+    if(conf.dims==3){
+    	conf = conf.reshape(0,num_prior)
+    }
+    for(i=1;num_prior;1){
+    	scores = conf.row(i-1).colRange(0,2)
+    	classIdPoint = ::POINT()
+    	var minVal,maxVal,minLoc0,maxLoc0 = cv2.minMaxLoc(scores)
+    	if(maxVal>0.5){
+    		console.log(maxVal)
+    		//var rowInd = (i-1)*4
+    		//var floatArray = ..raw.convert(loc.data,{float value[4]}, rowInd * floatSize).value
+    	}
+    	//predict_w = math.exp(  )
+    }
+    
+}
+
+confidences = cv2.vector.float()
+classIds = cv2.vector.int32()
+boxes = cv2.vector.rect()
+decode(outs[1],outs[2],boxes)
+
+
+
+var h,w,c = ..table.unpack(src.shape)
+
+/*
+table.map(boxes,function(v,k,result){
+    var x = v.x*w
+    var y = v.y*h
+    var x2 = (v.x+v.width)*w
+    var y2 = (v.y+v.height)*h
+	cv2.rectangle(src,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
+	var text = string.format("%s %.6f",classes[classIds[k]],scores[k] )
+	cv2.putText( src,text,::POINT(x,y) )
+})
+*/
+cv2.imshow("src",src)
+cv2.waitKey(0)
+//..console.pause()

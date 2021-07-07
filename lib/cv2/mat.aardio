@@ -33,9 +33,16 @@ class mat{
 		}
 		elseif(tArg==type.number){
 			var params = {...} // rows cols type data step 
-			//..console.log(arg,params[1],params[2],params[3],params[4],params[5])
-			err,ret = dll.core_Mat_new8(arg,params[1],params[2],params[3],params[4],params[5],{pointer value})
-			this.handle = ret.value
+			//..console.log(arg,params[1],params[2],params[3],params[4])
+			//..console.dumpTable(params[3])
+			err,ret,ret2 = dll.core_Mat_new8(arg,params[1],params[2],{pointer params[3]},params[4],{pointer value})
+			this.handle = ret2.value
+			//..console.log("this.handle",this.handle)
+		}
+		
+		if(this.handle==null){
+			error("创建Mat失败")
+			return ; 
 		}
 		
 		err,this.cvPtr = call(function(){
@@ -183,8 +190,14 @@ class mat{
 		return dst;
 	}
 	
-	reshape = function(){
-		//core_Mat_reshape1
+	reshape = function(cn=0,rows=0){
+		var err,ret = dll.core_Mat_reshape1(this,cn,rows,{ptr p})
+		return ..cv2.mat(ret.p); 
+	}
+	
+	reserve = function(sz){
+		var err = dll.core_Mat_reserve(this,sz)
+		return err==1; 
 	}
 	
 	exp = function(){
@@ -225,8 +238,6 @@ namespace mat {
 			var r = ::RECT(x,y,w,h)
 			return ..cv2.mat(owner,r); 
 		}
-		
-
 /*
 		cvPtr = {
 			_get = function(){
@@ -303,13 +314,18 @@ namespace mat {
 			}
 		}
 		
+		dims = {
+			_get = function(){
+				var err,stu = dll.core_Mat_dims(owner.handle,{int value})
+				return stu.value; 
+			}
+		}
+		
 		elemSize1 = {
 			_get = function(){
 				var err,stu = dll.core_Mat_elemSize1(owner.handle,{int value})
 				return stu.value; 
 			}
 		}
-		
-		
 	)
 }
