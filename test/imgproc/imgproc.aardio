@@ -43,7 +43,7 @@ pDst = {
 
 M3 = cv2.getPerspectiveTransform(pSrc,pDst)
 kindle = cv2.imread("./images/kindle.png")
-cv2.imshow("透明变换前",kindle)
+cv2.imshow("透视变换前",kindle)
 kindle2 = cv2.warpPerspective(kindle,M3,{571,586})
-cv2.imshow("透明变换后",kindle2)
+cv2.imshow("透视变换后",kindle2)
 cv2.waitKey(0)

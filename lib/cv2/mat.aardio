@@ -74,6 +74,11 @@ class mat{
 		return ..cv2.mat(ret.value)
 	}
 	
+	copyTo = function(dst,mask){
+		mask = mask ? (mask.cvPtr)
+		dll.core_copyTo(this.cvPtr,dst.cvPtr,mask)
+	}
+	
 	depth = function(){
 		var err,ret = dll.core_Mat_depth(this.handle,{int value})
 		return ret.value; 
@@ -130,7 +135,7 @@ class mat{
 		var err,ret = dll.core_Mat_colRange(this,startCol,endCol,{pointer value})
 		return ..cv2.mat(ret.value); 
 	}
-	
+
 	diag = function(d){
 		var err,ret = dll.core_Mat_diag(this,d,{pointer value})
 		return ..cv2.mat(ret.value); 

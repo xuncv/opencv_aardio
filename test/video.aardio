@@ -20,7 +20,7 @@ import console
 var camera
 winform.button.oncommand = function(id,event){
     winform.text = "open camera"
-	camera = cv2.videoCapture(0)
+	camera = cv2.videoCapture(1)
 	winform.text = "opened camera"
 	//var fps = camera.get(5/*_CV2_CAP_PROP_FPS*/)
 	while(win.delay(1)){

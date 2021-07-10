@@ -1,10 +1,15 @@
 import console; 
 import cv2
 //从数组创建mat
-data = {{0.1,0,0},{0,0.1,0},{0,0,0.1}};
+data = {{255,0,0},{0,255,0},{0,0,255}};
 m = cv2.mat(3,3,0x10/*_CV_8UC3*/,data)
-console.log(m.rows)
-//m = cv2.resize(m,,20,20)
-cv2.imshow("data",m)
+m = cv2.resize(m,,200,200)//放大200倍
+//cv2.imshow("data",m)
+//cv2.waitKey(0)
+//矩阵合并
+img = cv2.imread("./images/Lena.jpg")
+dst = cv2.hconcat(img,img,img)
+cv2.imshow("dst",dst)
+dst2 = cv2.vconcat(img,img,img)
+cv2.imshow("dst2",dst2)
 cv2.waitKey(0)
-console.pause(true);
