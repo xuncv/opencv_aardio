@@ -317,6 +317,62 @@ namespace rect{
     )
 }
 
+class rect2d{
+	ctor( arg,size ){
+		tArg = type(arg);
+		if(tArg==type.null){
+			this.ptr = dll.vector_Rect2d_new1P()
+		}
+		elseif(tArg==type.number){
+			this.ptr = dll.vector_Rect2d_new2P(arg)
+		}
+		elseif(tArg==type.table){
+			this.ptr = dll.vector_Rect2d_new3P({struct rects[]=arg},#arg)
+		}
+		..table.gc(this,"release")
+		
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+				length=size;
+				::RECT();
+				}
+			});
+		return ret.v; 			
+		}
+	}
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Rect2d_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace rect2d{
+	_meta = ..util.metaProperty( 
+		_type = "vectorOfRect2d";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+    	size = {
+    		_get = function(){ 
+    			return dll.vector_Rect2d_getSize(owner.ptr); 
+    		}
+    	};
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Rect2d_getPointerP(owner.ptr)
+			}
+		}
+    )
+}
+
 /**intellisense(cv2.vector)
 cv2.vector = opencv api动态数组库
 end intellisense**/
@@ -366,8 +422,17 @@ end intellisense**/
 /**intellisense()
 cv2.vector.rect() = 创建空白rect容器,一般作为API参数使用\n!vectorRect.
 cv2.vector.rect(.(容器大小) = 创建指定大小的空白rect容器
-cv2.vector.rect(.(rect对象数组) = 从rect对象数组创建mat容器
+cv2.vector.rect(.(rect对象数组) = 从rect对象数组创建rect容器
 !vectorRect.toArray() = 转成rect对象数组
-!vectorRect.release() = 释放资源
+!vectorRect.release() = 释放资源,可自动释放
 !vectorRect.size = rect容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.rect2d() = 创建空白rect2d容器,一般作为API参数使用\n!vectorRect2d.
+cv2.vector.rect2d(.(容器大小) = 创建指定大小的空白rect2d容器
+cv2.vector.rect2d(.(rect2d对象数组) = 从rect对象数组创建rect2d容器
+!vectorRect2d.toArray() = 转成rect2d对象数组
+!vectorRect2d.release() = 释放资源,可自动释放
+!vectorRect2d.size = rect2d容器大小
 end intellisense**/

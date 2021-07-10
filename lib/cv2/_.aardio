@@ -1,5 +1,4 @@
 ﻿namespace cv2
-import console
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
 
 var f2i = function(p){
@@ -625,6 +624,40 @@ class dnn_DetectionModel{
 		dll.dnn_Net_setInput(this.ptr,blob,name)
 	}
 	
+	nmsBoxesRect2d = function(boxes,confidences,classIds){
+		if(!#boxes){
+			return; 
+		}
+		vConfidences = ..cv2.vector.float(confidences)
+		vBoxes = ..cv2.vector.rect2d(boxes)
+		vIndices = ..cv2.vector.int32();
+		var err,ret = ..cv2.dnn_NMSBoxes_Rect2d(vBoxes,vConfidences,this.$config.confThreshold,this.$config.nmsThreshold,vIndices,1.0,0)
+		var boxes = {}
+		var scores = {}
+		var ids = {}
+
+		var boxesArray = vBoxes.toArray()
+		vIndicesArray = vIndices.toArray()
+		vConfidencesArray = vConfidences.toArray()
+		for(i=1;vIndices.size;1){
+			var idx = vIndicesArray[i];
+			var rect = boxesArray[idx+1]
+			..table.push( boxes,rect )
+			..table.push( scores,vConfidencesArray[idx+1] )
+			..table.push( ids,classIds[idx+1]+1)
+		}
+
+		//还原回0-1的浮点矩阵
+		boxes = ..table.map(boxes,function(v,k,result){
+			return ::RECTF(	v.left/this.size.cx,
+							v.top/this.size.cy,
+							v.right/this.size.cx,
+							v.bottom/this.size.cy
+							); 
+		})
+		return boxes,scores,ids; 		
+	}
+	
 	nmsBoxesRect = function(boxes,confidences,classIds){
 		if(!#boxes){
 			return; 
@@ -662,7 +695,7 @@ class dnn_DetectionModel{
 	forward = function(names){
 		var mats = ..cv2.vector.mat(#names).toArray()
 		var err,ret = dll.dnn_Net_forward3(this.ptr,{pointer value[]=mats},#names,{string s[]=names},#names)
-		return mats; 
+		return mats;
 	}
 }
 /*}}*/
@@ -876,6 +909,7 @@ cv2.dnn_DetectionModel(.(权重文件,网络结构文件,推理引擎 缺省为o
 !dnnDetection.setInput(.(blob) = 将数据输入到网络中
 !dnnDetection.forward(.(输出层数组) = 前向推理,返回输出矩阵数组
 !dnnDetection.setMean(.(b,g,r) = 设置各通道均值,默认为0 0 0
+!dnnDetection.
 /*end intellisense*/
 
 

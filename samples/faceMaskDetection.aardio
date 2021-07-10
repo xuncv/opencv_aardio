@@ -2,81 +2,120 @@ import cv2
 
 class faceMask{
 	ctor( confThresh=0.5,iouThresh=0.4  ){
+		
+		this.confThresh = confThresh
+		this.iouThresh = iouThresh
 		this.featureMapSizes = {{33, 33}, {17, 17}, {9, 9}, {5, 5}, {3, 3}};
 		this.anchorSizes = {{0.04, 0.056}, {0.08, 0.11}, {0.16, 0.22}, {0.32, 0.45}, {0.64, 0.72}};
 		this.anchorRatios =  {1, 0.62, 0.42};
 		this.variances = {0.1, 0.1, 0.2, 0.2};
 		this.targetShape = ::SIZE(260,260)
 		this.numPrior = 5972
-		this.priorData = ..table.array(5972*4,0)
+		this.priorData = {}//..table.array(this.numPrior*4,0)
+		this.net = ..cv2.dnn_DetectionModel("./model/face_mask_detection.caffemodel","./model/face_mask_detection.prototxt")
+		this.net.setConfig({
+			confThreshold = confThresh; 
+			nmsThreshold = iouThresh; 
+		})
+		this.outLayersNames = this.net.getUnconnectedOutLayersNames()
 	};
-	
+/*gen{{*/
 	generatePriors = function(){
-		featureMapHeight = this.featureMapSizes
+		owner.priorData = {}
+		var height = 0;
+		var width = 0;
+		var ratio = 0;
+		//..table.array()
+		for(i=1;5;1){
+			featureMapHeight = this.featureMapSizes[i][1];
+			featureMapWidth = this.featureMapSizes[i][2];
+			for(h=1;featureMapHeight;1){
+				for(w=1;featureMapWidth;1){
+					ratio = ..math.sqrt(this.anchorRatios[1])
+					for(j=1;2;1){
+						width = this.anchorSizes[i][j] * ratio
+						height = this.anchorSizes[i][j] / ratio
+						..table.push(this.priorData,
+									(w-1+0.5)/featureMapWidth,
+									(h-1+0.5)/featureMapHeight,
+									width,height
+									)
+					}
+					for(j=1;2;1){
+						ratio = ..math.sqrt(this.anchorRatios[j+1])
+						width = this.anchorSizes[i][1] * ratio
+						height = this.anchorSizes[i][2] / ratio
+						..table.push( this.priorData,
+									  (w-1+0.5)/featureMapWidth,
+									  (h-1+0.5)/featureMapHeight,
+									   width,height							
+						)
+					}
+				}
+			}
+		}
 	}
-	
-}
-
-
-
-
-
-faceMaskDetector = cv2.dnn_DetectionModel("./model/face_mask_detection.caffemodel","./model/face_mask_detection.prototxt")
-
-src = cv2.imread("./images/faceMask.jpg")
-src = cv2.cvtColor(src,4/*_CV2_COLOR_BGR2RGB*/)
-blob = faceMaskDetector.blobFromImage(src,1/255,::SIZE(260,260))
-faceMaskDetector.setInput(blob)
-names = faceMaskDetector.getUnconnectedOutLayersNames()
-outs = faceMaskDetector.forward(names)
-..console.log("#outs",#outs)
-
-num_prior = 5972
-prior_data = table.array(num_prior*4)
-variances = {0.1, 0.1, 0.2, 0.2};
-
-decode = function(loc,conf,boxes,confidences,classIds,srcimg_h,srcimg_w){
-    var floatSize = ..raw.sizeof({float v})
-    if(loc.dims==3){
-    	loc = loc.reshape(0,num_prior)
-    }
-    if(conf.dims==3){
-    	conf = conf.reshape(0,num_prior)
-    }
-    for(i=1;num_prior;1){
-    	scores = conf.row(i-1).colRange(0,2)
-    	classIdPoint = ::POINT()
-    	var minVal,maxVal,minLoc0,maxLoc0 = cv2.minMaxLoc(scores)
-    	if(maxVal>0.5){
-    		console.log(maxVal)
-    		//var rowInd = (i-1)*4
-    		//var floatArray = ..raw.convert(loc.data,{float value[4]}, rowInd * floatSize).value
+	/*}}*/    
+  
+	decode = function(outs){
+		this.generatePriors()
+		var loc = outs[1]
+		var conf = outs[2]
+		var boxes = {}
+		var confidences = {}
+		var classIds = {}
+    	var floatSize = ..raw.sizeof({float v})
+    	if(loc.dims==3){
+    		loc = loc.reshape(0,this.numPrior)
     	}
-    	//predict_w = math.exp(  )
-    }
-    
+    	if(conf.dims==3){
+    		conf = conf.reshape(0,this.numPrior)
+    	}
+    	var locData = loc.data
+    	for(i=1;this.numPrior;1){
+    		scores = conf.row(i-1).colRange(0,2)
+    		var minVal,maxVal,minLoc0,maxLoc0 = ..cv2.minMaxLoc(scores)
+    		if(maxVal>this.net.$config.confThreshold){
+    			var rowInd = (i-1)*4
+    			var floatArray = ..raw.convert(locData,{float value[4]}, rowInd*4).value
+    			predictW = ..math.exp(floatArray[3] * this.variances[3]) * this.priorData[rowInd + 3]
+    			predictH = ..math.exp(floatArray[4] * this.variances[4]) * this.priorData[rowInd + 4]
+    			predictXmin = floatArray[1] * this.variances[1] * this.priorData[rowInd+3] + this.priorData[rowInd+1] - 0.5 * predictW
+    			predictYmin = floatArray[2] * this.variances[2] * this.priorData[rowInd+4] + this.priorData[rowInd+2] - 0.5 * predictH
+    			..table.push( classIds,maxLoc0.x)
+    			..table.push( confidences, maxVal)
+    			..table.push( boxes,::RECT(predictXmin*this.net.size.cx,predictYmin*this.net.size.cy,predictW*this.net.size.cx,predictH*this.net.size.cy) )
+    		}
+    	}
+    	return boxes,confidences,classIds; 
+	}
+
+	detect = function(img){
+		var blob = this.net.blobFromImage(img,1/255,this.targetShape)
+		this.net.setInput(blob)
+		var outs = this.net.forward(this.outLayersNames)
+		boxes,confidences,classIds = this.decode(outs)
+		return this.net.nmsBoxesRect(boxes,confidences,classIds)
+	}
 }
 
-confidences = cv2.vector.float()
-classIds = cv2.vector.int32()
-boxes = cv2.vector.rect()
-decode(outs[1],outs[2],boxes)
 
+faceMaskDetector = faceMask()
 
+src = cv2.imread("./images/img5.jpeg")
+src = cv2.cvtColor(src,4/*_CV2_COLOR_BGR2RGB*/)
+boxes,scores,classIds = faceMaskDetector.detect(src)
 
-var h,w,c = ..table.unpack(src.shape)
-
-/*
+var h,w,c = table.unpack( src.shape )
 table.map(boxes,function(v,k,result){
     var x = v.x*w
     var y = v.y*h
     var x2 = (v.x+v.width)*w
     var y2 = (v.y+v.height)*h
 	cv2.rectangle(src,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
-	var text = string.format("%s %.6f",classes[classIds[k]],scores[k] )
+	var text = string.format("%s %.6f",classIds[classIds[k]]==1 ? "no mask" : "wear mask",scores[k] )
 	cv2.putText( src,text,::POINT(x,y) )
 })
-*/
+
 cv2.imshow("src",src)
 cv2.waitKey(0)
-//..console.pause()

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project ver="10" name="opencv_aardio_demo" libEmbed="true" icon="..." ui="console" output="opencv_aardio_demo.exe" CompanyName="单位名称" FileDescription="opencv_aardio_demo" LegalCopyright="Copyright (C) 作者 2021" ProductName="opencv_aardio_demo" InternalName="opencv_aardio_demo" FileVersion="0.0.0.12" ProductVersion="0.0.0.12" publishDir="/dist/" dstrip="true" local="false" ignored="false">
+<project ver="10" name="opencv_aardio_demo" libEmbed="true" icon="..." ui="console" output="opencv_aardio_demo.exe" CompanyName="单位名称" FileDescription="opencv_aardio_demo" LegalCopyright="Copyright (C) 作者 2021" ProductName="opencv_aardio_demo" InternalName="opencv_aardio_demo" FileVersion="0.0.0.17" ProductVersion="0.0.0.17" publishDir="/dist/" dstrip="true" local="false" ignored="false">
 	<file name="main.aardio" path="main.aardio" comment="启动程序代码"/>
 	<folder name="资源文件" path="res" embed="true" local="false" ignored="false"/>
 	<folder name="tools" path="tools" embed="true" comment="目录" local="false" ignored="false">
@@ -9,7 +9,6 @@
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
 		<file name="aardio2.aardio" path="test\aardio2.aardio" comment="test\aardio2.aardio"/>
-		<file name="ar.aardio" path="test\ar.aardio" comment="test\ar.aardio"/>
 		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
 		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
 		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
