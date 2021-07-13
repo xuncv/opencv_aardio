@@ -62,6 +62,7 @@ classes = {"person";"bicycle";"car";"motorbike";"aeroplane";"bus";"train";"truck
 }
 
 detector = yolo("./model/yolo-fastest-xl.weights","./model/yolo-fastest-xl.cfg",classes);
+//detector = yolo("./model/yolov4_tiny_weights_coco.pth",null,classes);
 
 detector.setConfig({
 	confThreshold = 0.5;

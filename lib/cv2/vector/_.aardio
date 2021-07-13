@@ -119,6 +119,58 @@ namespace string{
 	)
 }
 
+class byte{
+	ctor( arg ){
+		var tArg = type(arg)
+		if(!arg){
+			this.ptr = dll.vector_uchar_new1P()
+		}
+		elseif(tArg==type.number and arg>=0){
+			this.ptr = dll.vector_uchar_new2P(arg)
+		}elseif(tArg==type.table){
+			this.ptr = dll.vector_uchar_new3P({byte arr[]=arg},#arg)
+		}
+		..table.gc(this,"release")
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var buf = ..raw.buffer(size,0);
+			var ret = ..raw.convert( this.elemPtr,{byte v[]=buf});
+			return buf		
+		}
+	}
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_uchar_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace byte{
+	_meta = ..util.metaProperty(
+		_type = "vectorOfByte";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+			_get = function(){ 
+				return dll.vector_uchar_getSize(owner.ptr); 
+			}
+		};
+		elemPtr = {
+			_get = function(){
+				return dll.vector_uchar_getPointerP(owner.ptr)
+			}
+		}
+	)
+}
+
+
 class int32{
 	ctor( size ){
 		if(!size){
@@ -392,6 +444,15 @@ cv2.vector.string(.(容器大小) = 创建指定大小的空白string容器
 !vectorString.toArray() = 转成string数组
 !vectorString.release() = 释放资源
 !vectorString.size = string容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.byte() = 创建空白byte容器,一般作为API参数使用\n!vectorByte.
+cv2.vector.byte(.(容器大小) = 创建指定大小的空白byte容器
+cv2.vector.byte(.(byte数组) = 从普通byte数组中创建byte容器
+!vectorByte.toArray() = 转成raw.buffer字符串
+!vectorByte.release() = 释放资源
+!vectorByte.size = byte容器大小
 end intellisense**/
 
 /**intellisense()

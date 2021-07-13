@@ -15,10 +15,23 @@ imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
 	return null;
 }
 
-imwrite = function(filename,img){
-	dll.imgcodecs_imwrite(filename,img,null,null)
+imwrite = function(filename,img,params){
+	dll.imgcodecs_imwrite(filename,img,params ? {int p[]=params},#params)
 }
 
+imdecode = function(buffer,flag){
+    var buf = ..raw.buffer(buffer)
+	var err,ret = dll.imgcodecs_imdecode_vector(buf,#buf,flag,{pointer value})
+	return ..cv2.mat(ret.value); 
+}
+
+imencode = function(ext,img,parmas){
+	var buf = ..cv2.vector.byte();
+	dll.imgcodecs_imencode_vector(ext,img.cvPtr,buf,params ? {int p[]=params},#params,{pointer value});
+	var re = buf.toArray();
+	buf.release()
+	return re
+}
 
 /*}}*/
 
@@ -199,8 +212,6 @@ vconcat = function(...){
 		return dst
 	})
 }
-
-
 /*}}*/
 
 /*imgproc{{*/
@@ -766,7 +777,10 @@ namespace cv2{
 /**intellisense(cv2)
 imread() = !matObject.
 imread(.(图片路径,载入模式) = 读取图片
-imwrite(.(路径,输入图像) = 保存图片至本地路径
+imwrite(.(路径,输入图像,图片参数 可选) = 保存图片至本地路径
+imdecode() = !matObject.
+imdecode(.(图像字符串,载入模式) = 字符串数据转为Mat对象
+imencode(.(图片扩展名,输入图像,图片参数 可选) = 将输入图像转换成流数据,返回raw.buffer字符串
 imshow(.(窗口标题,显示内容) = 弹出窗口,显示图片
 destroyAllWindows() = 销毁所有cv2窗体
 waitKey(0) = 窗口等待键盘指令,返回键位码

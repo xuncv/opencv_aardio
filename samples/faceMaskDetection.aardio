@@ -1,10 +1,8 @@
 import cv2
+//https://github.com/AIZOOTech/FaceMaskDetection
 
 class faceMask{
 	ctor( confThresh=0.5,iouThresh=0.4  ){
-		
-		this.confThresh = confThresh
-		this.iouThresh = iouThresh
 		this.featureMapSizes = {{33, 33}, {17, 17}, {9, 9}, {5, 5}, {3, 3}};
 		this.anchorSizes = {{0.04, 0.056}, {0.08, 0.11}, {0.16, 0.22}, {0.32, 0.45}, {0.64, 0.72}};
 		this.anchorRatios =  {1, 0.62, 0.42};
@@ -99,13 +97,14 @@ class faceMask{
 	}
 }
 
-
+//推理调用
 faceMaskDetector = faceMask()
 
+var tk = time.tick()
 src = cv2.imread("./images/img5.jpeg")
 src = cv2.cvtColor(src,4/*_CV2_COLOR_BGR2RGB*/)
 boxes,scores,classIds = faceMaskDetector.detect(src)
-
+costTime = time.tick() - tk
 var h,w,c = table.unpack( src.shape )
 table.map(boxes,function(v,k,result){
     var x = v.x*w
@@ -117,5 +116,5 @@ table.map(boxes,function(v,k,result){
 	cv2.putText( src,text,::POINT(x,y) )
 })
 
-cv2.imshow("src",src)
+cv2.imshow(string.format("耗时:%dms",costTime),src)
 cv2.waitKey(0)
