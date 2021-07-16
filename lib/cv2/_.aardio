@@ -562,79 +562,89 @@ class VideoWriter{
 }
 /*}}*/
 
-/*dnn{{*/
-class dnn_DetectionModel{
-	ctor( model,cfg,backend=3/*_CV2_DNN_BACKEND_OPENCV*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
-		err,ret = dll.dnn_readNet(model,cfg,"",{pointer value});
-		if(!err){
-			this.ptr = ret.value
-			dll.dnn_Net_setPreferableBackend(this.ptr,backend);
-			dll.dnn_Net_setPreferableTarget(this.ptr,target)
+namespace dnn{
+    dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefactor,struct size,struct mean,int swapRB,int crop,pointer& returnValue)")
+	dnn_NMSBoxes_Rect = dll.api("dnn_NMSBoxes_Rect","INT(pointer bboxes,pointer scores,float score_threshold,float nms_threshold,pointer indices,float eta,int top_k)" )
+	class readNet{
+		ctor( model,cfg,backend=3/*_CV2_DNN_BACKEND_OPENCV*/,target=0/*_CV2_DNN_TARGET_CPU*/ ){
+			err,ret = dll.dnn_readNet(model,cfg,"",{pointer value});
+			if(!err){
+				this.ptr = ret.value
+				dll.dnn_Net_setPreferableBackend(this.ptr,backend);
+				dll.dnn_Net_setPreferableTarget(this.ptr,target)
+			}
+			this.swap = true
+			this.scale = 1.0/255
+			//this.mean = ::Scalar(110,135,158)
+			this.mean = ::Scalar(0,0,0)
+			this.$config = {
+				confThreshold = 0.5; //分类置信度
+				nmsThreshold = 0.4; //nms置信度
+			}
+		};
+		
+		setConfig = function(config){
+			..table.assign( this.$config,config)
 		}
-		this.swap = true
-		this.scale = 1.0/255
-		//this.mean = ::Scalar(110,135,158)
-		this.mean = ::Scalar(0,0,0)
-		this.$config = {
-			confThreshold = 0.5; //分类置信度
-			nmsThreshold = 0.4; //nms置信度
+		
+		setMean = function(b,g,r){
+			this.mean = ::Scalar(b,g,r)
 		}
-	};
-	
-	setConfig = function(config){
-		..table.assign( this.$config,config)
-	}
-	
-	setMean = function(b,g,r){
-		this.mean = ::Scalar(b,g,r)
-	}
-	
-	getUnconnectedOutLayers = function(){
-		var vecInt32 = ..cv2.vector.int32();
-		dll.dnn_Net_getUnconnectedOutLayers(this.ptr,vecInt32)
-		return vecInt32.toArray();
-	}
-	
-	getUnconnectedOutLayersNames = function(){
-		var vecString = ..cv2.vector.string();
-		dll.dnn_Net_getUnconnectedOutLayersNames(this.ptr,vecString)
-		return vecString.toArray(); 
-	}
-	
-	getLayerNames = function(){
-		var vecString = ..cv2.vector.string()
-		dll.dnn_Net_getLayerNames(this.ptr,vecString);
-		return vecString.toArray(); 
-	}
-	setInputSize = function(w,h){
-		if(type(w)==type.table and w[["cx"]] and w[["cy"]])
-		{
-			this.size = w
+		
+		getUnconnectedOutLayers = function(){
+			var vecInt32 = ..cv2.vector.int32();
+			dll.dnn_Net_getUnconnectedOutLayers(this.ptr,vecInt32)
+			return vecInt32.toArray();
 		}
-		elseif(!!w and !!h){
-			this.size = ::SIZE(w,h)
+		
+		getUnconnectedOutLayersNames = function(){
+			var vecString = ..cv2.vector.string();
+			dll.dnn_Net_getUnconnectedOutLayersNames(this.ptr,vecString)
+			return vecString.toArray(); 
+		}
+		
+		getLayerNames = function(){
+			var vecString = ..cv2.vector.string()
+			dll.dnn_Net_getLayerNames(this.ptr,vecString);
+			return vecString.toArray(); 
+		}
+		setInputSize = function(w,h){
+			if(type(w)==type.table and w[["cx"]] and w[["cy"]])
+			{
+				this.size = w
+			}
+			elseif(!!w and !!h){
+				this.size = ::SIZE(w,h)
+			}
+		}
+		
+		setInputScale = function(scale){
+			this.scale = scale : (1.0/255)
+		}
+		// bgr to rgb
+		setInputSwapRB = function(swap=true){
+			this.swap = swap
+		}
+		
+		blobFromImage = function(src,scale,size){
+			if scale this.setInputScale(scale)
+			if size this.setInputSize(size)
+			var ret,ret2,ret3 = ..cv2.dnn.dnn_blobFromImage(src,this.scale,this.size,this.mean,1,0,null)
+			return ..cv2.mat(ret2)
+		}
+		
+		setInput = function(blob,name){
+			dll.dnn_Net_setInput(this.ptr,blob,name)
+		}
+		
+		forward = function(names){
+			var mats = ..cv2.vector.mat(#names).toArray()
+			var err,ret = dll.dnn_Net_forward3(this.ptr,{pointer value[]=mats},#names,{string s[]=names},#names)
+			return mats;
 		}
 	}
 	
-	setInputScale = function(scale){
-		this.scale = scale : (1.0/255)
-	}
-	// bgr to rgb
-	setInputSwapRB = function(swap=true){
-		this.swap = swap
-	}
-	
-	blobFromImage = function(src,scale,size){
-		if scale this.setInputScale(scale)
-		if size this.setInputSize(size)
-		var ret,ret2,ret3 = ..cv2.dnn_blobFromImage(src,this.scale,this.size,this.mean,1,0,null)
-		return ..cv2.mat(ret2)
-	}
-	
-	setInput = function(blob,name){
-		dll.dnn_Net_setInput(this.ptr,blob,name)
-	}
-	
+	//dnn 模块内通用函数
 	nmsBoxesRect2d = function(boxes,confidences,classIds){
 		if(!#boxes){
 			return; 
@@ -669,47 +679,19 @@ class dnn_DetectionModel{
 		return boxes,scores,ids; 		
 	}
 	
-	nmsBoxesRect = function(boxes,confidences,classIds){
+	nmsBoxes = function(boxes,confidences,confThreshold,nmsThreshold){
 		if(!#boxes){
 			return; 
 		}
 		vConfidences = ..cv2.vector.float(confidences)
 		vBoxes = ..cv2.vector.rect(boxes)
 		vIndices = ..cv2.vector.int32();
-		var err,ret = ..cv2.dnn_NMSBoxes_Rect(vBoxes,vConfidences,this.$config.confThreshold,this.$config.nmsThreshold,vIndices,1.0,0)
-		var boxes = {}
-		var scores = {}
-		var ids = {}
-
-		var boxesArray = vBoxes.toArray()
-		vIndicesArray = vIndices.toArray()
-		vConfidencesArray = vConfidences.toArray()
-		for(i=1;vIndices.size;1){
-			var idx = vIndicesArray[i];
-			var rect = boxesArray[idx+1]
-			..table.push( boxes,rect )
-			..table.push( scores,vConfidencesArray[idx+1] )
-			..table.push( ids,classIds[idx+1]+1)
-		}
-
-		//还原回0-1的浮点矩阵
-		boxes = ..table.map(boxes,function(v,k,result){
-			return ::RECTF(	v.left/this.size.cx,
-							v.top/this.size.cy,
-							v.right/this.size.cx,
-							v.bottom/this.size.cy
-							); 
-		})
-		return boxes,scores,ids; 
-	}
-	
-	forward = function(names){
-		var mats = ..cv2.vector.mat(#names).toArray()
-		var err,ret = dll.dnn_Net_forward3(this.ptr,{pointer value[]=mats},#names,{string s[]=names},#names)
-		return mats;
+		var err,ret = ..cv2.dnn.dnn_NMSBoxes_Rect(vBoxes,vConfidences,confThreshold,nmsThreshold,vIndices,1.0,0)
+		var res = vIndices.toArray();
+		vIndices.release()
+		return res;
 	}
 }
-/*}}*/
 
 //以下为第三方库，按需封装
 /*WeChatQRCode{{*/
@@ -763,8 +745,6 @@ core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,doub
 core_addWeighted= dll.api("core_addWeighted","INT(pointer src1,double alpha,pointer &src2,double beta,double gamma,pointer dst,int dtype)")
 videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer capture,int propId,double& ret)")
 videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
-dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefactor,struct size,struct mean,int swapRB,int crop,pointer& returnValue)")
-dnn_NMSBoxes_Rect = dll.api("dnn_NMSBoxes_Rect","INT(pointer bboxes,pointer scores,float score_threshold,float nms_threshold,pointer indices,float eta,int top_k)" )
 imgproc_filter2D= dll.api("imgproc_filter2D","INT(pointer src,pointer dst,int ddepth,pointer kernel,struct anchor,double delta,int borderType)")
 imgproc_getRotationMatrix2D = dll.api("imgproc_getRotationMatrix2D","INT(struct pf,double angle,double scale,pointer& returnValue)")
 namespace cv2{   
@@ -906,9 +886,9 @@ cv2.videoCapture() = !cap.
 end intellisense**/
 
 /*intellisense()
-cv2.dnn_DetectionModel() = 基于深度学习的目标检测推理模块,支持TensorFlow Pytorch Torch Caffe DarkNet ONNX框架模型\n!dnnDetection.
-cv2.dnn_DetectionModel( = 创建目标检测推理对象,支持yolo ssd等常见网络
-cv2.dnn_DetectionModel(.(权重文件,网络结构文件,推理引擎 缺省为opencv,运行载体 缺省为CPU) = 创建目标检测推理对象
+cv2.dnn.readNet() = 基于深度学习的推理模块,支持TensorFlow Pytorch Torch Caffe DarkNet ONNX框架模型\n!dnnDetection.
+cv2.dnn.readNet( = 载入权重文件,创建深度学习推理模块,支持yolo ssd等常见网络
+cv2.dnn.readNet(.(权重文件,网络结构文件,推理引擎 缺省为opencv,运行载体 缺省为CPU) = 创建深度学习推理模块
 !dnnDetection.getUnconnectedOutLayersNames() = 获取输出层名称,返回字符串数组
 !dnnDetection.setInputSize(.(高,宽) = 设置输入大小
 !dnnDetection.setInputSize(.(::SIZE对象) = 设置输入大小
@@ -923,7 +903,7 @@ cv2.dnn_DetectionModel(.(权重文件,网络结构文件,推理引擎 缺省为o
 !dnnDetection.setInput(.(blob) = 将数据输入到网络中
 !dnnDetection.forward(.(输出层数组) = 前向推理,返回输出矩阵数组
 !dnnDetection.setMean(.(b,g,r) = 设置各通道均值,默认为0 0 0
-!dnnDetection.
+cv2.dnn.nmsBoxes(.(box数组,置信度数组,分类置信度,nms置信度) = 非极大值抑制算法,用于筛选出最佳锚框,返回筛选后box数组的索引数组
 /*end intellisense*/
 
 

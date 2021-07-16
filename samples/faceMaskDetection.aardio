@@ -10,7 +10,7 @@ class faceMask{
 		this.targetShape = ::SIZE(260,260)
 		this.numPrior = 5972
 		this.priorData = {}//..table.array(this.numPrior*4,0)
-		this.net = ..cv2.dnn_DetectionModel("./model/face_mask_detection.caffemodel","./model/face_mask_detection.prototxt")
+		this.net = ..cv2.dnn.readNet("./model/face_mask_detection.caffemodel","./model/face_mask_detection.prototxt")
 		this.net.setConfig({
 			confThreshold = confThresh; 
 			nmsThreshold = iouThresh; 
@@ -92,8 +92,30 @@ class faceMask{
 		var blob = this.net.blobFromImage(img,1/255,this.targetShape)
 		this.net.setInput(blob)
 		var outs = this.net.forward(this.outLayersNames)
-		boxes,confidences,classIds = this.decode(outs)
-		return this.net.nmsBoxesRect(boxes,confidences,classIds)
+		var boxes,confidences,classIds = this.decode(outs)
+		var indices = ..cv2.dnn.nmsBoxes(boxes,confidences,this.net.$config.confThreshold,this.net.$config.nmsThreshold)
+		
+		var filterBoxes = {}
+		var filterScores = {}
+		var filterIds = {}
+
+		for(i=1;#indices;1){
+			var idx = indices[i];
+			var rect = boxes[idx+1]
+			..table.push( filterBoxes,rect )
+			..table.push( filterScores,confidences[idx+1] )
+			..table.push( filterIds,classIds[idx+1]+1)
+		}
+
+		//还原回0-1的浮点矩阵
+		filterBoxes = ..table.map(filterBoxes,function(v,k,result){
+			return ::RECTF(	v.left/this.targetShape.cx,
+							v.top/this.targetShape.cy,
+							v.right/this.targetShape.cx,
+							v.bottom/this.targetShape.cy
+							); 
+		})
+		return filterBoxes,filterScores,filterIds; 
 	}
 }
 
@@ -102,6 +124,7 @@ faceMaskDetector = faceMask()
 
 var tk = time.tick()
 src = cv2.imread("./images/img5.jpeg")
+presrc = src.clone()
 src = cv2.cvtColor(src,4/*_CV2_COLOR_BGR2RGB*/)
 boxes,scores,classIds = faceMaskDetector.detect(src)
 costTime = time.tick() - tk
@@ -111,10 +134,10 @@ table.map(boxes,function(v,k,result){
     var y = v.y*h
     var x2 = (v.x+v.width)*w
     var y2 = (v.y+v.height)*h
-	cv2.rectangle(src,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
+	cv2.rectangle(presrc,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
 	var text = string.format("%s %.6f",classIds[classIds[k]]==1 ? "no mask" : "wear mask",scores[k] )
-	cv2.putText( src,text,::POINT(x,y) )
+	cv2.putText( presrc,text,::POINT(x+3,y+15),,0.4,::Scalar(255,0,0) )
 })
 
-cv2.imshow(string.format("耗时:%dms",costTime),src)
+cv2.imshow(string.format("耗时:%dms",costTime),presrc)
 cv2.waitKey(0)

@@ -5,7 +5,7 @@ import cv2
 
 class yolo{
 	ctor( weights,cfg ){
-		this.net = ..cv2.dnn_DetectionModel(weights,cfg);
+		this.net = ..cv2.dnn.readNet(weights,cfg);
 		this.setConfig = this.net.setConfig
 		this.outLayersNames = this.net.getUnconnectedOutLayersNames()
 		this.net.setInputSize(320,320)
@@ -46,8 +46,28 @@ class yolo{
 		this.net.setInput(blob);
 		var outs = this.net.forward(this.outLayersNames)
 		boxes,confidences,classIds = this.decode(outs)
-		boxes,scores,classIds = this.net.nmsBoxesRect(boxes,confidences,classIds);
-		return boxes,scores,classIds; 		
+		var indices = ..cv2.dnn.nmsBoxes(boxes,confidences,this.net.$config.confThreshold,this.net.$config.nmsThreshold);
+		var filterBoxes = {}
+		var filterScores = {}
+		var filterIds = {}
+
+		for(i=1;#indices;1){
+			var idx = indices[i];
+			var rect = boxes[idx+1]
+			..table.push( filterBoxes,rect )
+			..table.push( filterScores,confidences[idx+1] )
+			..table.push( filterIds,classIds[idx+1]+1)
+		}
+
+		//还原回0-1的浮点矩阵
+		filterBoxes = ..table.map(filterBoxes,function(v,k,result){
+			return ::RECTF(	v.left/this.net.size.cx,
+							v.top/this.net.size.cy,
+							v.right/this.net.size.cx,
+							v.bottom/this.net.size.cy
+							); 
+		})
+		return filterBoxes,filterScores,filterIds; 		
 	}
 }
 
@@ -82,7 +102,7 @@ table.map(boxes,function(v,k,result){
     var y2 = (v.y+v.height)*h
 	cv2.rectangle(src,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
 	var text = string.format("%s %.6f",classes[classIds[k]],scores[k] )
-	cv2.putText( src,text,::POINT(x,y) )
+	cv2.putText( src,text,::POINT(x,y+15),,0.5,::Scalar(255) )
 })
 
 //cv2.imwrite("./images/detect.jpg",src)
