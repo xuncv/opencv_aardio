@@ -273,6 +273,7 @@ adaptiveThreshold = function(src,maxValue,adaptiveMethod=1/*_CV2_ADAPTIVE_THRESH
 	return dst; 	
 }
 
+//owner.Canny = owner.canny
 canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
 	var dst = ..cv2.mat()
 	imgproc_Canny1(src.cvPtr,dst.cvPtr,threshold1,threshold2,apertureSize,L2gradient)
@@ -313,6 +314,12 @@ putText = function(src,text,position,font=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontSiz
     if !color color = ::Scalar(255,255,255)
 	var err = imgproc_putText(src.cvPtr,text,f2i(position),font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
 	return src; 
+}
+
+getTextSize = function(text,fontFace=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontScale,thickness){
+    var ref = ::SIZE()
+    var err,baseLine = imgproc_getTextSize(text,fontFace,fontScale,thickness,0,ref)
+	return ref,baseLine;
 }
 
 getStructuringElement = function(shape=0/*_CV2_MORPH_RECT*/,ksize,anchor){
@@ -464,6 +471,23 @@ warpPerspective = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_
 	var ret = dll.imgproc_warpPerspective_MisInputArray(src.cvPtr,dst.cvPtr,M.cvPtr,sz,flags,borderMode,borderValue)
 	return dst;
 }
+
+HoughLines = function(src,rho=1,theta=0.017453292519943,threshold=150,srn=0,stn=0){
+    var lines = ..cv2.vector.vec2f();
+	var err = imgproc_HoughLines(src.cvPtr,lines.ptr,rho,theta,threshold,srn,stn)
+	var res = lines.toArray(); 
+	lines.release()
+	return res
+}
+
+HoughLinesP = function(src,rho,theta,threshold,minLineLength=0,maxLineGap=0){
+    var lines = ..cv2.vector.vec4i();
+	var err = imgproc_HoughLinesP(src.cvPtr,lines,rho,theta,threshold,minLineLength,maxLineGap)
+	var res = lines.toArray(); 
+	lines.release()
+	return res
+}
+
 
 /*}}*/
 
@@ -740,6 +764,7 @@ imgproc_Canny1 = dll.api("imgproc_Canny1","int(pointer src,pointer edges,double 
 imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,struct pt2,struct color,int thickness, int line_type, int shift, double tipLength)" )
 imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
 imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
+imgproc_getTextSize = dll.api("imgproc_getTextSize","int(string text,int fontFace,double fontScale,int thickness,int& baseLine,struct& returnValue)")
 imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
 core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,double& maxVal,struct& minLoc,struct& maxLoc,pointer mask)")
 core_addWeighted= dll.api("core_addWeighted","INT(pointer src1,double alpha,pointer &src2,double beta,double gamma,pointer dst,int dtype)")
@@ -747,6 +772,10 @@ videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer captu
 videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
 imgproc_filter2D= dll.api("imgproc_filter2D","INT(pointer src,pointer dst,int ddepth,pointer kernel,struct anchor,double delta,int borderType)")
 imgproc_getRotationMatrix2D = dll.api("imgproc_getRotationMatrix2D","INT(struct pf,double angle,double scale,pointer& returnValue)")
+imgproc_HoughLines= dll.api("imgproc_HoughLines","INT(pointer src,pointer lines,double rho,double theta,int threshold,double srn, double stn)")
+imgproc_HoughLinesP= dll.api("imgproc_HoughLinesP","INT(pointer src,pointer lines,double rho,double theta,int threshold,double minLineLength,double maxLineGap)")
+  
+
 namespace cv2{   
     import fsys
 	import cv2.mat
@@ -801,6 +830,7 @@ drawMarker() = !matObject.
 drawMarker(.(输入图像,图案坐标,图案描边颜色,图案类型,图案尺寸 默认20,线条宽带 默认1像素,线条类型 可选) = 在输入图像上画图案
 putText() = !matObject.
 putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,颜色Scalar对象BGRA 可选,字体粗细 可选) = 在输入图像上写文字,暂不支持中文
+getTextSize(.(文字,字体,字体大小,字体粗细) = 计算并返回包含指定文本的框的大小,返回::SIZE对象,距离文本最低点对应的y坐标
 copyMakeBorder() = !matObject.
 copyMakeBorder(.(输入图像,上边宽度,下边宽度,左边宽度,右边宽度,边界类型 可选,边框类型为0时,可设置边框颜色 默认黑色) = 扩充图像边框,返回新图像
 getStructuringElement() = !matObject.
@@ -868,6 +898,8 @@ getPerspectiveTransform() = !matObject.
 getPerspectiveTransform(.(4个元素的::POINTF输入数组,4个元素的::POINTF输出数组) = 由2组4个点数组创建2x4的透视矩阵
 warpPerspective() = !matObject.
 warpPerspective(.(输入图像,2x4的透视矩阵,输出图像尺寸 可选 缺省时与源图相同,插值方法 可选,像素边界外推方法 可选,填充边界使用数值 可选) = 透视变换
+HoughLines(.(输入图像,扫描步长,角度步长,线段长度阈值,是否多尺度 可选,是否多尺度 可选) = 霍夫线变换
+HoughLinesP(.(输入图像,扫描步长,角度步长,线段长度阈值,线段最小长度,线段最大长度) = 累计概率霍夫线变换,返回线段起始点坐标数组
 end intellisense**/
 
 /**intellisense()
@@ -894,7 +926,7 @@ cv2.dnn.readNet(.(权重文件,网络结构文件,推理引擎 缺省为opencv,�
 !dnnDetection.setInputSize(.(::SIZE对象) = 设置输入大小
 !dnnDetection.setInputScale(1.0/255) = 设置缩放比例
 !dnnDetection.setInputSwapRB(true) = 设置是否交换RB通道
-!dnnDetection.blobFromImage(.(图像矩阵) = 返回一个4通道N维数组,结构为NCHW,用于神经网络输入
+!dnnDetection.blobFromImage(.(图像矩阵,缩放因子,输入尺寸 ::SIZE对象) = 返回一个4通道N维数组,结构为NCHW,用于神经网络输入
 !dnnDetection.setConfig( 参数表 ) = @.setConfig({
 	confThreshold = 0.5; //分类置信度\n
 	nmsThreshold = 0.4; //nms置信度\n

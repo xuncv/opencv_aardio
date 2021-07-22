@@ -1,5 +1,4 @@
 import cv2
-//https://github.com/AIZOOTech/FaceMaskDetection
 
 class faceMask{
 	ctor( confThresh=0.5,iouThresh=0.4  ){
@@ -135,9 +134,14 @@ table.map(boxes,function(v,k,result){
     var x2 = (v.x+v.width)*w
     var y2 = (v.y+v.height)*h
 	cv2.rectangle(presrc,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
-	var text = string.format("%s %.6f",classIds[classIds[k]]==1 ? "no mask" : "wear mask",scores[k] )
-	cv2.putText( presrc,text,::POINT(x+3,y+15),,0.4,::Scalar(255,0,0) )
+
+	var text = string.format("%s %.4f",classIds[classIds[k]]==1 ? "no masky" : "wear mask",scores[k] )
+	var textRectSize = cv2.getTextSize(text,0/*_CV2_FONT_HERSHEY_SIMPLEX*/,0.5,1)
+	cv2.rectangle(presrc,::POINT(x,y),::POINT(x+textRectSize.cx,y+textRectSize.cy+15),::Scalar(0,255,0),-1)
+	cv2.putText( presrc,text,::POINT(x,y+15),,0.5,::Scalar(255,0,0) )
 })
 
 cv2.imshow(string.format("耗时:%dms",costTime),presrc)
 cv2.waitKey(0)
+
+//参考项目 //https://github.com/AIZOOTech/FaceMaskDetection

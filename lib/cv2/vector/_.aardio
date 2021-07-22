@@ -173,11 +173,13 @@ namespace byte{
 
 class int32{
 	ctor( size ){
-		if(!size){
-			this.ptr = dll.vector_int32_new1P()
-		}else {
-			assert(size>=0,"size应当大于等于0")
+		var tArg = type(size);
+		if(tArg==type.null){
+			this.ptr = dll.vector_int32_new1P()	
+		}elseif(tArg==type.number and size>=0){
 			this.ptr = dll.vector_int32_new2P(size)
+		}elseif(tArg==type.table){
+			this.ptr = dll.vector_int32_new3P(size,#size);
 		}
 		..table.gc(this,"release")
 	};
@@ -425,6 +427,114 @@ namespace rect2d{
     )
 }
 
+class vec2f{
+	ctor(){
+		this.ptr = dll.vector_Vec2f_new1P();
+		
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+					length=size;
+					{
+						float f[2];
+					}
+				}
+			});
+			var res = {}
+			for(i=1;#ret.v;1){
+				..table.push( res,ret.v[i].f )
+			}
+			return res; 			
+		}
+	}
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Vec2f_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace vec2f{
+    _meta = ..util.metaProperty(
+    	_type = "vectorOfVec2f";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+    		_get = function(){ 
+    			return dll.vector_Vec2f_getSize(owner.ptr); 
+    		}
+    	};
+    	
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Vec2f_getPointerP(owner.ptr)
+			}
+		}
+    )
+}
+
+class vec4i{
+	ctor(data){
+		if(!data){
+			this.ptr = dll.vector_Vec4i_new1P();
+		}else {
+			//todo	
+		}
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+					length=size;
+					{int n[4];}
+					
+					//..cv2.vector.int32(4)
+				}
+			});
+			var res = {}
+			for(i=1;#ret.v;1){
+				..table.push( res,ret.v[i].n )
+			}
+			return res; 			
+		}
+	}
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Vec4i_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace vec4i{
+    _meta = ..util.metaProperty(
+    	_type = "vectorOfVec4i";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+    		_get = function(){ 
+    			return dll.vector_Vec4i_getSize(owner.ptr); 
+    		}
+    	};
+    	
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Vec4i_getPointerP(owner.ptr)
+			}
+		}
+    )
+}
+
+
 /**intellisense(cv2.vector)
 cv2.vector = opencv api动态数组库
 end intellisense**/
@@ -458,6 +568,7 @@ end intellisense**/
 /**intellisense()
 cv2.vector.int32() = 创建空白int32容器,一般作为API参数使用\n!vectorInt32.
 cv2.vector.int32(.(容器大小) = 创建指定大小的空白int32容器
+cv2.vector.int32(.(普通整数数组) = 由aardio的普通整数数组创建int32容器
 !vectorInt32.toArray() = 转成int32数组
 !vectorInt32.release() = 释放资源
 !vectorInt32.size = int32容器大小
@@ -496,4 +607,18 @@ cv2.vector.rect2d(.(rect2d对象数组) = 从rect对象数组创建rect2d容器
 !vectorRect2d.toArray() = 转成rect2d对象数组
 !vectorRect2d.release() = 释放资源,可自动释放
 !vectorRect2d.size = rect2d容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.vec2f() =  创建空白vec2f容器,即由2个float数值作为基本元素的动态数组一般作为API参数使用\n!vectorOfVec2f.
+!vectorOfVec2f.toArray() = 转成{float;float}数组
+!vectorOfVec2f.release() = 释放资源,可自动释放
+!vectorOfVec2f.size = vec2f容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.vec4i() = 创建空白vec4i容器,即由4个int数值作为基本元素的动态数组一般作为API参数使用\n!vectorOfVec4i.
+!vectorOfVec4i.toArray() = 转成{int;int;int;int}数组
+!vectorOfVec4i.release() = 释放资源,可自动释放
+!vectorOfVec4i.size = vec4i容器大小
 end intellisense**/

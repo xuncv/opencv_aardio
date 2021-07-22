@@ -101,8 +101,11 @@ table.map(boxes,function(v,k,result){
     var x2 = (v.x+v.width)*w
     var y2 = (v.y+v.height)*h
 	cv2.rectangle(src,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
-	var text = string.format("%s %.6f",classes[classIds[k]],scores[k] )
-	cv2.putText( src,text,::POINT(x,y+15),,0.5,::Scalar(255) )
+	
+	var text = string.format("%s %.4f",classes[classIds[k]],scores[k] )
+	var textSize = cv2.getTextSize(text,0,0.5,1)
+	cv2.rectangle(src,::POINT(x,y),::POINT(x+textSize.cx,y+textSize.cy),::Scalar(0,255,0),-1)
+	cv2.putText( src,text,::POINT(x,y+10),,0.5,::Scalar(255) )
 })
 
 //cv2.imwrite("./images/detect.jpg",src)

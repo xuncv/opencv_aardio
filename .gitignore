@@ -41,3 +41,4 @@
 model/
 
 images/coffee/
+*.py
