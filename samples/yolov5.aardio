@@ -65,10 +65,7 @@ class faceWithLandmark{
 					}
 				}
 			}
-			
-		
-		}
-		
+		}	
 		return boxes,confidences; 
 	}
 	

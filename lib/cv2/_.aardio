@@ -94,14 +94,14 @@ bitwise_and = function(src1,src2,mask){
 bitwise_or = function(src1,src2,mask){
     var dst = ..cv2.mat();
     mask = mask ? (mask.cvPtr)
-	var err = dll.core_bitwise_or(src1.cvPtr,src2.cvPtr.dst.cvPtr,null);
+	var err = dll.core_bitwise_or(src1.cvPtr,src2.cvPtr,dst.cvPtr,null);
 	return dst; 
 }
 
 bitwise_xor = function(src1,src2,mask){
     var dst = ..cv2.mat();
     mask = mask ? (mask.cvPtr)
-	var err = dll.core_bitwise_xor(src.cvPtr,src2.cvPtr,dst.cvPtr,null)
+	var err = dll.core_bitwise_xor(src1.cvPtr,src2.cvPtr,dst.cvPtr,null)
 	return dst; 
 }
 
