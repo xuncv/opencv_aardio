@@ -27,7 +27,7 @@
 		</folder>
 		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
 			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
-			<file name="houghLines.aardio" path="test\imgproc\houghLines.aardio" comment="test\imgproc\houghLines.aardio"/>
+			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\houghLines.aardio"/>
 		</folder>
 		<folder name="imgcodecs" path="test\imgcodecs" embed="true" comment="目录" local="false" ignored="false">
 			<file name="imgcodecs.aardio" path="test\imgcodecs\imgcodecs.aardio" comment="test\imgcodecs\imgcodecs.aardio"/>

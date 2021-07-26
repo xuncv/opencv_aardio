@@ -479,6 +479,110 @@ namespace vec2f{
     )
 }
 
+class vec3f{
+	ctor(){
+		this.ptr = dll.vector_Vec3f_new1P();
+		
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+					length=size;
+					{
+						float f[3];
+					}
+				}
+			});
+			var res = {}
+			for(i=1;#ret.v;1){
+				..table.push( res,ret.v[i].f )
+			}
+			return res; 			
+		}
+	}
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Vec3f_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace vec3f{
+    _meta = ..util.metaProperty(
+    	_type = "vectorOfVec3f";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+    		_get = function(){ 
+    			return dll.vector_Vec3f_getSize(owner.ptr); 
+    		}
+    	};
+    	
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Vec3f_getPointerP(owner.ptr)
+			}
+		}
+    )
+}
+
+class vec4f{
+	ctor(){
+		this.ptr = dll.vector_Vec4f_new1P();
+		
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+					length=size;
+					{
+						float f[4];
+					}
+				}
+			});
+			var res = {}
+			for(i=1;#ret.v;1){
+				..table.push( res,ret.v[i].f )
+			}
+			return res; 			
+		}
+	}
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Vec4f_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace vec4f{
+    _meta = ..util.metaProperty(
+    	_type = "vectorOfVec4f";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+    		_get = function(){ 
+    			return dll.vector_Vec4f_getSize(owner.ptr); 
+    		}
+    	};
+    	
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Vec4f_getPointerP(owner.ptr)
+			}
+		}
+    )
+}
+
 class vec4i{
 	ctor(data){
 		if(!data){
@@ -614,6 +718,20 @@ cv2.vector.vec2f() =  创建空白vec2f容器,即由2个float数值作为基本�
 !vectorOfVec2f.toArray() = 转成{float;float}数组
 !vectorOfVec2f.release() = 释放资源,可自动释放
 !vectorOfVec2f.size = vec2f容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.vec3f() =  创建空白vec3f容器,即由3个float数值作为基本元素的动态数组一般作为API参数使用\n!vectorOfVec3f.
+!vectorOfVec3f.toArray() = 转成{float;float;float}数组
+!vectorOfVec3f.release() = 释放资源,可自动释放
+!vectorOfVec3f.size = vec3f容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.vec4f() =  创建空白vec4f容器,即由4个float数值作为基本元素的动态数组一般作为API参数使用\n!vectorOfVec4f.
+!vectorOfVec4f.toArray() = 转成{float;float;float;float}数组
+!vectorOfVec4f.release() = 释放资源,可自动释放
+!vectorOfVec4f.size = vec4f容器大小
 end intellisense**/
 
 /**intellisense()

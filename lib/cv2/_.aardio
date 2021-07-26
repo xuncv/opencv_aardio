@@ -488,6 +488,14 @@ HoughLinesP = function(src,rho,theta,threshold,minLineLength=0,maxLineGap=0){
 	return res
 }
 
+HoughCircles = function(src,method,dp,minDist,param1,param2,minRadius,maxRadius){
+	var circles = ..cv2.vector.vec3f();
+	var err = imgproc_HoughCircles(src.cvPtr,circles,method,dp,minDist,param1,param2,minRadius,maxRadius)
+	var res = circles.toArray(); 
+	circles.release()
+	return res; 
+}
+
 
 /*}}*/
 
@@ -774,7 +782,7 @@ imgproc_filter2D= dll.api("imgproc_filter2D","INT(pointer src,pointer dst,int dd
 imgproc_getRotationMatrix2D = dll.api("imgproc_getRotationMatrix2D","INT(struct pf,double angle,double scale,pointer& returnValue)")
 imgproc_HoughLines= dll.api("imgproc_HoughLines","INT(pointer src,pointer lines,double rho,double theta,int threshold,double srn, double stn)")
 imgproc_HoughLinesP= dll.api("imgproc_HoughLinesP","INT(pointer src,pointer lines,double rho,double theta,int threshold,double minLineLength,double maxLineGap)")
-  
+imgproc_HoughCircles= dll.api("imgproc_HoughCircles","INT(pointer src,pointer circles,int method,double dp,double minDist,double param1,double param2,int minRadius,int maxRadius)") 
 
 namespace cv2{   
     import fsys
@@ -900,6 +908,7 @@ warpPerspective() = !matObject.
 warpPerspective(.(输入图像,2x4的透视矩阵,输出图像尺寸 可选 缺省时与源图相同,插值方法 可选,像素边界外推方法 可选,填充边界使用数值 可选) = 透视变换
 HoughLines(.(输入图像,扫描步长,角度步长,线段长度阈值,是否多尺度 可选,是否多尺度 可选) = 霍夫线变换
 HoughLinesP(.(输入图像,扫描步长,角度步长,线段长度阈值,线段最小长度,线段最大长度) = 累计概率霍夫线变换,返回线段起始点坐标数组
+HoughCircles(.(单通道图像,检测方法 默认HOUGH_GRADIENT,累加器数组大小,最小距离,边缘检测梯度值,累加器阈值,最小半径,最大半径) = 霍夫圆检测
 end intellisense**/
 
 /**intellisense()
