@@ -763,6 +763,34 @@ class wechat_qrcode_WeChatQRCode{
 }
 /*}}*/
 
+class barcode{
+	ctor( srPath,srModel ){
+		var err,ret = dll.barcode_Barcode_new(srPath,srModel,{pointer value})
+		this.ptr = ret.value
+		..table.gc( this,"release" )
+	};
+	
+	detectAndDecode = function(img){
+		var points = ..cv2.vector.point()
+		var lists = ..cv2.vector.string()
+		var err = dll.barcode_Barcode_detectAndDecode(this.ptr,img.cvPtr,lists,points);
+		var reStrs = lists.toArray(); 
+		var rePs = points.toArray();
+		lists.release()
+		points.release()
+		return reStrs,rePs
+	}
+	
+	
+	release = function(){
+		if(this[["ptr"]]){
+			dll.barcode_Barcode_delete(this.ptr);
+			this[["ptr"]] = null
+		}		
+	}
+}
+
+
 _dll = dll
 imgproc_GaussianBlur = dll.api("imgproc_GaussianBlur","int(pointer src,pointer dst,struct ksize,double sigmaX, double sigmaY, int borderType)")
 imgproc_bilateralFilter= dll.api("imgproc_bilateralFilter","INT(pointer src,pointer dst,int d,double sigmaColor,double sigmaSpace,int borderType)")
@@ -1023,4 +1051,11 @@ cv2.wechat_qrcode_WeChatQRCode(.(detect网络,detect权重,sr网络,sr权重) = 
 cv2.wechat_qrcode_WeChatQRCode() = !QRCode.
 !QRCode.detectAndDecode(.(输入图像) = 定位并解码二维码,返回 识别字符串数组,最小外接矩形四角POINT数组
 !QRCode.release() = 释放微信QRCode解码对象,可自动回收
+
+cv2.barcode() = 条形码定位与识别类库,相关模型至https://github.com/WeChatCV/opencv_3rdparty下载
+cv2.barcode( = 创建条形码定位与识别对象
+cv2.barcode(.(sr网络,sr权重) = 创建条形码定位与识别对象
+cv2.barcode() = !BarCode.
+!BarCode.detectAndDecode(.(输入图像) = 定位并解码条形码,返回 识别字符串数组,四角坐标数组
+!BarCode.release() = 释放微信条形码解码对象,可自动回收
 end intellisense**/

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project ver="10" name="opencv_aardio_demo" libEmbed="true" icon="..." ui="win" output="opencv_aardio_demo.exe" CompanyName="单位名称" FileDescription="opencv_aardio_demo" LegalCopyright="Copyright (C) 作者 2021" ProductName="opencv_aardio_demo" InternalName="opencv_aardio_demo" FileVersion="0.0.0.18" ProductVersion="0.0.0.18" publishDir="/dist/" dstrip="true" local="false" ignored="false">
+<project ver="10" name="opencv_aardio_demo" libEmbed="true" icon="..." ui="win" output="opencv_aardio_demo.exe" CompanyName="单位名称" FileDescription="opencv_aardio_demo" LegalCopyright="Copyright (C) 作者 2021" ProductName="opencv_aardio_demo" InternalName="opencv_aardio_demo" FileVersion="0.0.0.19" ProductVersion="0.0.0.19" publishDir="/dist/" dstrip="true" local="false" ignored="false">
 	<file name="main.aardio" path="main.aardio" comment="启动程序代码"/>
 	<folder name="资源文件" path="res" embed="true" local="false" ignored="false"/>
 	<folder name="tools" path="tools" embed="true" comment="目录" local="false" ignored="false">
@@ -40,5 +40,6 @@
 		<file name="scanQR.aardio" path="samples\scanQR.aardio" comment="samples\scanQR.aardio"/>
 		<file name="yolov4.aardio" path="samples\yolov4.aardio" comment="samples\yolov4.aardio"/>
 		<file name="yolov5.aardio" path="samples\yolov5.aardio" comment="samples\yolov5.aardio"/>
+		<file name="barcode.aardio" path="samples\barcode.aardio" comment="samples\barcode.aardio"/>
 	</folder>
 </project>

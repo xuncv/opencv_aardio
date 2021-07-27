@@ -135,7 +135,7 @@ table.map(boxes,function(v,k,result){
     var y2 = (v.y+v.height)*h
 	cv2.rectangle(presrc,::POINT(x,y),::POINT(x2,y2),::Scalar(0,255,0),3)
 
-	var text = string.format("%s %.4f",classIds[classIds[k]]==1 ? "no masky" : "wear mask",scores[k] )
+	var text = string.format("%s %.4f",classIds[classIds[k]]==1 ? "no mask" : "wear mask",scores[k] )
 	var textRectSize = cv2.getTextSize(text,0/*_CV2_FONT_HERSHEY_SIMPLEX*/,0.5,1)
 	cv2.rectangle(presrc,::POINT(x,y),::POINT(x+textRectSize.cx,y+textRectSize.cy+15),::Scalar(0,255,0),-1)
 	cv2.putText( presrc,text,::POINT(x,y+15),,0.5,::Scalar(255,0,0) )

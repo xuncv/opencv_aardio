@@ -638,6 +638,62 @@ namespace vec4i{
     )
 }
 
+class point{
+	ctor( size,params ){
+		var tArg = type(size)
+		if(tArg==type.null){
+			this.ptr = dll.vector_Point2i_new1P()
+		}elseif(tArg==type.number){
+			this.prt = dll.vector_Point2i_new2P(size)
+		}elseif(tArg==type.table){
+			//todo
+		}
+		..table.gc(this,"release")
+		
+		
+	};
+	
+	toArray = function(){
+		var size = this.size;
+		if(size){
+			var ret = ..raw.convert( this.elemPtr,{struct v[]={
+				length = size;
+				::POINT()
+			}}	
+			)
+			return ret.v; 
+		}
+	}
+	
+
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_Point2i_delete(this.ptr)
+		}
+		this[["ptr"]] = null		
+	}
+	@_meta
+}
+	
+namespace point{
+    _meta = ..util.metaProperty(
+    	_type = "vectorOfPoint";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+    		_get = function(){ 
+    			return dll.vector_Point2i_getSize(owner.ptr); 
+    		}
+    	};
+    	
+		elemPtr = {
+			_get = function(){
+				return dll.vector_Point2i_getPointerP(owner.ptr)
+			}
+		}
+    )
+}	
 
 /**intellisense(cv2.vector)
 cv2.vector = opencv api动态数组库
@@ -739,4 +795,12 @@ cv2.vector.vec4i() = 创建空白vec4i容器,即由4个int数值作为基本元�
 !vectorOfVec4i.toArray() = 转成{int;int;int;int}数组
 !vectorOfVec4i.release() = 释放资源,可自动释放
 !vectorOfVec4i.size = vec4i容器大小
+end intellisense**/
+
+/**intellisense()
+cv2.vector.point() = 创建空白point容器,即由多个::POINT对象作为基本元素的动态数组一般作为API参数使用\n!vectorOfPoint.
+cv2.vector.point(.(容器大小) = 创建指定大小的空白point容器
+!vectorOfPoint.toArray() = 转成::POINT对象数组
+!vectorOfPoint.release() = 释放资源,可自动释放
+!vectorOfPoint.size = point容器大小
 end intellisense**/
