@@ -211,7 +211,14 @@ vconcat = function(...){
 		dll.core_vconcat2(prev.cvPtr,next.cvPtr,dst.cvPtr)
 		return dst
 	})
+};
+
+self["reduce"] = function(src,dim=-1,rtype,dtype=-1){
+	var dst = ..cv2.mat()
+	dll.core_reduce(src.cvPtr,dst.cvPtr,dim,rtype,dtype)
+	return dst;
 }
+
 /*}}*/
 
 /*imgproc{{*/
@@ -404,6 +411,22 @@ boxPoints = function(box){
     return ref.value;
 }
 
+boundingRect = function(input){
+	var t = type.rget(input)
+	if(t=="mat"){
+		var rect = ::RECT()
+		var err = dll.imgproc_boundingRect_InputArray(input.cvPtr,rect)
+		return rect; 
+	}
+}
+
+convexHull = function(cnt,clockwise=1,returnPoints=0){
+    var dst = ..cv2.mat()
+	var err = dll.imgproc_convexHull_InputArray(cnt.cvPtr,dst.cvPtr,clockwise,returnPoints)
+	return dst; 
+}
+
+
 matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
     var dst = ..cv2.mat()
 	var err = dll.imgproc_matchTemplate(src.cvPtr,temp.cvPtr,dst.cvPtr,mode,mask)
@@ -496,11 +519,17 @@ HoughCircles = function(src,method,dp,minDist,param1,param2,minRadius,maxRadius)
 	return res; 
 }
 
+calcHist = function(images,dims,channels,mask){
+	//dll.imgproc_calcHist
+}
+
+
+
 
 /*}}*/
 
 /*videoio{{*/
-class videoCapture{
+class VideoCapture{
 	ctor( index,apiPreference=0 ){
 		//dll = ..cv2._dll;
 		var err,ret = dll.videoio_VideoCapture_new1({pointer p})
@@ -594,6 +623,14 @@ class VideoWriter{
 }
 /*}}*/
 
+
+namespace text{
+    
+    
+	
+}
+
+/*dnn{{*/
 namespace dnn{
     dnn_blobFromImage= dll.api("dnn_blobFromImage","INT(pointer image,double scalefactor,struct size,struct mean,int swapRB,int crop,pointer& returnValue)")
 	dnn_NMSBoxes_Rect = dll.api("dnn_NMSBoxes_Rect","INT(pointer bboxes,pointer scores,float score_threshold,float nms_threshold,pointer indices,float eta,int top_k)" )
@@ -724,6 +761,50 @@ namespace dnn{
 		return res;
 	}
 }
+/*}}*/
+
+import console
+// video
+class BackgroundSubtractor{
+	ctor( ptr ){
+		this.ptr = ptr
+	};
+	
+	getBackgroundImage = function(){
+		var dst = ..cv2.mat()
+		err = dll.video_BackgroundSubtractor_getBackgroundImage(this.ptr,dst.cvPtr)
+		return dst;
+	}
+	
+	apply = function(image,lr=-1.0){
+		var dst = ..cv2.mat()
+		err = ..cv2.video_BackgroundSubtractor_apply(this.ptr,image.cvPtr,dst.cvPtr,lr)
+		return dst; 
+	}
+}
+
+class createBackgroundSubtractorMOG2{
+	ctor( history=500,varThreshold=16.0,detectShadows=1 ){
+		err,this.handle = ..cv2.video_createBackgroundSubtractorMOG2(history,varThreshold,detectShadows,null)
+		if(!err){
+			var err,ret = dll.video_Ptr_BackgroundSubtractorMOG2_get(this.handle,{ptr p})
+			this.ptr = ret.p
+			this = ..cv2.BackgroundSubtractor(this.ptr)
+		}
+		..table.gc(this,"delete")
+	};
+	
+	delete = function(){
+		if(this.handle){
+			dll.video_Ptr_BackgroundSubtractorMOG2_delete(this.handle)
+		}
+		this.handle = null
+	}
+	
+
+	
+}
+
 
 //以下为第三方库，按需封装
 /*WeChatQRCode{{*/
@@ -763,6 +844,7 @@ class wechat_qrcode_WeChatQRCode{
 }
 /*}}*/
 
+/*barcode{{*/
 class barcode{
 	ctor( srPath,srModel ){
 		var err,ret = dll.barcode_Barcode_new(srPath,srModel,{pointer value})
@@ -790,6 +872,7 @@ class barcode{
 	}
 }
 
+/*}}*/
 
 _dll = dll
 imgproc_GaussianBlur = dll.api("imgproc_GaussianBlur","int(pointer src,pointer dst,struct ksize,double sigmaX, double sigmaY, int borderType)")
@@ -811,7 +894,10 @@ imgproc_getRotationMatrix2D = dll.api("imgproc_getRotationMatrix2D","INT(struct 
 imgproc_HoughLines= dll.api("imgproc_HoughLines","INT(pointer src,pointer lines,double rho,double theta,int threshold,double srn, double stn)")
 imgproc_HoughLinesP= dll.api("imgproc_HoughLinesP","INT(pointer src,pointer lines,double rho,double theta,int threshold,double minLineLength,double maxLineGap)")
 imgproc_HoughCircles= dll.api("imgproc_HoughCircles","INT(pointer src,pointer circles,int method,double dp,double minDist,double param1,double param2,int minRadius,int maxRadius)") 
+video_createBackgroundSubtractorMOG2 = dll.api("video_createBackgroundSubtractorMOG2","INT(int history,double varThreshold,int detectShadows,pointer& returnValue)")
+video_BackgroundSubtractor_apply = dll.api("video_BackgroundSubtractor_apply","INT(pointer BackgroundSubtractor,pointer image,pointer fgmask,double learningRate)" )
 
+	
 namespace cv2{   
     import fsys
 	import cv2.mat
@@ -912,6 +998,7 @@ drawContours() = !matObject.
 drawContours(.(输入图像,轮廓数组,绘制起点 默认-1,线条颜色,线条宽度 为-1时填充图案,线条样式) = 在输入图像上绘制轮廓
 minAreaRect(.(points点集合) = 获取最小外接矩形,返回RotatedRect对象
 boxPoints(.(RotatedRect对象) = 矩形四角坐标,返回4个::POINTF对象数组
+boundingRect(.(输入矩阵) = 返回输入矩阵的最小边框
 getTickCount() = 获取当前系统启动时间，单位毫秒
 getTickFrequency() = 用于返回CPU的频率
 compare() = !matObject.
@@ -940,18 +1027,18 @@ HoughCircles(.(单通道图像,检测方法 默认HOUGH_GRADIENT,累加器数组
 end intellisense**/
 
 /**intellisense()
-cv2.videoCapture() = 视频或摄像头解析对象
-cv2.videoCapture( = 创建视频解析对象
-cv2.videoCapture(.(摄像头编号或视频路径) = 创建视频解析对象,视频为非avi mpg格式时需opencv_videoio_ffmpeg452.dll
-cv2.videoCapture() = !cap.
+cv2.VideoCapture() = 视频或摄像头解析对象
+cv2.VideoCapture( = 创建视频解析对象
+cv2.VideoCapture(.(摄像头编号或视频路径) = 创建视频解析对象,视频为非avi mpg格式时需opencv_videoio_ffmpeg452.dll
+cv2.VideoCapture() = !cap.
 !cap.read() = 读取视频下一帧，返回读取状态,mat对象
 !cap.isOpened = 检测视频或摄像头是否打开，注意：视频有时候并不准确
-!cap.get(.(_CV2_CAP_PROP_) = 获取videoCapture对象参数
-!cap.set(.(_CV2_CAP_PROP_) = 设置videoCapture对象参数
+!cap.get(.(_CV2_CAP_PROP_) = 获取VideoCapture对象参数
+!cap.set(.(_CV2_CAP_PROP_) = 设置VideoCapture对象参数
 !cap.grab() = 从视频文件或捕获设备中获取下一帧
 !cap.retrieve() = 解码并返回抓取的视频帧,返回mat对象
 !cap.getBackendName() = 获取API后端名称
-!cap.release() = 释放videoCapture对象,解除视频文件或摄像头占用
+!cap.release() = 释放VideoCapture对象,解除视频文件或摄像头占用
 end intellisense**/
 
 /*intellisense()

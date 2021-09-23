@@ -1,0 +1,31 @@
+import console; 
+import cv2
+import fsys
+import inet.downBox
+
+
+cap = cv2.videoCapture("D:\workspace\github.com\aardio\opencv_aardio\images\768x576.avi")
+mog2 = cv2.createBackgroundSubtractorMOG2()
+ok,img = cap.read()
+console.log(ok,img)
+/*
+cv2.imshow("img2",img)
+code = cv2.waitKey(50)
+*/
+while(ok){
+	cv2.imshow("img",img)
+	code = cv2.waitKey(50)
+	fmask = mog2.apply(img)
+	cv2.imshow("fmask",fmask)
+	code = cv2.waitKey(50)
+	fmask.release()
+	if(code==27){
+		bk = mog2.getBackgroundImage()
+		cv2.imshow("bk",bk)
+		cv2.waitKey(0)
+        break
+    }
+    err,img = cap.read()
+}
+
+console.pause(true);

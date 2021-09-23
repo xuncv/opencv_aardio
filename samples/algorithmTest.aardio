@@ -1,0 +1,24 @@
+import win.ui;
+import cv2;
+import win.clip
+/*DSG{{*/
+var winform = win.form(text="aardio form";right=647;bottom=737)
+winform.add(
+button={cls="button";text="取剪贴板图像";left=533;top=14;right=638;bottom=49;z=2};
+button2={cls="button";text="阈值二值化";left=536;top=62;right=636;bottom=101;z=3};
+picturebox={cls="picturebox";left=19;top=16;right=473;bottom=271;z=1};
+picturebox2={cls="picturebox";left=20;top=329;right=473;bottom=588;z=5};
+trackbar={cls="trackbar";left=533;top=120;right=638;bottom=150;max=100;min=0;z=4}
+)
+/*}}*/
+
+winform.button.oncommand = function(id,event){
+	var hBmp = win.clip.readBitmap()
+	if(hBmp){
+		winform.picturebox.setBitmap(hBmp)	
+	}
+}
+
+winform.show();
+win.loopMessage();
+return winform;
