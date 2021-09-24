@@ -8,6 +8,7 @@
 		<file name="api.aardio" path="tools\api.aardio" comment="tools\api.aardio"/>
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
+		<file name="aardio1.aardio" path="test\aardio1.aardio" comment="test\aardio1.aardio"/>
 		<file name="aardio2.aardio" path="test\aardio2.aardio" comment="test\aardio2.aardio"/>
 		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
 		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
@@ -20,23 +21,25 @@
 		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
 		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
 		<file name="morphology.aardio" path="test\morphology.aardio" comment="test\morphology.aardio"/>
+		<file name="text.aardio" path="test\text.aardio" comment="test\text.aardio"/>
+		<file name="text2.aardio" path="test\text2.aardio" comment="test\text2.aardio"/>
+		<file name="textd.aardio" path="test\textd.aardio" comment="test\textd.aardio"/>
 		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
 		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
-		<folder name="core" path="test\core" comment="test\core" local="false" embed="false" ignored="false">
+		<folder name="core" path="test\core" comment="test\core">
 			<file name="mat.aardio" path="test\core\mat.aardio" comment="test\core\mat.aardio"/>
 			<file name="sample.aardio" path="test\core\sample.aardio" comment="test\core\sample.aardio"/>
 		</folder>
-		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
-			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
-			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\houghLines.aardio"/>
-		</folder>
-		<folder name="imgcodecs" path="test\imgcodecs" embed="true" comment="目录" local="false" ignored="false">
+		<folder name="imgcodecs" path="test\imgcodecs" comment="test\imgcodecs">
 			<file name="imgcodecs.aardio" path="test\imgcodecs\imgcodecs.aardio" comment="test\imgcodecs\imgcodecs.aardio"/>
 		</folder>
-		<file name="text.aardio" path="test\text.aardio" comment="test\text.aardio"/>
-		<file name="textd.aardio" path="test\textd.aardio" comment="test\textd.aardio"/>
-		<file name="text2.aardio" path="test\text2.aardio" comment="test\text2.aardio"/>
-		<file name="subtractor.aardio" path="test\subtractor.aardio" comment="test\subtractor.aardio"/>
+		<folder name="imgproc" path="test\imgproc" comment="test\imgproc">
+			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\hough.aardio"/>
+			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
+		</folder>
+		<folder name="video" path="test\video" comment="test\video" local="false" embed="false" ignored="false">
+			<file name="subtractor.aardio" path="test\video\subtractor.aardio" comment="test\video\subtractor.aardio"/>
+		</folder>
 	</folder>
 	<folder name="samples" path="samples" embed="true" comment="目录" local="false" ignored="false">
 		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>

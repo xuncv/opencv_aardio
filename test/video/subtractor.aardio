@@ -1,31 +1,27 @@
-import console; 
 import cv2
 import fsys
-import inet.downBox
 
-
-cap = cv2.videoCapture("D:\workspace\github.com\aardio\opencv_aardio\images\768x576.avi")
-mog2 = cv2.createBackgroundSubtractorMOG2()
+//示例视频下载地址 https://raw.githubusercontent.com/opencv/opencv/3.1.0/samples/data/768x576.avi
+cap = cv2.VideoCapture("./images/768x576.avi")
+//subtractor = cv2.createBackgroundSubtractorMOG2()
+subtractor = cv2.createBackgroundSubtractorKNN()
+k = cv2.getStructuringElement( 1/*_CV2_MORPH_CROSS*/,::SIZE(3,3) )
 ok,img = cap.read()
-console.log(ok,img)
-/*
-cv2.imshow("img2",img)
-code = cv2.waitKey(50)
-*/
 while(ok){
-	cv2.imshow("img",img)
+	cv2.imshow("原图",img)
 	code = cv2.waitKey(50)
-	fmask = mog2.apply(img)
-	cv2.imshow("fmask",fmask)
+	fmask = subtractor.apply(img)
+	binary = cv2.threshold( fmask,220,255,0x0/*_CV2_THRESH_BINARY*/)
+	binary = cv2.morphologyEx( binary,2/*_CV2_MORPH_OPEN*/,k)
+	cv2.imshow("蒙版图",binary)
 	code = cv2.waitKey(50)
 	fmask.release()
+	binary.release()
 	if(code==27){
-		bk = mog2.getBackgroundImage()
-		cv2.imshow("bk",bk)
+		bk = subtractor.getBackgroundImage()
+		cv2.imshow("背景图",bk)
 		cv2.waitKey(0)
         break
     }
     err,img = cap.read()
 }
-
-console.pause(true);

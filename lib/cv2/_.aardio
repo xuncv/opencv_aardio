@@ -60,7 +60,6 @@ cvGetWindowHandle = function(name){
 	return ret.value; 
 }
 
-
 /*}}*/
 
 /*core{{*/
@@ -543,7 +542,7 @@ class VideoCapture{
 	};
 	
 	isOpened = function(){
-		var err,ret = dll.videoio_VideoWriter_isOpened(this.ptr,{int op})
+		var err,ret = dll.videoio_VideoCapture_isOpened(this.ptr,{int op})
 		return ret.op==1; 
 	}
 	
@@ -766,8 +765,9 @@ namespace dnn{
 import console
 // video
 class BackgroundSubtractor{
-	ctor( ptr ){
-		this.ptr = ptr
+	ctor( handle ){
+		var err,ret = dll.video_Ptr_BackgroundSubtractor_get(handle,{pointer ptr})
+		this.ptr = ret.ptr
 	};
 	
 	getBackgroundImage = function(){
@@ -781,15 +781,15 @@ class BackgroundSubtractor{
 		err = ..cv2.video_BackgroundSubtractor_apply(this.ptr,image.cvPtr,dst.cvPtr,lr)
 		return dst; 
 	}
+	
+	
 }
 
 class createBackgroundSubtractorMOG2{
 	ctor( history=500,varThreshold=16.0,detectShadows=1 ){
 		err,this.handle = ..cv2.video_createBackgroundSubtractorMOG2(history,varThreshold,detectShadows,null)
 		if(!err){
-			var err,ret = dll.video_Ptr_BackgroundSubtractorMOG2_get(this.handle,{ptr p})
-			this.ptr = ret.p
-			this = ..cv2.BackgroundSubtractor(this.ptr)
+			this = ..cv2.BackgroundSubtractor(this.handle)
 		}
 		..table.gc(this,"delete")
 	};
@@ -800,11 +800,24 @@ class createBackgroundSubtractorMOG2{
 		}
 		this.handle = null
 	}
-	
-
-	
 }
 
+class createBackgroundSubtractorKNN{
+	ctor( history=500,varThreshold=16.0,detectShadows=1 ){
+		err,this.handle = ..cv2.video_createBackgroundSubtractorMOG2(history,varThreshold,detectShadows,null)
+		if(!err){
+			this = ..cv2.BackgroundSubtractor(this.handle)
+		}
+		..table.gc(this,"delete")		
+	};
+	
+	delete = function(){
+		if(this.handle){
+			dll.video_Ptr_BackgroundSubtractorKNN_delete(this.handle)
+		}
+		this.handle = null
+	}
+}
 
 //以下为第三方库，按需封装
 /*WeChatQRCode{{*/
@@ -896,6 +909,7 @@ imgproc_HoughLinesP= dll.api("imgproc_HoughLinesP","INT(pointer src,pointer line
 imgproc_HoughCircles= dll.api("imgproc_HoughCircles","INT(pointer src,pointer circles,int method,double dp,double minDist,double param1,double param2,int minRadius,int maxRadius)") 
 video_createBackgroundSubtractorMOG2 = dll.api("video_createBackgroundSubtractorMOG2","INT(int history,double varThreshold,int detectShadows,pointer& returnValue)")
 video_BackgroundSubtractor_apply = dll.api("video_BackgroundSubtractor_apply","INT(pointer BackgroundSubtractor,pointer image,pointer fgmask,double learningRate)" )
+video_createBackgroundSubtractorKNN = dll.api("video_createBackgroundSubtractorKNN","INT(int history,double varThreshold,int detectShadows,pointer& returnValue)" )
 
 	
 namespace cv2{   
@@ -1029,7 +1043,7 @@ end intellisense**/
 /**intellisense()
 cv2.VideoCapture() = 视频或摄像头解析对象
 cv2.VideoCapture( = 创建视频解析对象
-cv2.VideoCapture(.(摄像头编号或视频路径) = 创建视频解析对象,视频为非avi mpg格式时需opencv_videoio_ffmpeg452.dll
+cv2.VideoCapture(.(摄像头编号或视频路径) = 创建视频解析对象,视频为非avi mpg格式时需opencv_videoio_ffmpeg453.dll
 cv2.VideoCapture() = !cap.
 !cap.read() = 读取视频下一帧，返回读取状态,mat对象
 !cap.isOpened = 检测视频或摄像头是否打开，注意：视频有时候并不准确
@@ -1039,6 +1053,22 @@ cv2.VideoCapture() = !cap.
 !cap.retrieve() = 解码并返回抓取的视频帧,返回mat对象
 !cap.getBackendName() = 获取API后端名称
 !cap.release() = 释放VideoCapture对象,解除视频文件或摄像头占用
+end intellisense**/
+
+/**intellisense()
+cv2.createBackgroundSubtractorMOG2() = MOG2动态目标检测
+cv2.createBackgroundSubtractorMOG2( = 创建基于MOG2的动态目标检测对象
+cv2.createBackgroundSubtractorMOG2() = !subtractor.
+!subtractor.apply() = !matObject.
+!subtractor.apply(.(image) = 输入图像,进行学习
+!subtractor.getBackgroundImage() = 获取背景\n!matObject.
+
+cv2.createBackgroundSubtractorKNN() = KNN动态目标检测
+cv2.createBackgroundSubtractorKNN( = 创建基于KNN的动态目标检测对象
+cv2.createBackgroundSubtractorKNN() = !subtractor.
+!subtractor.apply() = !matObject.
+!subtractor.apply(.(image) = 输入图像,进行学习
+!subtractor.getBackgroundImage() = 获取背景\n!matObject.
 end intellisense**/
 
 /*intellisense()
