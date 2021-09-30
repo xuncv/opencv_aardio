@@ -762,7 +762,6 @@ namespace dnn{
 }
 /*}}*/
 
-import console
 // video
 class BackgroundSubtractor{
 	ctor( handle ){
@@ -939,7 +938,7 @@ adaptiveThreshold(.(灰度化图像,最大灰度值,自适应阈值算法,二值
 medianBlur() = !matObject.
 medianBlur(.(源数据,核大小) = 中值滤波
 resize() = !matObject.
-resize(.(源数据,::SIZE对象,x轴缩放倍数,y轴缩放倍数,插值方式) = 调整图片大小
+resize(.(源数据,::SIZE对象,x轴缩放倍数 缺省1.0,y轴缩放倍数 缺省1.0,插值方式) = 调整图片大小
 gaussianBlur() = !matObject.
 gaussianBlur(.(输入图像,::SIZE对象 高斯核大小,X方向上的高斯核标准偏差, Y方向上的高斯核标准差,边缘模式) = 高斯滤波
 blur() = !matObject.

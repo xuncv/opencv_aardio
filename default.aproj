@@ -11,7 +11,6 @@
 		<file name="aardio1.aardio" path="test\aardio1.aardio" comment="test\aardio1.aardio"/>
 		<file name="aardio2.aardio" path="test\aardio2.aardio" comment="test\aardio2.aardio"/>
 		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
-		<file name="blurWinform.aardio" path="test\blurWinform.aardio" comment="test\blurWinform.aardio"/>
 		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
 		<file name="common.aardio" path="test\common.aardio" comment="test\common.aardio"/>
 		<file name="compare.aardio" path="test\compare.aardio" comment="test\compare.aardio"/>
@@ -20,7 +19,6 @@
 		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
 		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
 		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
-		<file name="morphology.aardio" path="test\morphology.aardio" comment="test\morphology.aardio"/>
 		<file name="text.aardio" path="test\text.aardio" comment="test\text.aardio"/>
 		<file name="text2.aardio" path="test\text2.aardio" comment="test\text2.aardio"/>
 		<file name="textd.aardio" path="test\textd.aardio" comment="test\textd.aardio"/>
@@ -33,11 +31,14 @@
 		<folder name="imgcodecs" path="test\imgcodecs" comment="test\imgcodecs">
 			<file name="imgcodecs.aardio" path="test\imgcodecs\imgcodecs.aardio" comment="test\imgcodecs\imgcodecs.aardio"/>
 		</folder>
-		<folder name="imgproc" path="test\imgproc" comment="test\imgproc">
+		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
+			<file name="blurWinform.aardio" path="test\imgproc\blurWinform.aardio" comment="test\imgproc\blurWinform.aardio"/>
 			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\hough.aardio"/>
 			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
+			<file name="morphology.aardio" path="test\imgproc\morphology.aardio" comment="test\imgproc\morphology.aardio"/>
+			<file name="person.aardio" path="test\imgproc\person.aardio" comment="test\imgproc\person.aardio"/>
 		</folder>
-		<folder name="video" path="test\video" comment="test\video" local="false" embed="false" ignored="false">
+		<folder name="video" path="test\video" comment="test\video">
 			<file name="subtractor.aardio" path="test\video\subtractor.aardio" comment="test\video\subtractor.aardio"/>
 		</folder>
 	</folder>
