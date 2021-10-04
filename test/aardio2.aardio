@@ -1,7 +1,8 @@
 import console; 
 import cv2
-
-src = cv2.imread("./images/Lena.jpg")
+console.log(cv2.getNumThreads())
+console.log(cv2.getVersionString())
+src = cv2.imread("./assets/images/Lena.jpg")
 cv2.imshow("src",src)
 dst = src(0,200,20,200)
 cv2.imshow("dst",dst)

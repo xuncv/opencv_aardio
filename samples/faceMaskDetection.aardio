@@ -2,6 +2,7 @@ import cv2
 
 class faceMask{
 	ctor( confThresh=0.5,iouThresh=0.4  ){
+		//..cv2.setNumThreads(4)
 		this.featureMapSizes = {{33, 33}, {17, 17}, {9, 9}, {5, 5}, {3, 3}};
 		this.anchorSizes = {{0.04, 0.056}, {0.08, 0.11}, {0.16, 0.22}, {0.32, 0.45}, {0.64, 0.72}};
 		this.anchorRatios =  {1, 0.62, 0.42};
@@ -9,7 +10,7 @@ class faceMask{
 		this.targetShape = ::SIZE(260,260)
 		this.numPrior = 5972
 		this.priorData = {}//..table.array(this.numPrior*4,0)
-		this.net = ..cv2.dnn.readNet("./model/face_mask_detection.caffemodel","./model/face_mask_detection.prototxt")
+		this.net = ..cv2.dnn.readNet("./assets/model/face_mask_detection.caffemodel","./assets/model/face_mask_detection.prototxt")
 		this.net.setConfig({
 			confThreshold = confThresh; 
 			nmsThreshold = iouThresh; 
@@ -122,7 +123,7 @@ class faceMask{
 faceMaskDetector = faceMask()
 
 var tk = time.tick()
-src = cv2.imread("./images/img5.jpeg")
+src = cv2.imread("./assets/images/img5.jpeg")
 presrc = src.clone()
 src = cv2.cvtColor(src,4/*_CV2_COLOR_BGR2RGB*/)
 boxes,scores,classIds = faceMaskDetector.detect(src)

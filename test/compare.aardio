@@ -1,5 +1,5 @@
 import cv2
-src1 = cv2.imread("./images/Lena.jpg")
+src1 = cv2.imread("./assets/images/Lena.jpg")
 src2 =src1.clone()
 cv2.putText(src1,"Lena",::POINT(20,20))
 //src2 = cv2.imread("./images/result.jpg")

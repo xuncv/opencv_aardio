@@ -1,0 +1,5 @@
+import cv2
+img = cv2.mat()
+img = img.zeros(450,450,0x10/*_CV_8UC3*/)
+cv2.imshow("clock",img)
+cv2.waitKey(0) 

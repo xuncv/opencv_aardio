@@ -16,15 +16,13 @@
 		<file name="compare.aardio" path="test\compare.aardio" comment="test\compare.aardio"/>
 		<file name="compare.py" path="test\compare.py" comment="test\compare.py"/>
 		<file name="contour.aardio" path="test\contour.aardio" comment="test\contour.aardio"/>
-		<file name="draw.aardio" path="test\draw.aardio" comment="test\draw.aardio"/>
 		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
 		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
 		<file name="text.aardio" path="test\text.aardio" comment="test\text.aardio"/>
 		<file name="text2.aardio" path="test\text2.aardio" comment="test\text2.aardio"/>
 		<file name="textd.aardio" path="test\textd.aardio" comment="test\textd.aardio"/>
-		<file name="threshold.aardio" path="test\threshold.aardio" comment="test\threshold.aardio"/>
 		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
-		<folder name="core" path="test\core" comment="test\core">
+		<folder name="core" path="test\core" comment="test\core" local="false" embed="false" ignored="false">
 			<file name="mat.aardio" path="test\core\mat.aardio" comment="test\core\mat.aardio"/>
 			<file name="sample.aardio" path="test\core\sample.aardio" comment="test\core\sample.aardio"/>
 		</folder>
@@ -33,12 +31,15 @@
 		</folder>
 		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
 			<file name="blurWinform.aardio" path="test\imgproc\blurWinform.aardio" comment="test\imgproc\blurWinform.aardio"/>
+			<file name="draw.aardio" path="test\imgproc\draw.aardio" comment="test\imgproc\draw.aardio"/>
 			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\hough.aardio"/>
 			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
 			<file name="morphology.aardio" path="test\imgproc\morphology.aardio" comment="test\imgproc\morphology.aardio"/>
 			<file name="person.aardio" path="test\imgproc\person.aardio" comment="test\imgproc\person.aardio"/>
+			<file name="threshold.aardio" path="test\imgproc\threshold.aardio" comment="test\imgproc\threshold.aardio"/>
+			<file name="clock.aardio" path="test\imgproc\clock.aardio" comment="test\imgproc\clock.aardio"/>
 		</folder>
-		<folder name="video" path="test\video" comment="test\video">
+		<folder name="video" path="test\video" comment="test\video" local="false" embed="false" ignored="false">
 			<file name="subtractor.aardio" path="test\video\subtractor.aardio" comment="test\video\subtractor.aardio"/>
 		</folder>
 	</folder>
@@ -51,6 +52,5 @@
 		<file name="yolov5.aardio" path="samples\yolov5.aardio" comment="samples\yolov5.aardio"/>
 		<file name="barcode.aardio" path="samples\barcode.aardio" comment="samples\barcode.aardio"/>
 		<file name="algorithmTest.aardio" path="samples\algorithmTest.aardio" comment="samples\algorithmTest.aardio"/>
-		<file name="backgroundSubtrator.aardio" path="samples\backgroundSubtrator.aardio" comment="samples\backgroundSubtrator.aardio"/>
 	</folder>
 </project>

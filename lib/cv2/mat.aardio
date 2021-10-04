@@ -1,11 +1,10 @@
-﻿//mat 矩阵类
+﻿//Mat 矩阵类
 import util.metaProperty
 import gdip
-import cv2.matExpr
+
 namespace cv2;
-class mat{
+class Mat{
 	ctor( arg,... ){ //
-		var dll = ..cv2._dll;
 		var tArg = type(arg)
 		if(tArg == type.pointer){
 			this.handle = arg
@@ -164,12 +163,12 @@ class mat{
 	zeros = function(rows,cols,tp){
 		var err,ret = dll.core_Mat_zeros1(rows,cols,tp,{pointer p})
 		var matHandle = ..cv2.matExpr(ret.p).toMat()
-		return ..cv2.mat(matExpr.ptr); 
+		return matHandle//..cv2.mat(matHandle); 
 	}
 	
 	ones = function(rows,cols,tp){
 		var err,ret = dll.core_Mat_ones1(rows,cols,tp,{pointer p})
-		var m = ..cv2.matExpr(ret.p)
+		var m = ..cv2.matExpr(ret.p).toMat()
 		return m; 
 	}
 	
@@ -224,8 +223,10 @@ class mat{
 	@_metaProperty;
 }
 
-namespace mat {
-    var dll = ..cv2._dll;
+namespace Mat {
+    //var dll = ..cv2._dll;
+    import cv2.matExpr
+    dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
     core_Mat_convertTo = dll.api("core_Mat_convertTo","INT(pointer self, pointer m, int rtype, double alpha, double beta)")
 	core_Mat_mul = dll.api("core_Mat_mul","INT(pointer self, pointer m,double scale,struct ret)")
 	core_Mat_operatorMultiply_MatDouble = dll.api("core_Mat_operatorMultiply_MatDouble","INT(pointer self,double s,pointer ret)")

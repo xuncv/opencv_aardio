@@ -4,7 +4,6 @@ namespace cv2
 
 class matExpr{
 	ctor( ptr ){
-		var dll = ..cv2._dll;
 		if(!ptr){
 			err,ret = dll.core_MatExpr_new1({pointer value})
 			this.ptr = ret.value
@@ -31,8 +30,8 @@ class matExpr{
 }
 
 namespace matExpr{
-    import cv2.mat
-    var dll = ..cv2._dll;
+    //import cv2.mat
+    dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
     core_operatorMultiply_MatExprDouble = dll.api("core_operatorMultiply_MatExprDouble","INT(pointer src,double scale,pointer& ret)")
     core_MatExpr_toMat = dll.api("core_MatExpr_toMat","INT(pointer MatExpr,pointer Mat)")
     _meta = ..util.metaProperty(

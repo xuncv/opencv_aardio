@@ -10,7 +10,7 @@ imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
     var path = ..io.fullpath(path)
 	if(..io.exist(path)){
 		var err,ret = dll.imgcodecs_imread(..string.fromto(path),mode,{ptr p})
-		return ..cv2.mat(ret.p)
+		return ..cv2.Mat(ret.p)
 	}
 	return null;
 }
@@ -22,7 +22,7 @@ imwrite = function(filename,img,params){
 imdecode = function(buffer,flag){
     var buf = ..raw.buffer(buffer)
 	var err,ret = dll.imgcodecs_imdecode_vector(buf,#buf,flag,{pointer value})
-	return ..cv2.mat(ret.value); 
+	return ..cv2.Mat(ret.value); 
 }
 
 imencode = function(ext,img,parmas){
@@ -75,7 +75,7 @@ getTickFrequency = function(){
 }
 
 copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTypes_BORDER_CONSTANT*/,color){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
     if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !color){
     	color = ::Scalar(0,0,0)
     }
@@ -84,21 +84,21 @@ copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*_CV2_BorderTyp
 }
 
 bitwise_and = function(src1,src2,mask){
-    var dst = ..cv2.mat();  
+    var dst = ..cv2.Mat();  
     mask = mask ? (mask.cvPtr)
 	var err = dll.core_bitwise_and(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask);
 	return dst; 
 }
 
 bitwise_or = function(src1,src2,mask){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
     mask = mask ? (mask.cvPtr)
 	var err = dll.core_bitwise_or(src1.cvPtr,src2.cvPtr,dst.cvPtr,null);
 	return dst; 
 }
 
 bitwise_xor = function(src1,src2,mask){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
     mask = mask ? (mask.cvPtr)
 	var err = dll.core_bitwise_xor(src1.cvPtr,src2.cvPtr,dst.cvPtr,null)
 	return dst; 
@@ -112,7 +112,7 @@ bitwise_not = function(src,mask){
 
 core_normalize= dll.api("core_normalize","INT(pointer src,pointer dst,double alpha,double beta,int normType,int dtype,pointer mask)")
 normalize = function(src,alpha,beta,normType=0x20/*_CV2_NormTypes_NORM_MINMAX*/,dtype=-1,mask){
-	//mask = mask : ..cv2.mat().cvPtr
+	//mask = mask : ..cv2.Mat().cvPtr
 	var err = core_normalize(src.cvPtr,src.cvPtr,alpha,beta,normType,dtype,topointer(0))
 	return src; 
 }
@@ -129,7 +129,7 @@ split = function(src){
 
 merge = function(srcs){
     //var vecMat = ..cv2.vectorOfMat(srcs)
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
     if(#srcs){
  		dll.core_merge({ ptr p[] = srcs },#srcs,dst);   	
     }
@@ -137,27 +137,27 @@ merge = function(srcs){
 }
 
 flip = function(src,flipCode){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
 	var err = dll.core_flip(src.cvPtr,dst.cvPtr,flipCode)
 	return dst; 
 }
 
 subtract = function(src1,src2,mask,dtype){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
     mask = mask ? mask.cvPtr
 	var err = dll.core_subtract_InputArray2(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
 	return dst;
 }
 
 add = function(src1,src2,mask,dtype){
-	var dst = ..cv2.mat();
+	var dst = ..cv2.Mat();
 	mask = mask ? mask.cvPtr
 	var  err = dll.core_add(src1.cvPtr,src2.cvPtr,dst.cvPtr,mask,dtype)
 	return dst; 
 }
 
 addWeighted = function(src1,alpha,src2,beta,gamma=0,dtype=-1){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
     var err = core_addWeighted(src1.cvPtr,alpha,src2.cvPtr,beta,gamma,dst.cvPtr,dtype);
     return dst; 
 }
@@ -170,7 +170,7 @@ minMaxLoc = function(src){
 }
 
 rotate = function(src,rotateCode){
-	var dst = ..cv2.mat();
+	var dst = ..cv2.Mat();
 	var err = dll.core_rotate(src.cvPtr,dst.cvPtr,rotateCode);
 	return dst; 
 }
@@ -178,7 +178,7 @@ rotate = function(src,rotateCode){
 inRange = function(src,lower,upper){
    	var tLower = type.rget(lower)
    	var tUpper = type.rget(upper)
-   	var dst = ..cv2.mat()
+   	var dst = ..cv2.Mat()
    	if(tLower=="mat" and tUpper=="mat"){
    		err = dll.core_inRange_InputArray(src.cvPtr,lower.cvPtr,upper.cvPtr,dst.cvPtr)
    	}
@@ -189,7 +189,7 @@ inRange = function(src,lower,upper){
 }
 
 compare = function(src1,src2,cmpop){
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
 	dll.core_compare(src1.cvPtr,src2.cvPtr,dst.cvPtr,cmpop)
 	return dst; 
 }
@@ -197,7 +197,7 @@ compare = function(src1,src2,cmpop){
 hconcat = function(...){
 	var mats = {...}
 	return reduce(mats,function(prev,next,index,arr){
-		var dst = ..cv2.mat()
+		var dst = ..cv2.Mat()
 		dll.core_hconcat2(prev.cvPtr,next.cvPtr,dst.cvPtr)
 		return dst
 	})
@@ -206,49 +206,63 @@ hconcat = function(...){
 vconcat = function(...){
 	var mats = {...}
 	return reduce(mats,function(prev,next,index,arr){
-		var dst = ..cv2.mat()
+		var dst = ..cv2.Mat()
 		dll.core_vconcat2(prev.cvPtr,next.cvPtr,dst.cvPtr)
 		return dst
 	})
 };
 
 self["reduce"] = function(src,dim=-1,rtype,dtype=-1){
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	dll.core_reduce(src.cvPtr,dst.cvPtr,dim,rtype,dtype)
 	return dst;
 }
 
+setNumThreads = function(nthreads=0){
+	var err = dll.core_setNumThreads(nthreads)
+}
+
+getNumThreads = function(){
+	var err,ret = dll.core_getNumThreads({int nthreads})
+	return ret.nthreads; 
+}
+
+getVersionString = function(){
+	var buffer = ..raw.buffer(0xff)
+	var err = dll.core_getVersionString(buffer,0xff)
+	return ..raw.str(buffer); 
+}
 /*}}*/
 
 /*imgproc{{*/
 resize = function(src,dsize,fx=1.0,fy=1.0,interpolation=1/*_CV2_INTER_LINEAR*/){
-	var dst = ..cv2.mat();
+	var dst = ..cv2.Mat();
 	dsize = dsize : ::SIZE()
 	var err = imgproc_resize(src.cvPtr,dst.cvPtr,dsize,fx,fy,interpolation)
 	return dst; 
 }
 
 cvtColor = function(src,code,dstCn=0){
-    var dst = ..cv2.mat();
+    var dst = ..cv2.Mat();
 	var err = dll.imgproc_cvtColor(src.cvPtr,dst.cvPtr,code,dstCn)
 	assert(!err,"转换失败!")
 	return dst;
 }
 
 medianBlur = function(src,ksize){
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
 	var err = dll.imgproc_medianBlur(src.cvPtr,dst.cvPtr,ksize)
 	return dst; 
 }
 
-gaussianBlur = function(srcMat,ksize,sigmaX=0,sigmaY=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
-    var dstMat = ..cv2.mat()
+GaussianBlur = function(srcMat,ksize,sigmaX=0,sigmaY=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
+    var dstMat = ..cv2.Mat()
     err = imgproc_GaussianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize,sigmaX,sigmaY,borderType)
     return dstMat; 
 }
 
 blur = function(srcMat,ksize,anchor,borderType=4/*_CV2_BORDER_DEFAULT*/){
-	var dstMat = ..cv2.mat()
+	var dstMat = ..cv2.Mat()
 	anchor = anchor : ::POINT(-1,-1)
 	var err = dll.imgproc_blur(srcMat.cvPtr,dstMat.cvPtr,ksize,anchor,borderType)
 	return dstMat; 
@@ -256,32 +270,32 @@ blur = function(srcMat,ksize,anchor,borderType=4/*_CV2_BORDER_DEFAULT*/){
 
 boxFilter = function(srcMat,ddepth=-1,ksize,anchor,normalize=true,borderType=4/*_CV2_BORDER_DEFAULT*/){
 	anchor = anchor : ::POINT(-1,-1)
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	var err = dll.imgproc_boxFilter(srcMat.cvPtr,dst.cvPtr,ddepth,ksize,anchor,normalize,borderType)
 	return dst; 
 }
 
 bilateralFilter = function(src,d,sigmaColor,sigmaSpace,borderType=4/*_CV2_BORDER_DEFAULT*/){
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	var err = imgproc_bilateralFilter(src.cvPtr,dst.cvPtr,d,sigmaColor,sigmaSpace,borderType)
 	return dst; 
 }
 
 threshold = function(src,thresh,maxVal=255,thresholdType=0x0/*_CV2_THRESH_BINARY*/){
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	var err,ret = imgproc_threshold(src.cvPtr,dst.cvPtr,thresh,maxVal,thresholdType,0)
-	return dst
+	return ret,dst
 }
 
 adaptiveThreshold = function(src,maxValue,adaptiveMethod=1/*_CV2_ADAPTIVE_THRESH_GAUSSIAN_C*/,thresholdType=0x0/*_CV2_THRESH_BINARY*/,blockSize,C){
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	var err = imgproc_adaptiveThreshold(src.cvPtr,dst.cvPtr,maxValue,adaptiveMethod,thresholdType,blockSize,C);
 	return dst; 	
 }
 
 //owner.Canny = owner.canny
-canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
-	var dst = ..cv2.mat()
+Canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
+	var dst = ..cv2.Mat()
 	imgproc_Canny1(src.cvPtr,dst.cvPtr,threshold1,threshold2,apertureSize,L2gradient)
 	return dst; 	
 }
@@ -332,12 +346,12 @@ getStructuringElement = function(shape=0/*_CV2_MORPH_RECT*/,ksize,anchor){
 	anchor = anchor : ::POINT(-1,-1)
 	var ref = {pointer p};
 	var err,ret = dll.imgproc_getStructuringElement(shape,ksize,anchor,ref);
-	return ..cv2.mat(ref.p); 
+	return ..cv2.Mat(ref.p); 
 }
 
 morphologyEx = function(src,op,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
     anchor = anchor : ::POINT(-1,-1)
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
 	if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !borderValue){
     	borderValue = ::Scalar(0,0,0)
     }
@@ -347,7 +361,7 @@ morphologyEx = function(src,op,kernel,iterations=1,anchor,borderType=0/*_CV2_BOR
 
 erode = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
 	anchor = anchor : ::POINT(-1,-1)
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !borderValue){
     	borderValue = ::Scalar(0,0,0)
     } 
@@ -357,7 +371,7 @@ erode = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTA
 
 dilate = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONSTANT*/,borderValue){
 	anchor = anchor : ::POINT(-1,-1)
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	if(borderType==0/*_CV2_BORDER_CONSTANT*/ or !borderValue){
     	borderValue = ::Scalar(0,0,0)
     } 
@@ -366,14 +380,14 @@ dilate = function(src,kernel,iterations=1,anchor,borderType=0/*_CV2_BORDER_CONST
 }
 
 distanceTransform = function(src,distanceType,maskSize){
-	var dst = ..cv2.mat();
+	var dst = ..cv2.Mat();
 	var err = dll.imgproc_distanceTransform(src.cvPtr,dst.cvPtr,distanceType,maskSize,null);
 	return dst; 
 }
 
 findContours = function(src,mode=3/*_CV2_RETR_TREE*/,method=2/*_CV2_CHAIN_APPROX_SIMPLE*/){
     var contours = ..cv2.vector.mat()
-    var hierarchy = ..cv2.mat()
+    var hierarchy = ..cv2.Mat()
 	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
 	return src,contours,hierarchy; 
 }
@@ -393,7 +407,7 @@ drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x
 }
 
 minAreaRect = function(points){
-    //var mp = ..cv2.mat(points)
+    //var mp = ..cv2.Mat(points)
     var err,ret = dll.imgproc_minAreaRect_InputArray(points.cvPtr,::RotatedRect( ::POINTF(),::POINTF(),0 ))
 	//mp.release()
 	return ret; 
@@ -420,20 +434,20 @@ boundingRect = function(input){
 }
 
 convexHull = function(cnt,clockwise=1,returnPoints=0){
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
 	var err = dll.imgproc_convexHull_InputArray(cnt.cvPtr,dst.cvPtr,clockwise,returnPoints)
 	return dst; 
 }
 
 
 matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
 	var err = dll.imgproc_matchTemplate(src.cvPtr,temp.cvPtr,dst.cvPtr,mode,mask)
 	return dst; 
 }
 
 filter2D = function(src,ddepth=-1,kernel,anchor,delta=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
-	var dst = ..cv2.mat()
+	var dst = ..cv2.Mat()
 	anchor = anchor : (::POINT(-1,-1))
 	var err = imgproc_filter2D(src.cvPtr,dst.cvPtr,ddepth,kernel.cvPtr,anchor,delta,borderType)
 	return dst; 
@@ -441,11 +455,11 @@ filter2D = function(src,ddepth=-1,kernel,anchor,delta=0,borderType=4/*_CV2_BORDE
 
 getRotationMatrix2D = function(center,angle,scale=1){
     var ret,p = imgproc_getRotationMatrix2D(center,angle,scale,null)
-    return ..cv2.mat(p);
+    return ..cv2.Mat(p);
 }
 
 warpAffine = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_CV2_BORDER_CONSTANT*/,borderValue=0){
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
     if(!sz){
     	sz = ::SIZE(src.cols,src.rows)
     }
@@ -466,7 +480,7 @@ getAffineTransform = function(src,dst){
     }
     var ref = {pointer value}
 	dll.imgproc_getAffineTransform1({struct s[]=src},{struct d[]=dst},ref)
-	return ..cv2.mat(ref.value); 
+	return ..cv2.Mat(ref.value); 
 }
 
 getPerspectiveTransform = function(src,dst){
@@ -476,11 +490,11 @@ getPerspectiveTransform = function(src,dst){
     }
     var ref = {pointer value}
     dll.imgproc_getPerspectiveTransform1({struct s[]=src},{struct d[]=dst},ref)
-    return ..cv2.mat(ref.value); 
+    return ..cv2.Mat(ref.value); 
 }
 
 warpPerspective = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_CV2_BORDER_CONSTANT*/,borderValue=0){
-    var dst = ..cv2.mat()
+    var dst = ..cv2.Mat()
     if(!sz){
     	sz = ::SIZE(src.cols,src.rows)
     }
@@ -522,9 +536,6 @@ calcHist = function(images,dims,channels,mask){
 	//dll.imgproc_calcHist
 }
 
-
-
-
 /*}}*/
 
 /*videoio{{*/
@@ -547,7 +558,7 @@ class VideoCapture{
 	}
 	
 	read = function(){
-		var dst = ..cv2.mat()
+		var dst = ..cv2.Mat()
 		var err,ret = dll.videoio_VideoCapture_read_OutputArray(this.ptr,dst.cvPtr,{int value})	
 		return ret.value==1,dst
 	}
@@ -558,7 +569,7 @@ class VideoCapture{
 	}
 	
 	retrieve = function(flag=0){
-		var dst = ..cv2.mat();
+		var dst = ..cv2.Mat();
 		var err,ret = dll.videoio_VideoCapture_retrieve_OutputArray(this.ptr,dst.cvPtr,flag,{int value})
 		return ret==1,dst; 
 	}
@@ -698,7 +709,7 @@ namespace dnn{
 			if scale this.setInputScale(scale)
 			if size this.setInputSize(size)
 			var ret,ret2,ret3 = ..cv2.dnn.dnn_blobFromImage(src,this.scale,this.size,this.mean,1,0,null)
-			return ..cv2.mat(ret2)
+			return ..cv2.Mat(ret2)
 		}
 		
 		setInput = function(blob,name){
@@ -770,18 +781,16 @@ class BackgroundSubtractor{
 	};
 	
 	getBackgroundImage = function(){
-		var dst = ..cv2.mat()
+		var dst = ..cv2.Mat()
 		err = dll.video_BackgroundSubtractor_getBackgroundImage(this.ptr,dst.cvPtr)
 		return dst;
 	}
 	
 	apply = function(image,lr=-1.0){
-		var dst = ..cv2.mat()
+		var dst = ..cv2.Mat()
 		err = ..cv2.video_BackgroundSubtractor_apply(this.ptr,image.cvPtr,dst.cvPtr,lr)
 		return dst; 
 	}
-	
-	
 }
 
 class createBackgroundSubtractorMOG2{
@@ -913,7 +922,7 @@ video_createBackgroundSubtractorKNN = dll.api("video_createBackgroundSubtractorK
 	
 namespace cv2{   
     import fsys
-	import cv2.mat
+	import cv2.Mat
 	import cv2.types
 	import cv2.vector
 }
@@ -932,15 +941,15 @@ waitKey(.(延时 单位毫秒) = 窗口延时等待
 namedWindow(.(窗口标题,缩放类型_CV2_WINDOW) = 设置cv窗口
 cvGetWindowHandle(.(窗口标题) = 根据窗口标题获取cv窗口句柄
 threshold() = !matObject.
-threshold(.(灰度图,起始值,最大值,二值化算法-默认THRESH_BINARY) = 图像阈值处理
+threshold(.(灰度图,起始值,最大值,阈值类型-默认THRESH_BINARY) = 图像阈值处理,返回当前阈值 处理后图像
 adaptiveThreshold() = !matObject.
-adaptiveThreshold(.(灰度化图像,最大灰度值,自适应阈值算法,二值化方法,区域大小,常数 可为负数) = 自适应阈值二值化
+adaptiveThreshold(.(灰度化图像,最大灰度值,自适应阈值算法,,阈值类型,区域大小,常数 可为负数) = 自适应阈值二值化
 medianBlur() = !matObject.
 medianBlur(.(源数据,核大小) = 中值滤波
 resize() = !matObject.
 resize(.(源数据,::SIZE对象,x轴缩放倍数 缺省1.0,y轴缩放倍数 缺省1.0,插值方式) = 调整图片大小
-gaussianBlur() = !matObject.
-gaussianBlur(.(输入图像,::SIZE对象 高斯核大小,X方向上的高斯核标准偏差, Y方向上的高斯核标准差,边缘模式) = 高斯滤波
+GaussianBlur() = !matObject.
+GaussianBlur(.(输入图像,::SIZE对象 高斯核大小,X方向上的高斯核标准偏差, Y方向上的高斯核标准差,边缘模式) = 高斯滤波
 blur() = !matObject.
 blur(.(输入图像,::SIZE对象 核大小) = 均值滤波,对于椒盐噪声的滤除效果比较好。
 boxFilter() = !matObject.
@@ -949,8 +958,8 @@ bilateralFilter() = !matObject.
 bilateralFilter(.(输入图像,邻域直径范围,颜色空间过滤器的sigma值,坐标空间中滤波器的sigma值,边缘模式) = 双边滤波,此函数运行较慢
 cvtColor() = !matObject.
 cvtColor(.(输入图像,颜色空间代码) = 转换颜色空间
-canny() = !matObject.
-canny(.(输入图像,阈值1,阈值2,Sobel算子大小 默认3,是否使用L2范数 默认true) = 边缘检测
+Canny() = !matObject.
+Canny(.(输入图像,阈值1,阈值2,Sobel算子大小 默认3,是否使用L2范数 默认true) = 边缘检测
 line() = !matObject.
 line(.(输入图像,起点POINT对象,终点POINT对象,颜色Scalar对象BGRA,线条宽度 默认1像素,线条类型 可选 ) = 在输入图像上画线段
 arrowedLine() = !matObject.
@@ -1018,10 +1027,13 @@ compare() = !matObject.
 compare(.(输入矩阵1,输入矩阵2,比较符_CV2_CMP) = 比较2个矩阵,返回结果矩阵,匹配像素标记为255 不匹配标记为0
 hconcat() = !matObject.
 hconcat( = 矩阵-图像水平拼接
-hconcat(任意数量的同尺寸矩阵) = 矩阵-图像水平拼接
+hconcat(.(任意数量的同尺寸矩阵) = 矩阵-图像水平拼接
 vconcat() = !matObject.
 vconcat( = 矩阵-图像垂直拼接
-vconcat(任意数量的同尺寸矩阵) = 矩阵-图像垂直拼接
+vconcat(.(任意数量的同尺寸矩阵) = 矩阵-图像垂直拼接
+setNumThreads(.(线程数 可选) = 设定OpenCV使用的线程数,默认为核心数。不要超过核心数1.5倍，过高无用
+getNumThreads() = 获取当前OpenCV使用的线程数
+getVersionString() = 获取当前OpenCV版本号
 filter2D() = !matObject.
 filter2D(.(输入图像,目标深度 默认-1,卷积核 由getStructuringElement函数构建,内核锚点 缺省为中心点,偏置值 缺省为0,外推法 可选) = 任意线性滤波器卷积\n如果锚点坐标为中心点,卷积核大小可以为偶数
 getRotationMatrix2D() = !matObject.
@@ -1093,12 +1105,12 @@ cv2.dnn.nmsBoxes(.(box数组,置信度数组,分类置信度,nms置信度) = 非
 
 
 /**intellisense()
-cv2.mat() = 创建Mat矩阵对象\n!matObject.
-cv2.mat() = 创建一个空Mat矩阵
-cv2.mat(.(Mat指针) = 由Mat指针创建Mat矩阵
-cv2.mat(.(bitmap对象) = 由bitmap对象创建Mat矩阵
-cv2.mat(.(输入Mat矩阵,::RECT对象) = 从感兴趣区域(ROI)中创建Mat对象
-cv2.mat(.(行数,列数,矩阵类型_CV_,数组,步长 缺省时为自动步长) = 由数值数组创建Mat矩阵对象
+cv2.Mat() = 创建Mat矩阵对象\n!matObject.
+cv2.Mat() = 创建一个空Mat矩阵
+cv2.Mat(.(Mat指针) = 由Mat指针创建Mat矩阵
+cv2.Mat(.(bitmap对象) = 由bitmap对象创建Mat矩阵
+cv2.Mat(.(输入Mat矩阵,::RECT对象) = 从感兴趣区域(ROI)中创建Mat对象
+cv2.Mat(.(行数,列数,矩阵类型_CV_,数组,步长 缺省时为自动步长) = 由数值数组创建Mat矩阵对象
 end intellisense**/
 
 /**intellisense()
