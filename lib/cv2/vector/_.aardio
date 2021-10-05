@@ -23,7 +23,7 @@ class mat
 		var size = this.size;
 		//var dstPtr = {}
 		for(i=1;size;1){
-			var m = ..cv2.mat()
+			var m = ..cv2.Mat()
 			..table.push( dst, m );
 			//..table.push( dstPtr,m.cvPtr )
 		}

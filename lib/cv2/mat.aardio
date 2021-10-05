@@ -1,7 +1,7 @@
 ﻿//Mat 矩阵类
 import util.metaProperty
 import gdip
-
+import console
 namespace cv2;
 class Mat{
 	ctor( arg,... ){ //
@@ -66,7 +66,7 @@ class Mat{
 	
 	clone = function(){
 		var err,ret = dll.core_Mat_clone(this.handle,{pointer value})
-		return ..cv2.mat(ret.value)
+		return ..cv2.Mat(ret.value)
 	}
 	
 	copyTo = function(dst,mask){
@@ -113,27 +113,27 @@ class Mat{
 	
 	row = function(y){
 		var err,ret = dll.core_Mat_row(this,y,{pointer value})
-		return ..cv2.mat(ret.value); 
+		return ..cv2.Mat(ret.value); 
 	}
 	
 	col = function(x){
 		var err,ret = dll.core_Mat_col(this,x,{pointer value})
-		return ..cv2.mat(ret.value); 
+		return ..cv2.Mat(ret.value); 
 	}
 	
 	rowRange = function(startRow,endRow){
 		var err,ret = dll.core_Mat_rowRange(this,startRow,endRow,{pointer value})
-		return ..cv2.mat(ret.value); 
+		return ..cv2.Mat(ret.value); 
 	}
 	
 	colRange = function(startCol,endCol){
 		var err,ret = dll.core_Mat_colRange(this,startCol,endCol,{pointer value})
-		return ..cv2.mat(ret.value); 
+		return ..cv2.Mat(ret.value); 
 	}
 
 	diag = function(d){
 		var err,ret = dll.core_Mat_diag(this,d,{pointer value})
-		return ..cv2.mat(ret.value); 
+		return ..cv2.Mat(ret.value); 
 	}
 	
 	isContinuous = function(){
@@ -163,7 +163,7 @@ class Mat{
 	zeros = function(rows,cols,tp){
 		var err,ret = dll.core_Mat_zeros1(rows,cols,tp,{pointer p})
 		var matHandle = ..cv2.matExpr(ret.p).toMat()
-		return matHandle//..cv2.mat(matHandle); 
+		return matHandle//..cv2.Mat(matHandle); 
 	}
 	
 	ones = function(rows,cols,tp){
@@ -185,14 +185,14 @@ class Mat{
 	}
 	
 	convertTo = function(rtype,alpha=1,beta=0){
-		var dst = ..cv2.mat();
+		var dst = ..cv2.Mat();
 		var err = core_Mat_convertTo(this,dst.cvPtr,rtype,alpha,beta)
 		return dst;
 	}
 	
 	reshape = function(cn=0,rows=0){
 		var err,ret = dll.core_Mat_reshape1(this,cn,rows,{ptr p})
-		return ..cv2.mat(ret.p); 
+		return ..cv2.Mat(ret.p); 
 	}
 	
 	reserve = function(sz){
@@ -201,13 +201,13 @@ class Mat{
 	}
 	
 	exp = function(){
-		var dst = ..cv2.mat();
+		var dst = ..cv2.Mat();
 		dll.core_exp_Mat(this.cvPtr,dst.cvPtr)
 		return dst; 
 	}
 	
 	log = function(){
-		var dst = ..cv2.mat();
+		var dst = ..cv2.Mat();
 		dll.core_log_Mat(this.cvPtr,dst.cvPtr)
 		return dst; 		
 	}
@@ -238,7 +238,7 @@ namespace Mat {
 		
 		_call = function(x,y,w,h){
 			var r = ::RECT(x,y,w,h)
-			return ..cv2.mat(owner,r); 
+			return ..cv2.Mat(owner,r); 
 		}
 /*
 		cvPtr = {

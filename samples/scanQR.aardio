@@ -1,11 +1,11 @@
 import console; 
 import cv2
 //相关模型至https://github.com/WeChatCV/opencv_3rdparty下载
-detector = cv2.wechat_qrcode_WeChatQRCode("./model/detect.prototxt",
-								"./model/detect.caffemodel",
-								"./model/sr.prototxt",
-								"./model/sr.caffemodel")					
-img = cv2.imread("./images/qr.png")
+detector = cv2.wechat_qrcode_WeChatQRCode("./assets/model/detect.prototxt",
+								"./assets/model/detect.caffemodel",
+								"./assets/model/sr.prototxt",
+								"./assets/model/sr.caffemodel")					
+img = cv2.imread("./assets/images/qr.png")
 var list,points = detector.detectAndDecode(img)
 console.dumpJson(points)
 for(i=1;#points;1){
@@ -14,7 +14,8 @@ for(i=1;#points;1){
 	cv2.line( img,ps[2],ps[3],::Scalar(0,255,0),1)
 	cv2.line( img,ps[3],ps[4],::Scalar(0,255,0),1)
 	cv2.line( img,ps[4],ps[1],::Scalar(0,255,0),1)
-	cv2.putText( img,list[i],ps[1],,1,::Scalar(0,255,0))
+	fontSize = string.find(list[i],":") ? 15 : 0.5
+	cv2.putText( img,list[i],ps[1],,fontSize,::Scalar(0,255,0))
 }
 
 console.dumpJson(list)

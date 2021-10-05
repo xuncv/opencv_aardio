@@ -332,7 +332,12 @@ drawMarker = function(src,position,color,markerType,markerSize=20,thickness=1,li
 
 putText = function(src,text,position,font=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontSize=1,color,thickness=1){
     if !color color = ::Scalar(255,255,255)
-	var err = imgproc_putText(src.cvPtr,text,f2i(position),font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
+    if(..string.find(text,":")){
+        font = font : "宋体"
+    	var err = dll.imgproc_putTextZh(src.cvPtr,..string.fromto(text),f2i(position),fontSize,color,font,false,false)
+    }else {
+    	var err = imgproc_putText(src.cvPtr,text,f2i(position),font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
+    }
 	return src; 
 }
 
@@ -973,7 +978,7 @@ ellipse(.(输入图像,椭圆中心坐标 POINT对象,椭圆长轴短轴 SIZE对
 drawMarker() = !matObject.
 drawMarker(.(输入图像,图案坐标,图案描边颜色,图案类型,图案尺寸 默认20,线条宽带 默认1像素,线条类型 可选) = 在输入图像上画图案
 putText() = !matObject.
-putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,颜色Scalar对象BGRA 可选,字体粗细 可选) = 在输入图像上写文字,暂不支持中文
+putText(.(输入图像,文字,左上角坐标,字体 可选,字体大小 可选,颜色Scalar对象BGRA 可选,字体粗细 可选) = 在输入图像上写文字,支持中文
 getTextSize(.(文字,字体,字体大小,字体粗细) = 计算并返回包含指定文本的框的大小,返回::SIZE对象,距离文本最低点对应的y坐标
 copyMakeBorder() = !matObject.
 copyMakeBorder(.(输入图像,上边宽度,下边宽度,左边宽度,右边宽度,边界类型 可选,边框类型为0时,可设置边框颜色 默认黑色) = 扩充图像边框,返回新图像
