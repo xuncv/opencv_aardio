@@ -4,16 +4,10 @@ ret,img = cv2.threshold(src,180,255,0x8/*_CV_THRESH_OTSU*/)
 //cv2.imshow( "threshold",img )
 
 img,contours,hierarchy = cv2.findContours(img)
-import console
-console.log(contours.size)
-p = contours.toArray()
-console.dump(contours.toArray())
+
 src = cv2.imread( "./assets/images/contour.png",1 ) //读入彩色图像,便于标记
-img = cv2.drawContours(src,p,-1,::Scalar(0,255,0),5,hierarchy,0)
-/*
+img = cv2.drawContours(src,contours,-1,::Scalar(0,255,0),5)
 for(i=1;contours.size;1){
-	//console.dump(contours[i])
-	//continue
 	var ret = cv2.minAreaRect(contours[i])
 	var points = cv2.boxPoints(ret)
 	cv2.line( img,points[1],points[2],::Scalar(255,127,0),3)
@@ -25,7 +19,6 @@ for(i=1;contours.size;1){
 	cv2.rectangle( img,::POINT(rect.left,rect.top),::POINT(rect.left+rect.right,rect.top+rect.bottom),::Scalar(,,255),1 )
 	//凸包检测
 	var hull = cv2.convexHull(contours[i])
-}*/
-//cv2.imshow( "contours",img )
-//cv2.waitKey()
-console.pause()
+}
+cv2.imshow( "contours",img )
+cv2.waitKey()

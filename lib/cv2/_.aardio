@@ -391,6 +391,29 @@ distanceTransform = function(src,distanceType,maskSize){
 }
 
 findContours = function(src,mode=3/*_CV2_RETR_TREE*/,method=2/*_CV2_CHAIN_APPROX_SIMPLE*/){
+    var contours = ..cv2.vector.mat()
+    var hierarchy = ..cv2.Mat()
+	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
+	return src,contours,hierarchy; 
+}
+
+drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
+    var cType = type.rget(contours);
+    if(cType=="vectorOfMat"){
+    	contours = contours.toArray()
+    }
+    var contoursLength = #contours
+    if(contoursLength==0){
+    	return ; 
+    }
+    color = color : (::Scalar(0,255,0))
+    var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
+	return src; 
+}
+
+
+/**
+findContours = function(src,mode=3/*_CV2_RETR_TREE*/,method=2/*_CV2_CHAIN_APPROX_SIMPLE*/){
     //var contours = ..cv2.vector.mat()
     //var hierarchy = ..cv2.Mat()
 	//var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
@@ -414,7 +437,7 @@ drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x
     var err = dll.imgproc_drawContours_vector(src.cvPtr,contours,contours.size,contourIdx,color,thickness,lineType,hierarchy,hiearchyLength,0x7FFFFFFF/*_MAXLONG*/,::POINT())
 	return src; 
 }
-
+**/
 minAreaRect = function(points){
     //var mp = ..cv2.Mat(points)
     var err,ret = dll.imgproc_minAreaRect_InputArray(points.cvPtr,::RotatedRect( ::POINTF(),::POINTF(),0 ))
