@@ -1,7 +1,7 @@
 import cv2
 
 //调整大小
-img = cv2.imread("./images/Lena.jpg",1/*_CV2_IMREAD_COLOR*/)
+img = cv2.imread("./assets/images/Lena.jpg",1/*_CV2_IMREAD_COLOR*/)
 img = cv2.resize( img,::SIZE(500,500) )
 cv2.imshow("调整大小",img)
 //cv2.waitKey()
@@ -22,3 +22,5 @@ img = cv2.bitwise_not(img)
 cv2.imshow( "bitwise_not",img )
 
 cv2.waitKey()
+
+cv2.copyMakeBorder(

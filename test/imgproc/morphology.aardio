@@ -1,15 +1,15 @@
 //形态学函数测试
 import cv2
 
-src = cv2.imread( "./images/tower.jpg",0 )
+src = cv2.imread( "./assets/images/tower.jpg",0 )
 //边缘检测
-img = cv2.gaussianBlur(src, ::SIZE(3,3))
-cv2.imshow( "gaussianBlur",img )
-edge = cv2.canny(img,30,50)
-cv2.imshow( "canny",edge )
+img = cv2.GaussianBlur(src, ::SIZE(3,3))
+cv2.imshow( "GaussianBlur",img )
+edge = cv2.Canny(img,30,50)
+cv2.imshow( "Canny",edge )
 
 //通用形态学变换
-img = cv2.threshold(src,180,255)
+ret,img = cv2.threshold(src,180,255)
 cv2.imshow( "threshold",img )
 
 kernel = cv2.getStructuringElement(0/*_CV2_MORPH_RECT*/,::SIZE(5,5) )

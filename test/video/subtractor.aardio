@@ -1,10 +1,9 @@
 import cv2
-import fsys
 
 //示例视频下载地址 https://raw.githubusercontent.com/opencv/opencv/3.1.0/samples/data/768x576.avi
 cap = cv2.VideoCapture("./assets/images/768x576.avi")
-//subtractor = cv2.createBackgroundSubtractorMOG2()
-subtractor = cv2.createBackgroundSubtractorKNN()
+subtractor = cv2.createBackgroundSubtractorMOG2()
+//subtractor = cv2.createBackgroundSubtractorKNN()
 k = cv2.getStructuringElement( 1/*_CV2_MORPH_CROSS*/,::SIZE(3,3) )
 ok,img = cap.read()
 while(ok){

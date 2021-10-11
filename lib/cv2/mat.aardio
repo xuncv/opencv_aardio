@@ -225,7 +225,7 @@ class Mat{
 
 namespace Mat {
     //var dll = ..cv2._dll;
-    import cv2.matExpr
+    import cv2.MatExpr
     dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
     core_Mat_convertTo = dll.api("core_Mat_convertTo","INT(pointer self, pointer m, int rtype, double alpha, double beta)")
 	core_Mat_mul = dll.api("core_Mat_mul","INT(pointer self, pointer m,double scale,struct ret)")

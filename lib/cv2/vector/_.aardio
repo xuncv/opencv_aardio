@@ -1,6 +1,7 @@
 ﻿//vector 动态数组库
 import util.metaProperty
 namespace cv2.vector
+import console
 var dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
 class mat
 {
@@ -693,7 +694,89 @@ namespace point{
 			}
 		}
     )
-}	
+}
+
+class vecPoint{
+	ctor(size){
+		if(!size){
+			this.ptr = dll.vector_vector_Point_new1P();
+		}else {
+			this.ptr = dll.vector_vector_Point_new2P(size)
+		}
+	};
+	
+	getSize1 = function(){
+		return dll.vector_vector_Point_getSize1(this.ptr)
+	}
+	
+	getSize2 = function(){
+		var size = this.size
+		var err,ret = dll.vector_vector_Point_getSize2(this.ptr,{int n[]={length=size}})
+		return ret.n; 
+	}
+	//copyFromVectorToArray
+	toArray = function(){
+		var size = this.size;
+		var size2 = this.getSize2()
+		var ret = {}
+		var ppoints = {ptr array[]={length=size}}
+		for(i=1;size;1){
+			ppoints.array[i] = ..raw.buffer({struct array[] ={::POINT(),length=size2[i]} } )
+		}
+		if(size){
+			var res = dll.vector_vector_Point_copy(this.ptr,ppoints )
+			for(i=1;#(ppoints.array);1){
+				ret[i] = ..raw.convertArray(ppoints.array[i],size2[i],::POINT())	
+			}
+		}
+		return ppoints; 
+	}
+
+	/*
+	// copyFromVectorToArray2
+	toArray = function(){
+		var size = this.size;
+		var size2 = this.getSize2()
+		var ret = {}
+		var points = class {
+			ctor( x,y ){
+				this = { struct array[] = {length = x;} }
+				for(i=1;x;1){
+					this.array[i] = { struct array[] = {length = y[i];::POINT()} }
+				}
+			};
+		}
+		ppoints = points(size,size2)
+		if(size){
+			var res = dll.vector_vector_Point_copy(this.ptr,ppoints )
+		}
+		return ppoints; 
+	}
+	*/
+	release = function(){
+		if(this[["ptr"]]){
+			dll.vector_vector_Point_delete(this.ptr)
+		}
+		this[["ptr"]] = null
+	}
+	@_meta
+}
+
+namespace vecPoint{
+    _meta = ..util.metaProperty(
+    	_type = "vectorOfVecPoint";
+		_topointer = function(){
+			return owner.ptr; 
+		}
+		size = {
+    		_get = function(){ 
+    			return dll.vector_vector_Point_getSize1(owner.ptr); 
+    		}
+    	};
+    )
+}
+
+
 
 /**intellisense(cv2.vector)
 cv2.vector = opencv api动态数组库

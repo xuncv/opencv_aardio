@@ -1,5 +1,5 @@
 import cv2
-img = cv2.imread("./images/Lena.jpg")
+img = cv2.imread("./assets/images/Lena.jpg")
 dst = cv2.reduce(img,-1,0,4/*_CV_32S*/)
 //cv2.imshow("dst",dst)
 import console

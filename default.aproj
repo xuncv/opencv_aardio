@@ -8,17 +8,12 @@
 		<file name="api.aardio" path="tools\api.aardio" comment="tools\api.aardio"/>
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
-		<file name="aardio1.aardio" path="test\aardio1.aardio" comment="test\aardio1.aardio"/>
 		<file name="aardio2.aardio" path="test\aardio2.aardio" comment="test\aardio2.aardio"/>
 		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
 		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
 		<file name="common.aardio" path="test\common.aardio" comment="test\common.aardio"/>
-		<file name="compare.aardio" path="test\compare.aardio" comment="test\compare.aardio"/>
-		<file name="compare.py" path="test\compare.py" comment="test\compare.py"/>
 		<file name="contour.aardio" path="test\contour.aardio" comment="test\contour.aardio"/>
-		<file name="inRange.aardio" path="test\inRange.aardio" comment="test\inRange.aardio"/>
 		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
-		<file name="text.aardio" path="test\text.aardio" comment="test\text.aardio"/>
 		<file name="text2.aardio" path="test\text2.aardio" comment="test\text2.aardio"/>
 		<file name="textd.aardio" path="test\textd.aardio" comment="test\textd.aardio"/>
 		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
@@ -26,18 +21,18 @@
 			<file name="mat.aardio" path="test\core\mat.aardio" comment="test\core\mat.aardio"/>
 			<file name="sample.aardio" path="test\core\sample.aardio" comment="test\core\sample.aardio"/>
 		</folder>
-		<folder name="imgcodecs" path="test\imgcodecs" comment="test\imgcodecs">
+		<folder name="imgcodecs" path="test\imgcodecs" comment="test\imgcodecs" local="false" embed="false" ignored="false">
 			<file name="imgcodecs.aardio" path="test\imgcodecs\imgcodecs.aardio" comment="test\imgcodecs\imgcodecs.aardio"/>
 		</folder>
 		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
 			<file name="blurWinform.aardio" path="test\imgproc\blurWinform.aardio" comment="test\imgproc\blurWinform.aardio"/>
+			<file name="clock.aardio" path="test\imgproc\clock.aardio" comment="test\imgproc\clock.aardio"/>
 			<file name="draw.aardio" path="test\imgproc\draw.aardio" comment="test\imgproc\draw.aardio"/>
 			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\hough.aardio"/>
 			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
 			<file name="morphology.aardio" path="test\imgproc\morphology.aardio" comment="test\imgproc\morphology.aardio"/>
 			<file name="person.aardio" path="test\imgproc\person.aardio" comment="test\imgproc\person.aardio"/>
 			<file name="threshold.aardio" path="test\imgproc\threshold.aardio" comment="test\imgproc\threshold.aardio"/>
-			<file name="clock.aardio" path="test\imgproc\clock.aardio" comment="test\imgproc\clock.aardio"/>
 		</folder>
 		<folder name="video" path="test\video" comment="test\video" local="false" embed="false" ignored="false">
 			<file name="subtractor.aardio" path="test\video\subtractor.aardio" comment="test\video\subtractor.aardio"/>

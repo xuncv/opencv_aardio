@@ -391,23 +391,27 @@ distanceTransform = function(src,distanceType,maskSize){
 }
 
 findContours = function(src,mode=3/*_CV2_RETR_TREE*/,method=2/*_CV2_CHAIN_APPROX_SIMPLE*/){
-    var contours = ..cv2.vector.mat()
-    var hierarchy = ..cv2.Mat()
-	var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
+    //var contours = ..cv2.vector.mat()
+    //var hierarchy = ..cv2.Mat()
+	//var err = dll.imgproc_findContours1_OutputArray(src.cvPtr,contours,hierarchy.cvPtr,mode,method,::POINT())
+	var contours = ..cv2.vector.vecPoint();
+	var hierarchy = ..cv2.vector.vec4i();
+	var err = dll.imgproc_findContours1_vector(src.cvPtr,contours,hierarchy,mode,method,::POINT())
 	return src,contours,hierarchy; 
 }
 
-drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/){
-    var cType = type.rget(contours);
+drawContours = function(src,contours,contourIdx=-1,color,thickness=1,lineType=0x10/*_CV2_LineTypes_LINE_AA*/,hierarchy=0 ){
+    /*var cType = type.rget(contours);
     if(cType=="vectorOfMat"){
     	contours = contours.toArray()
-    }
+    }*/
+    /*
     var contoursLength = #contours
     if(contoursLength==0){
     	return ; 
-    }
+    }*/
     color = color : (::Scalar(0,255,0))
-    var err = dll.imgproc_drawContours_InputArray(src.cvPtr,{ ptr p[] = contours },contoursLength,contourIdx,color,thickness,lineType,null,0x7FFFFFFF/*_MAXLONG*/,::POINT())
+    var err = dll.imgproc_drawContours_vector(src.cvPtr,contours,contours.size,contourIdx,color,thickness,lineType,hierarchy,hiearchyLength,0x7FFFFFFF/*_MAXLONG*/,::POINT())
 	return src; 
 }
 
@@ -1000,7 +1004,7 @@ bitwise_xor() = !matObject.
 bitwise_xor(.(输入图像1,输入图像2,腌膜 可选) = 对图像的每一个像素值进行逻辑异或操作
 bitwise_not() = !matObject.
 bitwise_not(.(输入图像1,输入图像2,腌膜 可选) = 对图像的每一个像素值进行逻辑非操作
-split(.(输入图像) = 将图像拆分成BGR通道图像,返回B G R 3个mat对象
+split(.(输入图像) = 将多通道矩阵分成多个单通道矩阵,返回多个Mat对象
 merge() = !matObject.
 merge(.(BGR通道图像数组)) = 将BGR通道图像合并
 flip() = !matObject.

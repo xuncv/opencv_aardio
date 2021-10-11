@@ -1,6 +1,6 @@
 import cv2
-var src = cv2.imread("./images/kindle.png")
-var edge = cv2.canny( src,100,200 )
+var src = cv2.imread("./assets/images/kindle.png")
+var edge = cv2.Canny( src,100,200 )
 
 //霍夫线变换
 lines = cv2.HoughLines(edge,1,math.pi/180,180)
@@ -31,9 +31,9 @@ for(i=1;#linePs;1){
 
 cv2.imshow("dst1",src)
 //霍夫圆变换
-img = cv2.imread("./images/tower.jpg")
-img = cv2.gaussianBlur(img,::SIZE(3,3))
-gray = cv2.canny( img,80,120 )
+img = cv2.imread("./assets/images/tower.jpg")
+img = cv2.GaussianBlur(img,::SIZE(3,3))
+gray = cv2.Canny( img,80,120 )
 circles = cv2.HoughCircles(gray,3,1,200,50,50,50,100)
 cv2.imshow("gray1",gray)
 for(i=1;#circles;1){
