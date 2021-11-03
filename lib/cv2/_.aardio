@@ -16,7 +16,9 @@ imread = function(path,mode=1/*_CV2_IMREAD_COLOR*/){
 }
 
 imwrite = function(filename,img,params){
-	dll.imgcodecs_imwrite(filename,img,params ? {int p[]=params},#params)
+	var ret = {int value}
+	var err = dll.imgcodecs_imwrite(filename,img,params ? {int p[]=params},#params,ret)
+	return ret.value; 
 }
 
 imdecode = function(buffer,flag){

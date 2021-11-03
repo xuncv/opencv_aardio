@@ -15,7 +15,8 @@ cv2.waitKey(0)
 /*
 //console.log(img.channels())
 v,s,h = cv2.split(img)
-cv2.imshow("img",img)
+cv2.imshow("img"
+,img)
 cv2.imshow("v",v)
 cv2.imshow("s",s) //可以作为筛选通道
 cv2.imshow("h",h)
