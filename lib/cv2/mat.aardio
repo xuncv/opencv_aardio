@@ -186,7 +186,7 @@ class Mat{
 	
 	convertTo = function(rtype,alpha=1,beta=0){
 		var dst = ..cv2.Mat();
-		var err = core_Mat_convertTo(this,dst.cvPtr,rtype,alpha,beta)
+		var err = dll.core_Mat_convertTo(this,dst.cvPtr,rtype,..raw.double(alpha),..raw.double(beta))
 		return dst;
 	}
 	
@@ -227,9 +227,6 @@ namespace Mat {
     //var dll = ..cv2._dll;
     import cv2.MatExpr
     dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
-    core_Mat_convertTo = dll.api("core_Mat_convertTo","INT(pointer self, pointer m, int rtype, double alpha, double beta)")
-	core_Mat_mul = dll.api("core_Mat_mul","INT(pointer self, pointer m,double scale,struct ret)")
-	core_Mat_operatorMultiply_MatDouble = dll.api("core_Mat_operatorMultiply_MatDouble","INT(pointer self,double s,pointer ret)")
 	_metaProperty = ..util.metaProperty(
 		_topointer = function(){
 			return owner.handle; 

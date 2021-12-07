@@ -32,14 +32,12 @@ class MatExpr{
 namespace MatExpr{
     //import cv2.mat
     dll = ..raw.loadDll("~/lib/cv2/.res/OpenCvSharpExtern.dll","opencv2","cdecl")
-    core_operatorMultiply_MatExprDouble = dll.api("core_operatorMultiply_MatExprDouble","INT(pointer src,double scale,pointer& ret)")
-    core_MatExpr_toMat = dll.api("core_MatExpr_toMat","INT(pointer MatExpr,pointer Mat)")
     _meta = ..util.metaProperty(
 		_type = "MatExpr";
 		// *
     	_mul = function(scale){
-    		var err,ref = core_operatorMultiply_MatExprDouble(owner.ptr,scale,null)
-    		return ..cv2.MatExpr(ref); 
+    		var err,ref = dll.core_operatorMultiply_MatExprDouble(owner.ptr,..raw.double(scale),{pointer value})
+    		return ..cv2.MatExpr(ref.value); 
     	}
     	// +
     	_add = function(rt){

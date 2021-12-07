@@ -13,7 +13,7 @@ trackbar={cls="trackbar";left=12;top=10;right=291;bottom=40;max=255;min=0;z=1}
 winform.trackbar.pos = 127
 //拖动滑块,修改图像阈值
 import cv2
-var img = cv2.imread( "./images/Lena.jpg",0/*_CV2_IMREAD_GRAYSCALE*/ )
+var img = cv2.imread( "./assets/images/Lena.jpg",0/*_CV2_IMREAD_GRAYSCALE*/ )
 scaleX = winform.plus.width / img.width
 scaleY = winform.plus.height / img.height
 scale = math.min(scaleX,scaleY )

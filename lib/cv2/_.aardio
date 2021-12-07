@@ -160,14 +160,14 @@ add = function(src1,src2,mask,dtype){
 
 addWeighted = function(src1,alpha,src2,beta,gamma=0,dtype=-1){
     var dst = ..cv2.Mat();
-    var err = core_addWeighted(src1.cvPtr,alpha,src2.cvPtr,beta,gamma,dst.cvPtr,dtype);
+    var err = dll.core_addWeighted(src1.cvPtr,..raw.double(alpha),src2.cvPtr,..raw.double(beta),..raw.double(gamma),dst.cvPtr,dtype);
     return dst; 
 }
 
 minMaxLoc = function(src){
     minLoc0 = ::POINT();
     maxLoc0 = ::POINT();
-	var err,minVal,maxVal = core_minMaxLoc2(src.cvPtr,0,0,minLoc0,maxLoc0,null)
+	var err,minVal,maxVal = dll.core_minMaxLoc2(src.cvPtr,..raw.double(0,true),..raw.double(0,true),minLoc0,maxLoc0,null)
 	return minVal,maxVal,minLoc0,maxLoc0; 
 }
 
@@ -240,7 +240,7 @@ getVersionString = function(){
 resize = function(src,dsize,fx=1.0,fy=1.0,interpolation=1/*_CV2_INTER_LINEAR*/){
 	var dst = ..cv2.Mat();
 	dsize = dsize : ::SIZE()
-	var err = imgproc_resize(src.cvPtr,dst.cvPtr,dsize,fx,fy,interpolation)
+	var err = dll.imgproc_resize(src.cvPtr,dst.cvPtr,dsize,..raw.double(fx),..raw.double(fy),interpolation)
 	return dst; 
 }
 
@@ -259,7 +259,8 @@ medianBlur = function(src,ksize){
 
 GaussianBlur = function(srcMat,ksize,sigmaX=0,sigmaY=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
     var dstMat = ..cv2.Mat()
-    err = imgproc_GaussianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize,sigmaX,sigmaY,borderType)
+    err = dll.imgproc_GaussianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize,..raw.double(sigmaX),..raw.double(sigmaY),borderType)
+    //err = imgproc_GaussianBlur(srcMat.cvPtr,dstMat.cvPtr,ksize,sigmaX,sigmaY,borderType)
     return dstMat; 
 }
 
@@ -279,26 +280,26 @@ boxFilter = function(srcMat,ddepth=-1,ksize,anchor,normalize=true,borderType=4/*
 
 bilateralFilter = function(src,d,sigmaColor,sigmaSpace,borderType=4/*_CV2_BORDER_DEFAULT*/){
 	var dst = ..cv2.Mat()
-	var err = imgproc_bilateralFilter(src.cvPtr,dst.cvPtr,d,sigmaColor,sigmaSpace,borderType)
+	var err = dll.imgproc_bilateralFilter(src.cvPtr,dst.cvPtr,d,..raw.double(sigmaColor),..raw.double(sigmaSpace),borderType)
 	return dst; 
 }
 
 threshold = function(src,thresh,maxVal=255,thresholdType=0x0/*_CV2_THRESH_BINARY*/){
 	var dst = ..cv2.Mat()
-	var err,ret = imgproc_threshold(src.cvPtr,dst.cvPtr,thresh,maxVal,thresholdType,0)
+	var err,ret = dll.imgproc_threshold(src.cvPtr,dst.cvPtr,..raw.double(thresh),..raw.double(maxVal),thresholdType,..raw.double(0,true))
 	return ret,dst
 }
 
 adaptiveThreshold = function(src,maxValue,adaptiveMethod=1/*_CV2_ADAPTIVE_THRESH_GAUSSIAN_C*/,thresholdType=0x0/*_CV2_THRESH_BINARY*/,blockSize,C){
 	var dst = ..cv2.Mat()
-	var err = imgproc_adaptiveThreshold(src.cvPtr,dst.cvPtr,maxValue,adaptiveMethod,thresholdType,blockSize,C);
+	var err = dll.imgproc_adaptiveThreshold(src.cvPtr,dst.cvPtr,..raw.double(maxValue),adaptiveMethod,thresholdType,blockSize,..raw.double(C));
 	return dst; 	
 }
 
 //owner.Canny = owner.canny
 Canny = function(src,threshold1, threshold2, apertureSize=3, L2gradient=true){
 	var dst = ..cv2.Mat()
-	imgproc_Canny1(src.cvPtr,dst.cvPtr,threshold1,threshold2,apertureSize,L2gradient)
+	dll.imgproc_Canny1(src.cvPtr,dst.cvPtr,..raw.double(threshold1),..raw.double(threshold2),apertureSize,L2gradient)
 	return dst; 	
 }
 
@@ -308,7 +309,7 @@ line = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shi
 }
 
 arrowedLine = function(src,from,to,scalar,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0,tipLength=0.1){
-	var err = imgproc_arrowedLine(src.cvPtr,from,to,scalar,thickness,lineType,shift,tipLength)
+	var err = dll.imgproc_arrowedLine(src.cvPtr,from,to,scalar,thickness,lineType,shift,..raw.double(tipLength))
 	return src; 
 }
 
@@ -323,7 +324,7 @@ circle = function(src,center,radius,scalar,thickness=1,lineType=0x10/*_CV2_LINE_
 }
 
 ellipse = function(src,center,axes,angle,startAngle,endAngle,color,thickness=1,lineType=0x10/*_CV2_LINE_AA*/,shift=0){
-	var err = imgproc_ellipse1(src.cvPtr,center,axes,angle,startAngle,endAngle,color,thickness,lineType,shift)
+	var err = dll.imgproc_ellipse1(src.cvPtr,center,axes,..raw.double(angle),..raw.double(startAngle),..raw.double(endAngle),color,thickness,lineType,shift)
 	return src; 
 }
 
@@ -338,14 +339,14 @@ putText = function(src,text,position,font=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontSiz
         font = font : "宋体"
     	var err = dll.imgproc_putTextZh(src.cvPtr,..string.fromto(text),f2i(position),fontSize,color,font,false,false)
     }else {
-    	var err = imgproc_putText(src.cvPtr,text,f2i(position),font,fontSize,color,thickness,0x10/*_CV2_LINE_AA*/,0)
+    	var err = imgproc_putText(src.cvPtr,text,f2i(position),font,..raw.double(fontSize),color,thickness,0x10/*_CV2_LINE_AA*/,0)
     }
 	return src; 
 }
 
 getTextSize = function(text,fontFace=0/*_CV2_FONT_HERSHEY_SIMPLEX*/,fontScale,thickness){
-    var ref = ::SIZE()
-    var err,baseLine = imgproc_getTextSize(text,fontFace,fontScale,thickness,0,ref)
+    var ref = ::SIZE() 
+    var err,baseLine = imgproc_getTextSize(text,fontFace,..raw.double(fontScale),thickness,..raw.int(0,true),ref)
 	return ref,baseLine;
 }
 
@@ -483,13 +484,13 @@ matchTemplate = function(src,temp,mode=5/*_CV2_TM_CCOEFF_NORMED*/,mask){
 filter2D = function(src,ddepth=-1,kernel,anchor,delta=0,borderType=4/*_CV2_BORDER_DEFAULT*/){
 	var dst = ..cv2.Mat()
 	anchor = anchor : (::POINT(-1,-1))
-	var err = imgproc_filter2D(src.cvPtr,dst.cvPtr,ddepth,kernel.cvPtr,anchor,delta,borderType)
+	var err = dll.imgproc_filter2D(src.cvPtr,dst.cvPtr,ddepth,kernel.cvPtr,anchor,..raw.double(delta),borderType)
 	return dst; 
 }
 
 getRotationMatrix2D = function(center,angle,scale=1){
-    var ret,p = imgproc_getRotationMatrix2D(center,angle,scale,null)
-    return ..cv2.Mat(p);
+    var ret,p = imgproc_getRotationMatrix2D(center,..raw.double(angle),..raw.double(scale),{pointer value})
+    return ..cv2.Mat(p.value);
 }
 
 warpAffine = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_CV2_BORDER_CONSTANT*/,borderValue=0){
@@ -544,7 +545,7 @@ warpPerspective = function(src,M,sz,flags=1/*_CV2_INTER_LINEAR*/,borderMode=0/*_
 
 HoughLines = function(src,rho=1,theta=0.017453292519943,threshold=150,srn=0,stn=0){
     var lines = ..cv2.vector.vec2f();
-	var err = imgproc_HoughLines(src.cvPtr,lines.ptr,rho,theta,threshold,srn,stn)
+	var err = dll.imgproc_HoughLines(src.cvPtr,lines.ptr,..raw.double(rho),..raw.double(theta),threshold,..raw.double(srn),..raw.double(stn))
 	var res = lines.toArray(); 
 	lines.release()
 	return res
@@ -552,7 +553,7 @@ HoughLines = function(src,rho=1,theta=0.017453292519943,threshold=150,srn=0,stn=
 
 HoughLinesP = function(src,rho,theta,threshold,minLineLength=0,maxLineGap=0){
     var lines = ..cv2.vector.vec4i();
-	var err = imgproc_HoughLinesP(src.cvPtr,lines,rho,theta,threshold,minLineLength,maxLineGap)
+	var err = dll.imgproc_HoughLinesP(src.cvPtr,lines,..raw.double(rho),..raw.double(theta),threshold,..raw.double(minLineLength),..raw.double(maxLineGap))
 	var res = lines.toArray(); 
 	lines.release()
 	return res
@@ -560,7 +561,7 @@ HoughLinesP = function(src,rho,theta,threshold,minLineLength=0,maxLineGap=0){
 
 HoughCircles = function(src,method,dp,minDist,param1,param2,minRadius,maxRadius){
 	var circles = ..cv2.vector.vec3f();
-	var err = imgproc_HoughCircles(src.cvPtr,circles,method,dp,minDist,param1,param2,minRadius,maxRadius)
+	var err = dll.imgproc_HoughCircles(src.cvPtr,circles,method,..raw.double(dp),..raw.double(minDist),..raw.double(param1),..raw.double(param2),minRadius,maxRadius)
 	var res = circles.toArray(); 
 	circles.release()
 	return res; 
@@ -609,12 +610,12 @@ class VideoCapture{
 	}
 	
 	get = function(propId){
-		var err,ret = ..cv2.videoio_VideoCapture_get(this.ptr,propId,0)
+		var err,ret = dll.videoio_VideoCapture_get(this.ptr,propId,..raw.double(0,true))
 		return ret;
 	}
 	
 	set = function(propId,value){
-		var err,ret = ..cv2.videoio_VideoCapture_set(this.ptr,propId,value,0)
+		var err,ret = dll.videoio_VideoCapture_set(this.ptr,propId,..raw.int(0,true))
 		return ret==1; 
 	}
 	
@@ -822,14 +823,15 @@ class BackgroundSubtractor{
 	
 	apply = function(image,lr=-1.0){
 		var dst = ..cv2.Mat()
-		err = ..cv2.video_BackgroundSubtractor_apply(this.ptr,image.cvPtr,dst.cvPtr,lr)
+		err = dll.video_BackgroundSubtractor_apply(this.ptr,image.cvPtr,dst.cvPtr,..raw.double(lr))
 		return dst; 
 	}
 }
 
 class createBackgroundSubtractorMOG2{
 	ctor( history=500,varThreshold=16.0,detectShadows=1 ){
-		err,this.handle = ..cv2.video_createBackgroundSubtractorMOG2(history,varThreshold,detectShadows,null)
+		err,ret = dll.video_createBackgroundSubtractorMOG2(history,..raw.double(varThreshold),detectShadows,{pointer value})
+		this.handle = ret.value
 		if(!err){
 			this = ..cv2.BackgroundSubtractor(this.handle)
 		}
@@ -846,7 +848,8 @@ class createBackgroundSubtractorMOG2{
 
 class createBackgroundSubtractorKNN{
 	ctor( history=500,varThreshold=16.0,detectShadows=1 ){
-		err,this.handle = ..cv2.video_createBackgroundSubtractorMOG2(history,varThreshold,detectShadows,null)
+		err,ret = dll.video_createBackgroundSubtractorKNN(history,..raw.double(varThreshold),detectShadows,{pointer value})
+		this.handle = ret.value
 		if(!err){
 			this = ..cv2.BackgroundSubtractor(this.handle)
 		}
@@ -930,30 +933,7 @@ class barcode{
 /*}}*/
 
 _dll = dll
-imgproc_GaussianBlur = dll.api("imgproc_GaussianBlur","int(pointer src,pointer dst,struct ksize,double sigmaX, double sigmaY, int borderType)")
-imgproc_bilateralFilter= dll.api("imgproc_bilateralFilter","INT(pointer src,pointer dst,int d,double sigmaColor,double sigmaSpace,int borderType)")
-imgproc_resize = dll.api("imgproc_resize","pointer(pointer,pointer,struct,double,double,int)")
-imgproc_threshold = dll.api("imgproc_threshold","int(pointer src,pointer dst,double thresh,double maxVal, int type, double& returnValue)")
-imgproc_Canny1 = dll.api("imgproc_Canny1","int(pointer src,pointer edges,double threshold1,double threshold2,int apertureSize, bool L2gradient)" )
-imgproc_arrowedLine = dll.api("imgproc_arrowedLine","int(pointer src,struct pt1,struct pt2,struct color,int thickness, int line_type, int shift, double tipLength)" )
-imgproc_ellipse1 = dll.api("imgproc_ellipse1","int(pointer img,struct center,struct axes,double angle,double startAngle,double endAngle,struct color,int thickness,int lineType,int shift)")
-imgproc_putText = dll.api("imgproc_putText","int(pointer img,string text,struct org,int fontFace,double fontScale,struct color,int thickness,int lineType, int bottomLeftOrigin)")
-imgproc_getTextSize = dll.api("imgproc_getTextSize","int(string text,int fontFace,double fontScale,int thickness,int& baseLine,struct& returnValue)")
-imgproc_adaptiveThreshold = dll.api("imgproc_adaptiveThreshold","INT(pointer src,pointer dst,double maxValue,int adaptiveMethod,int thresholdType, int blockSize,double C)")
-core_minMaxLoc2 = dll.api("core_minMaxLoc2","INT(pointer src,double& minVal,double& maxVal,struct& minLoc,struct& maxLoc,pointer mask)")
-core_addWeighted= dll.api("core_addWeighted","INT(pointer src1,double alpha,pointer &src2,double beta,double gamma,pointer dst,int dtype)")
-videoio_VideoCapture_get = dll.api("videoio_VideoCapture_get","INT(pointer capture,int propId,double& ret)")
-videoio_VideoCapture_set = dll.api("videoio_VideoCapture_set","INT(pointer capture,int propId,int& ret)")
-imgproc_filter2D= dll.api("imgproc_filter2D","INT(pointer src,pointer dst,int ddepth,pointer kernel,struct anchor,double delta,int borderType)")
-imgproc_getRotationMatrix2D = dll.api("imgproc_getRotationMatrix2D","INT(struct pf,double angle,double scale,pointer& returnValue)")
-imgproc_HoughLines= dll.api("imgproc_HoughLines","INT(pointer src,pointer lines,double rho,double theta,int threshold,double srn, double stn)")
-imgproc_HoughLinesP= dll.api("imgproc_HoughLinesP","INT(pointer src,pointer lines,double rho,double theta,int threshold,double minLineLength,double maxLineGap)")
-imgproc_HoughCircles= dll.api("imgproc_HoughCircles","INT(pointer src,pointer circles,int method,double dp,double minDist,double param1,double param2,int minRadius,int maxRadius)") 
-video_createBackgroundSubtractorMOG2 = dll.api("video_createBackgroundSubtractorMOG2","INT(int history,double varThreshold,int detectShadows,pointer& returnValue)")
-video_BackgroundSubtractor_apply = dll.api("video_BackgroundSubtractor_apply","INT(pointer BackgroundSubtractor,pointer image,pointer fgmask,double learningRate)" )
-video_createBackgroundSubtractorKNN = dll.api("video_createBackgroundSubtractorKNN","INT(int history,double varThreshold,int detectShadows,pointer& returnValue)" )
 
-	
 namespace cv2{   
     import fsys
 	import cv2.Mat
