@@ -1,0 +1,40 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 ORB and BFMatcher features");
+
+var img,err = cv2.imread('/assets/images/Lena.jpg',cv2.IMREAD_GRAYSCALE);
+$.test(img !== null,"load grayscale Lena",err);
+
+var orb = cv2.ORB_create(200);
+var keypoints,descriptors = orb.detectAndCompute(img);
+$.test(keypoints.count >= 50,"ORB detects enough keypoints",keypoints.count);
+$.expect(descriptors.shape,[keypoints.count,32,1],"ORB descriptor shape");
+$.expect(descriptors.typeValue,cv2.CV_8UC1,"ORB descriptor type");
+
+var firstKeyPoint = keypoints.get(0);
+$.test(firstKeyPoint.pt[1] >= 0 && firstKeyPoint.pt[1] < img.width,"KeyPoint x in image",firstKeyPoint);
+$.test(firstKeyPoint.pt[2] >= 0 && firstKeyPoint.pt[2] < img.height,"KeyPoint y in image",firstKeyPoint);
+$.test(firstKeyPoint.size > 0,"KeyPoint size",firstKeyPoint);
+$.expect(#keypoints.toArray(),keypoints.count,"KeyPoints.toArray count");
+
+var drawn = cv2.drawKeypoints(img,keypoints);
+$.expect(drawn.shape,[img.height,img.width,3],"drawKeypoints output shape");
+
+var matcher = cv2.BFMatcher(cv2.NORM_HAMMING,true);
+var matches = matcher.match(descriptors,descriptors);
+$.expect(matches.count,keypoints.count,"BFMatcher self-match count");
+var firstMatch = matches.get(0);
+$.expect(firstMatch.distance,0,"BFMatcher self-match zero distance");
+$.expect(firstMatch.queryIdx,firstMatch.trainIdx,"BFMatcher self-match index");
+$.expect(#matches.toArray(),matches.count,"Matches.toArray count");
+
+var drawnMatches = cv2.drawMatches(img,keypoints,img,keypoints,matches);
+$.expect(drawnMatches.height,img.height,"drawMatches output height");
+$.expect(drawnMatches.width,img.width * 2,"drawMatches output width");
+$.expect(drawnMatches.channels(),3,"drawMatches output channels");
+
+orb.release();
+matcher.release();
+
+return $.report();

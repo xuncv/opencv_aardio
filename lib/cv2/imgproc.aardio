@@ -1,0 +1,581 @@
+namespace cv2.imgproc{}
+namespace cv2;
+
+// Image processing: morphology, channels/statistics, contours, drawing, geometry, Hough, components, histogram
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+getStructuringElement = function(shape,ksize,anchor){
+    init();
+    var width,height = _size2wh(ksize);
+    var anchorX,anchorY = -1,-1;
+    if(anchor) anchorX,anchorY = _size2wh(anchor);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GetStructuringElement(shape,width,height,anchorX,anchorY));
+}
+
+erode = function(src,kernel,iterations=1,borderType=4/*BORDER_DEFAULT*/,borderValue){
+    init();
+    var v0,v1,v2,v3 = _scalar4(borderValue);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Erode(_asNetMat(src),_asNetMat(kernel),iterations,borderType,v0,v1,v2,v3));
+}
+
+dilate = function(src,kernel,iterations=1,borderType=4/*BORDER_DEFAULT*/,borderValue){
+    init();
+    var v0,v1,v2,v3 = _scalar4(borderValue);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Dilate(_asNetMat(src),_asNetMat(kernel),iterations,borderType,v0,v1,v2,v3));
+}
+
+morphologyEx = function(src,op,kernel,iterations=1,borderType=4/*BORDER_DEFAULT*/,borderValue){
+    init();
+    var v0,v1,v2,v3 = _scalar4(borderValue);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.MorphologyEx(_asNetMat(src),op,_asNetMat(kernel),iterations,borderType,v0,v1,v2,v3));
+}
+
+morphologyDefaultBorderValue = function(){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.MorphologyDefaultBorderValue();
+    return [r.Val0,r.Val1,r.Val2,r.Val3];
+}
+
+copyMakeBorder = function(src,top,bottom,left,right,borderType=0/*BORDER_CONSTANT*/,color){
+    init();
+    var v0,v1,v2,v3 = _scalar4(color);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CopyMakeBorder(_asNetMat(src),top,bottom,left,right,borderType,v0,v1,v2,v3));
+}
+
+extractChannel = function(src,coi){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ExtractChannel(_asNetMat(src),coi));
+}
+
+split = function(src){
+    init();
+    var ret = [];
+    for(i=0;src.channels()-1;1){
+        ..table.push(ret,extractChannel(src,i));
+    }
+    return ret;
+}
+
+merge = function(mats){
+    init();
+    var n = #mats;
+    if(n == 1) return Mat(..Aardio.OpenCvSharpBridge.Cv.Merge1(_asNetMat(mats[1])));
+    if(n == 2) return Mat(..Aardio.OpenCvSharpBridge.Cv.Merge2(_asNetMat(mats[1]),_asNetMat(mats[2])));
+    if(n == 3) return Mat(..Aardio.OpenCvSharpBridge.Cv.Merge3(_asNetMat(mats[1]),_asNetMat(mats[2]),_asNetMat(mats[3])));
+    if(n == 4) return Mat(..Aardio.OpenCvSharpBridge.Cv.Merge4(_asNetMat(mats[1]),_asNetMat(mats[2]),_asNetMat(mats[3]),_asNetMat(mats[4])));
+    error("cv2.merge 当前仅支持 1 到 4 个通道",2);
+}
+
+hconcat = function(src1,src2){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.HConcat2(_asNetMat(src1),_asNetMat(src2)));
+}
+
+vconcat = function(src1,src2){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.VConcat2(_asNetMat(src1),_asNetMat(src2)));
+}
+
+minMaxLoc = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.MinMaxLoc(_asNetMat(src));
+    return r.MinVal,r.MaxVal,[r.MinX,r.MinY],[r.MaxX,r.MaxY];
+}
+
+mean = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Mean(_asNetMat(src));
+    return [r.Val0,r.Val1,r.Val2,r.Val3];
+}
+
+meanStdDev = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.MeanStdDev(_asNetMat(src));
+    return [r.First.Val0,r.First.Val1,r.First.Val2,r.First.Val3],[r.Second.Val0,r.Second.Val1,r.Second.Val2,r.Second.Val3];
+}
+
+norm = function(src1,src2,normType=4/*NORM_L2*/){
+    init();
+    if(src2 === null) return ..Aardio.OpenCvSharpBridge.Cv.Norm(_asNetMat(src1),normType);
+    if(type(src2)==type.number) return ..Aardio.OpenCvSharpBridge.Cv.Norm(_asNetMat(src1),src2);
+    return ..Aardio.OpenCvSharpBridge.Cv.Norm2(_asNetMat(src1),_asNetMat(src2),normType);
+}
+
+sumElems = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SumElems(_asNetMat(src));
+    return [r.Val0,r.Val1,r.Val2,r.Val3];
+}
+sum = sumElems; Sum = sumElems;
+
+trace = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Trace(_asNetMat(src));
+    return [r.Val0,r.Val1,r.Val2,r.Val3];
+}
+
+moments = function(src,binaryImage=false){
+    init();
+    return _momentsTable(..Aardio.OpenCvSharpBridge.Cv.Moments(_asNetMat(src),binaryImage));
+}
+
+contourMoments = function(contour,binaryImage=false){
+    init();
+    return _momentsTable(..Aardio.OpenCvSharpBridge.Cv.ContourMoments(contour.net,binaryImage));
+}
+
+HuMoments = function(src,binaryImage=false){
+    var m;
+    if(type.rget(src)=="cv2.Contour") m = contourMoments(src,binaryImage);
+    else m = moments(src,binaryImage);
+    return _huMomentsFromTable(m);
+}
+
+countNonZero = function(src){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.CountNonZero(_asNetMat(src));
+}
+
+inRange = function(src,lowerb,upperb){
+    init();
+    var l0,l1,l2,l3 = _scalar4(lowerb);
+    var u0,u1,u2,u3 = _scalar4(upperb);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.InRange(_asNetMat(src),l0,l1,l2,l3,u0,u1,u2,u3));
+}
+
+findContours = function(src,mode=0/*RETR_EXTERNAL*/,method=2/*CHAIN_APPROX_SIMPLE*/,offset){
+    init();
+    var offsetX,offsetY = _size2wh(offset);
+    if(offsetX === null) offsetX = 0;
+    if(offsetY === null) offsetY = 0;
+    var r = ..Aardio.OpenCvSharpBridge.Cv.FindContours(_asNetMat(src),mode,method,offsetX,offsetY);
+    var contours = [];
+    var hierarchy = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(contours,Contour(r.GetContour(i)));
+        var h = r.GetHierarchy(i);
+        ..table.push(hierarchy,[h.Next,h.Previous,h.Child,h.Parent]);
+    }
+    return contours,hierarchy;
+}
+
+contourArea = function(contour,oriented=false){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.ContourArea(contour.net,oriented);
+}
+
+arcLength = function(curve,closed=true){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.ArcLength(curve.net,closed);
+}
+
+boundingRect = function(contour){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.BoundingRect(contour.net);
+    return [r.X,r.Y,r.Width,r.Height];
+}
+
+approxPolyDP = function(curve,epsilon,closed=true){
+    init(); return Contour(..Aardio.OpenCvSharpBridge.Cv.ApproxPolyDP(curve.net,epsilon,closed));
+}
+
+convexHull = function(contour,clockwise=false){
+    init(); return Contour(..Aardio.OpenCvSharpBridge.Cv.ConvexHull(contour.net,clockwise));
+}
+
+convexHullIndices = function(contour,clockwise=false){
+    init(); return _intArray(..Aardio.OpenCvSharpBridge.Cv.ConvexHullIndices(contour.net,clockwise));
+}
+
+convexityDefects = function(contour,hullIndices){
+    init(); return _vec4iArray(..Aardio.OpenCvSharpBridge.Cv.ConvexityDefects(contour.net,hullIndices));
+}
+
+isContourConvex = function(contour){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.IsContourConvex(contour.net);
+}
+
+matchShapes = function(contour1,contour2,method=1/*CONTOURS_MATCH_I1*/,parameter=0){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.MatchShapes(contour1.net,contour2.net,method,parameter);
+}
+
+minAreaRect = function(contour){
+    init(); return _rotatedRectTable(..Aardio.OpenCvSharpBridge.Cv.MinAreaRect(contour.net));
+}
+
+boxPoints = function(rotatedRect){
+    init();
+    var cx,cy,w,h,angle = _rotatedRectArgs(rotatedRect);
+    return _point2fArray(..Aardio.OpenCvSharpBridge.Cv.BoxPoints(cx,cy,w,h,angle));
+}
+
+minEnclosingCircle = function(contour){
+    init(); return _circleTable(..Aardio.OpenCvSharpBridge.Cv.MinEnclosingCircle(contour.net));
+}
+
+minEnclosingTriangle = function(contour){
+    init(); return _convexIntersectionTable(..Aardio.OpenCvSharpBridge.Cv.MinEnclosingTriangle(contour.net));
+}
+
+fitLine = function(contour,distType=2/*DIST_L2*/,param=0,reps=0.01,aeps=0.01){
+    init(); return _line2DTable(..Aardio.OpenCvSharpBridge.Cv.FitLine(contour.net,distType,param,reps,aeps));
+}
+
+fitEllipse = function(contour){ init(); return _rotatedRectTable(..Aardio.OpenCvSharpBridge.Cv.FitEllipse(contour.net)); }
+fitEllipseAMS = function(contour){ init(); return _rotatedRectTable(..Aardio.OpenCvSharpBridge.Cv.FitEllipseAMS(contour.net)); }
+fitEllipseDirect = function(contour){ init(); return _rotatedRectTable(..Aardio.OpenCvSharpBridge.Cv.FitEllipseDirect(contour.net)); }
+
+pointPolygonTest = function(contour,pt,measureDist=false){
+    init();
+    var x,y = _point2(pt);
+    return ..Aardio.OpenCvSharpBridge.Cv.PointPolygonTest(contour.net,x,y,measureDist);
+}
+
+intersectConvexConvex = function(contour1,contour2,handleNested=true){
+    init();
+    return _convexIntersectionTable(..Aardio.OpenCvSharpBridge.Cv.IntersectConvexConvex(contour1.net,contour2.net,handleNested));
+}
+
+rotatedRectangleIntersection = function(rect1,rect2){
+    init();
+    var c1x,c1y,w1,h1,a1 = _rotatedRectArgs(rect1);
+    var c2x,c2y,w2,h2,a2 = _rotatedRectArgs(rect2);
+    return _rotatedRectIntersectionTable(..Aardio.OpenCvSharpBridge.Cv.RotatedRectangleIntersection(c1x,c1y,w1,h1,a1,c2x,c2y,w2,h2,a2));
+}
+
+applyCLAHE = function(src,clipLimit=40.0,tileGridSize){
+    init();
+    var width,height = 8,8;
+    if(tileGridSize) width,height = _size2wh(tileGridSize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CLAHEApply(_asNetMat(src),clipLimit,width,height));
+}
+
+drawContours = function(img,contours,contourIdx=-1,color=255,thickness=1,lineType=8/*LINE_8*/){
+    init();
+    var v0,v1,v2,v3 = _scalar4(color);
+    if(contourIdx >= 0){
+        ..Aardio.OpenCvSharpBridge.Cv.DrawContour(_asNetMat(img),contours[contourIdx+1].net,v0,v1,v2,v3,thickness,lineType);
+    }
+    else {
+        for(i,contour in contours){
+            ..Aardio.OpenCvSharpBridge.Cv.DrawContour(_asNetMat(img),contour.net,v0,v1,v2,v3,thickness,lineType);
+        }
+    }
+    return img;
+}
+
+rectangle = function(img,pt1,pt2,color=255,thickness=1,lineType=8/*LINE_8*/){
+    init();
+    var x1,y1 = _size2wh(pt1);
+    var x2,y2 = _size2wh(pt2);
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.Rectangle(_asNetMat(img),x1,y1,x2-x1,y2-y1,v0,v1,v2,v3,thickness,lineType);
+    return img;
+}
+
+circle = function(img,center,radius,color=255,thickness=1,lineType=8/*LINE_8*/){
+    init();
+    var x,y = _size2wh(center);
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.Circle(_asNetMat(img),x,y,radius,v0,v1,v2,v3,thickness,lineType);
+    return img;
+}
+
+line = function(img,pt1,pt2,color=255,thickness=1,lineType=8/*LINE_8*/){
+    init();
+    var x1,y1 = _size2wh(pt1);
+    var x2,y2 = _size2wh(pt2);
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.Line(_asNetMat(img),x1,y1,x2,y2,v0,v1,v2,v3,thickness,lineType);
+    return img;
+}
+
+arrowedLine = function(img,pt1,pt2,color=255,thickness=1,lineType=8/*LINE_8*/,tipLength=0.1){
+    init();
+    var x1,y1 = _size2wh(pt1);
+    var x2,y2 = _size2wh(pt2);
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.ArrowedLine(_asNetMat(img),x1,y1,x2,y2,v0,v1,v2,v3,thickness,lineType,tipLength);
+    return img;
+}
+
+ellipse = function(img,center,axes,angle=0.0,startAngle=0.0,endAngle=360.0,color=255,thickness=1,lineType=8/*LINE_8*/){
+    init();
+    var cx,cy = _size2wh(center);
+    var width,height = _size2wh(axes);
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.Ellipse(_asNetMat(img),cx,cy,width,height,angle,startAngle,endAngle,v0,v1,v2,v3,thickness,lineType);
+    return img;
+}
+
+putText = function(img,text,org,fontFace=0/*FONT_HERSHEY_SIMPLEX*/,fontScale=1.0,color=255,thickness=1,lineType=8/*LINE_8*/,bottomLeftOrigin=false){
+    init();
+    var x,y = _size2wh(org);
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.PutText(_asNetMat(img),text,x,y,fontFace,fontScale,v0,v1,v2,v3,thickness,lineType,bottomLeftOrigin);
+    return img;
+}
+
+getTextSize = function(text,fontFace=0/*FONT_HERSHEY_SIMPLEX*/,fontScale=1.0,thickness=1){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.GetTextSize(text,fontFace,fontScale,thickness);
+    return [r.Width,r.Height],r.BaseLine;
+}
+
+ellipse2Poly = function(center,axes,angle=0,arcStart=0,arcEnd=360,delta=5){
+    init();
+    var cx,cy = _size2wh(center);
+    var width,height = _size2wh(axes);
+    return Contour(..Aardio.OpenCvSharpBridge.Cv.Ellipse2Poly(cx,cy,width,height,angle,arcStart,arcEnd,delta));
+}
+
+polylines = function(img,contour,isClosed=true,color=255,thickness=1,lineType=8/*LINE_8*/){
+    init();
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.PolylinesContour(_asNetMat(img),contour.net,isClosed,v0,v1,v2,v3,thickness,lineType);
+    return img;
+}
+
+fillPoly = function(img,contour,color=255,lineType=8/*LINE_8*/){
+    init();
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.FillPolyContour(_asNetMat(img),contour.net,v0,v1,v2,v3,lineType);
+    return img;
+}
+
+fillConvexPoly = function(img,contour,color=255,lineType=8/*LINE_8*/){
+    init();
+    var v0,v1,v2,v3 = _scalar4(color);
+    ..Aardio.OpenCvSharpBridge.Cv.FillConvexPolyContour(_asNetMat(img),contour.net,v0,v1,v2,v3,lineType);
+    return img;
+}
+
+getRotationMatrix2D = function(center,angle,scale=1.0){
+    init();
+    var x,y = _size2wh(center);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GetRotationMatrix2D(x,y,angle,scale));
+}
+
+getAffineTransform = function(src,dst){
+    init();
+    var sx0,sy0,sx1,sy1,sx2,sy2 = _points3(src);
+    var dx0,dy0,dx1,dy1,dx2,dy2 = _points3(dst);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GetAffineTransform(sx0,sy0,sx1,sy1,sx2,sy2,dx0,dy0,dx1,dy1,dx2,dy2));
+}
+
+getPerspectiveTransform = function(src,dst){
+    init();
+    var sx0,sy0,sx1,sy1,sx2,sy2,sx3,sy3 = _points4(src);
+    var dx0,dy0,dx1,dy1,dx2,dy2,dx3,dy3 = _points4(dst);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GetPerspectiveTransform(sx0,sy0,sx1,sy1,sx2,sy2,sx3,sy3,dx0,dy0,dx1,dy1,dx2,dy2,dx3,dy3));
+}
+
+invertAffineTransform = function(M){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.InvertAffineTransform(_asNetMat(M)));
+}
+
+warpAffine = function(src,M,dsize,flags=1/*INTER_LINEAR*/,borderMode=0/*BORDER_CONSTANT*/,borderValue){
+    init();
+    var width,height = _size2wh(dsize);
+    var v0,v1,v2,v3 = _scalar4(borderValue);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.WarpAffine(_asNetMat(src),_asNetMat(M),width,height,flags,borderMode,v0,v1,v2,v3));
+}
+
+warpPerspective = function(src,M,dsize,flags=1/*INTER_LINEAR*/,borderMode=0/*BORDER_CONSTANT*/,borderValue){
+    init();
+    var width,height = _size2wh(dsize);
+    var v0,v1,v2,v3 = _scalar4(borderValue);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.WarpPerspective(_asNetMat(src),_asNetMat(M),width,height,flags,borderMode,v0,v1,v2,v3));
+}
+
+remap = function(src,map1,map2,interpolation=1/*INTER_LINEAR*/,borderMode=0/*BORDER_CONSTANT*/,borderValue){
+    init();
+    var v0,v1,v2,v3 = _scalar4(borderValue);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Remap(_asNetMat(src),_asNetMat(map1),_asNetMat(map2),interpolation,borderMode,v0,v1,v2,v3));
+}
+
+transform = function(src,m){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Transform(_asNetMat(src),_asNetMat(m)));
+}
+
+perspectiveTransform = function(src,m){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.PerspectiveTransform(_asNetMat(src),_asNetMat(m)));
+}
+
+warpPolar = function(src,dsize,center,maxRadius,flags=1/*INTER_LINEAR*/,mode=0/*WARP_POLAR_LINEAR*/){
+    init();
+    var width,height = _size2wh(dsize);
+    var x,y = _point2(center);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.WarpPolar(_asNetMat(src),width,height,x,y,maxRadius,flags,mode));
+}
+
+linearPolar = function(src,center,maxRadius,flags=1/*INTER_LINEAR*/){
+    init();
+    var x,y = _point2(center);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.LinearPolar(_asNetMat(src),x,y,maxRadius,flags));
+}
+
+logPolar = function(src,center,m,flags=1/*INTER_LINEAR*/){
+    init();
+    var x,y = _point2(center);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.LogPolar(_asNetMat(src),x,y,m,flags));
+}
+
+floodFill = function(image,seedPoint,newVal,loDiff,upDiff,flags=4){
+    init();
+    var x,y = _point2(seedPoint);
+    var nv0,nv1,nv2,nv3 = _scalar4(newVal);
+    var lo0,lo1,lo2,lo3 = _scalar4(loDiff);
+    var up0,up1,up2,up3 = _scalar4(upDiff);
+    var r = ..Aardio.OpenCvSharpBridge.Cv.FloodFill(_asNetMat(image),x,y,nv0,nv1,nv2,nv3,lo0,lo1,lo2,lo3,up0,up1,up2,up3,flags);
+    return r.Area,[r.Rect.X,r.Rect.Y,r.Rect.Width,r.Rect.Height];
+}
+
+grabCut = function(image,rect,iterCount=1,mode=0/*GC_INIT_WITH_RECT*/){
+    init();
+    var x,y,w,h = _rect4(rect);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GrabCut(_asNetMat(image),x,y,w,h,iterCount,mode));
+}
+
+watershed = function(image,markers){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Watershed(_asNetMat(image),_asNetMat(markers)));
+}
+
+HoughLines = function(image,rho,theta,threshold,srn=0.0,stn=0.0){
+    init();
+    var lines = ..Aardio.OpenCvSharpBridge.Cv.HoughLines(_asNetMat(image),rho,theta,threshold,srn,stn);
+    var ret = [];
+    for(i=0;lines.Length-1;1){
+        var line = lines.GetValue(i);
+        ..table.push(ret,[line.Rho,line.Theta]);
+    }
+    return ret;
+}
+
+HoughLinesP = function(image,rho,theta,threshold,minLineLength=0.0,maxLineGap=0.0){
+    init();
+    var lines = ..Aardio.OpenCvSharpBridge.Cv.HoughLinesP(_asNetMat(image),rho,theta,threshold,minLineLength,maxLineGap);
+    var ret = [];
+    for(i=0;lines.Length-1;1){
+        var line = lines.GetValue(i);
+        ..table.push(ret,[line.X1,line.Y1,line.X2,line.Y2]);
+    }
+    return ret;
+}
+
+HoughCircles = function(image,method=3/*HOUGH_GRADIENT*/,dp=1.0,minDist=1.0,param1=100.0,param2=10.0,minRadius=0,maxRadius=0){
+    init();
+    var circles = ..Aardio.OpenCvSharpBridge.Cv.HoughCircles(_asNetMat(image),method,dp,minDist,param1,param2,minRadius,maxRadius);
+    var ret = [];
+    for(i=0;circles.Length-1;1){
+        var c = circles.GetValue(i);
+        ..table.push(ret,[c.X,c.Y,c.Radius]);
+    }
+    return ret;
+}
+
+matchTemplate = function(image,templ,method=5/*TM_CCOEFF_NORMED*/){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.MatchTemplate(_asNetMat(image),_asNetMat(templ),method));
+}
+
+cornerHarris = function(src,blockSize=2,ksize=3,k=0.04,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CornerHarris(_asNetMat(src),blockSize,ksize,k,borderType));
+}
+
+cornerMinEigenVal = function(src,blockSize=3,ksize=3,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.CornerMinEigenVal(_asNetMat(src),blockSize,ksize,borderType));
+}
+
+cornerEigenValsAndVecs = function(src,blockSize=3,ksize=3,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.CornerEigenValsAndVecs(_asNetMat(src),blockSize,ksize,borderType));
+}
+
+preCornerDetect = function(src,ksize=3,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.PreCornerDetect(_asNetMat(src),ksize,borderType));
+}
+
+goodFeaturesToTrack = function(image,maxCorners=100,qualityLevel=0.01,minDistance=1.0,blockSize=3,useHarrisDetector=false,k=0.04){
+    init();
+    var corners = ..Aardio.OpenCvSharpBridge.Cv.GoodFeaturesToTrack(_asNetMat(image),maxCorners,qualityLevel,minDistance,blockSize,useHarrisDetector,k);
+    var ret = [];
+    for(i=0;corners.Length-1;1){
+        var corner = corners.GetValue(i);
+        ..table.push(ret,[corner.X,corner.Y]);
+    }
+    return ret;
+}
+
+cornerSubPix = function(image,corners,winSize,zeroZone,maxIter=40,epsilon=0.001){
+    init();
+    if(!winSize) winSize = [5,5];
+    if(!zeroZone) zeroZone = [-1,-1];
+    var winW,winH = _size2wh(winSize);
+    var zeroW,zeroH = _size2wh(zeroZone);
+    return _point2fArray(..Aardio.OpenCvSharpBridge.Cv.CornerSubPix(_asNetMat(image),_pointsToFlatArray(corners,2),winW,winH,zeroW,zeroH,maxIter,epsilon));
+}
+
+connectedComponentsWithStats = function(image,connectivity=8,ltype=4/*CV_32S*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.ConnectedComponentsWithStats(_asNetMat(image),connectivity,ltype);
+    return r.Count, Mat(r.Labels), Mat(r.Stats), Mat(r.Centroids);
+}
+
+connectedComponents = function(image,connectivity=8,ltype=4/*CV_32S*/){
+    var count,labels = connectedComponentsWithStats(image,connectivity,ltype);
+    return count,labels;
+}
+
+connectedComponentsWithAlgorithm = function(image,connectivity=8,ltype=4/*CV_32S*/,ccltype=-1/*CCL_DEFAULT*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.ConnectedComponentsWithAlgorithm(_asNetMat(image),connectivity,ltype,ccltype);
+    return r.Count, Mat(r.Labels);
+}
+
+connectedComponentsWithStatsWithAlgorithm = function(image,connectivity=8,ltype=4/*CV_32S*/,ccltype=-1/*CCL_DEFAULT*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.ConnectedComponentsWithStatsWithAlgorithm(_asNetMat(image),connectivity,ltype,ccltype);
+    return r.Count, Mat(r.Labels), Mat(r.Stats), Mat(r.Centroids);
+}
+
+distanceTransform = function(src,distanceType=2/*DIST_L2*/,maskSize=3/*DIST_MASK_3*/){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.DistanceTransform(_asNetMat(src),distanceType,maskSize));
+}
+
+distanceTransformWithLabels = function(src,distanceType=2/*DIST_L2*/,maskSize=3/*DIST_MASK_3*/,labelType=0/*DIST_LABEL_CCOMP*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.DistanceTransformWithLabels(_asNetMat(src),distanceType,maskSize,labelType);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+
+calcHist = function(image,histSize=256,range){
+    init();
+    var range0,range1 = 0,256;
+    if(range) range0,range1 = _size2wh(range);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CalcHist1(_asNetMat(image),histSize,range0,range1));
+}
+
+calcBackProject = function(image,hist,range,scale=1.0){
+    init();
+    var range0,range1 = 0,256;
+    if(range) range0,range1 = _size2wh(range);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CalcBackProject1(_asNetMat(image),_asNetMat(hist),range0,range1,scale));
+}
+
+LUT = function(src,lut){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.LUT(_asNetMat(src),_asNetMat(lut)));
+}
+
+applyColorMap = function(src,colormap=2/*COLORMAP_JET*/){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ApplyColorMap(_asNetMat(src),colormap)); }
+compareHist = function(h1,h2,method=0/*HISTCMP_CORREL*/){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CompareHist(_asNetMat(h1),_asNetMat(h2),method); }
+phaseCorrelate = function(src1,src2,window){
+    init();
+    var r = window ? ..Aardio.OpenCvSharpBridge.Cv.PhaseCorrelate(_asNetMat(src1),_asNetMat(src2),_asNetMat(window)) : ..Aardio.OpenCvSharpBridge.Cv.PhaseCorrelateNoWindow(_asNetMat(src1),_asNetMat(src2));
+    return [r.X,r.Y],r.Response;
+}
+createHanningWindow = function(winSize,tp=5/*CV_32F*/){
+    init();
+    var width,height = _size2wh(winSize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CreateHanningWindow(width,height,tp));
+}
+
+VideoCapture = VideoCapture;
+VideoWriter = VideoWriter;

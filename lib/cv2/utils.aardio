@@ -1,0 +1,101 @@
+namespace cv2.utils{}
+namespace cv2;
+
+// Version, tick and threading utilities
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+getVersionString = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetVersionString(); }
+getBuildInformation = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetBuildInformation(); }
+getTickCount = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetTickCount(); }
+getTickFrequency = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetTickFrequency(); }
+setNumThreads = function(nthreads=0){ init(); ..Aardio.OpenCvSharpBridge.Cv.SetNumThreads(nthreads); }
+getNumThreads = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetNumThreads(); }
+
+/**intellisense(cv2)
+Mat(.(rows,cols,type) = 创建 Mat 矩阵
+imread(.(path,flags=1) = 读取图像，返回 cv2.Mat
+imwrite(.(path,img) = 保存图像
+resize(.(src,dsize,fx=0,fy=0,interpolation=1) = 调整大小，dsize 可为 ::SIZE(w,h) 或 [w,h]
+cvtColor(.(src,code,dstCn=0) = 颜色空间转换
+GaussianBlur(.(src,ksize,sigmaX=0,sigmaY=0,borderType=4) = 高斯滤波
+medianBlur(.(src,ksize) = 中值滤波
+equalizeHist(.(src) = 直方图均衡化，单通道 8 位图像
+adaptiveThreshold(.(src,maxValue=255,adaptiveMethod=0,thresholdType=0,blockSize=11,C=2) = 自适应阈值
+convertScaleAbs(.(src,alpha=1,beta=0) = 缩放取绝对值并转为 8 位
+pyrDown(.(src,dsize,borderType=4) = 图像金字塔下采样
+pyrUp(.(src,dsize,borderType=4) = 图像金字塔上采样
+blur(.(src,ksize,anchor,borderType=4) = 均值滤波
+boxFilter(.(src,ddepth,ksize,normalize=true,borderType=4) = 方框滤波
+Sobel(.(src,ddepth,dx,dy,ksize=3,scale=1,delta=0,borderType=4) = Sobel 梯度
+Laplacian(.(src,ddepth,ksize=1,scale=1,delta=0,borderType=4) = Laplacian 边缘
+Canny(.(src,threshold1,threshold2,apertureSize=3,L2gradient=false) = Canny 边缘检测
+threshold(.(src,thresh,maxVal=255,thresholdType=0) = 阈值处理，返回 ret,dst
+split(.(src) = 分离通道，返回 Mat 数组
+merge(.(mats) = 合并 1~4 个通道
+minMaxLoc(.(src) = 返回 minVal,maxVal,minLoc,maxLoc
+mean(.(src) = 返回 Scalar 数组 [v0,v1,v2,v3]
+meanStdDev(.(src) = 返回 mean,stddev 两个 Scalar 数组
+norm(.(src1,src2,normType=4) = 计算 Mat 范数，参数 2 可省略或指定 normType
+sumElems(.(src) = 返回各通道元素和 Scalar 数组
+trace(.(src) = 返回矩阵迹 Scalar 数组
+moments(.(src,binaryImage=false) = 计算图像矩，返回包含 m00/m10/m01 等字段的表
+contourMoments(.(contour,binaryImage=false) = 计算轮廓矩，返回包含 m00/m10/m01 等字段的表
+findContours(.(src,mode=0,method=2,offset) = 查找轮廓，返回 contours,hierarchy
+contourArea(.(contour,oriented=false) = 计算轮廓面积
+arcLength(.(curve,closed=true) = 计算轮廓周长
+boundingRect(.(contour) = 返回 [x,y,width,height]
+approxPolyDP(.(curve,epsilon,closed=true) = 多边形逼近
+rectangle(.(img,pt1,pt2,color=255,thickness=1,lineType=8) = 绘制矩形，修改并返回 img
+circle(.(img,center,radius,color=255,thickness=1,lineType=8) = 绘制圆，修改并返回 img
+line(.(img,pt1,pt2,color=255,thickness=1,lineType=8) = 绘制直线，修改并返回 img
+getRotationMatrix2D(.(center,angle,scale=1) = 获取 2x3 旋转仿射矩阵
+getAffineTransform(.(src,dst) = 根据 3 对点获取 2x3 仿射矩阵
+getPerspectiveTransform(.(src,dst) = 根据 4 对点获取 3x3 透视矩阵
+invertAffineTransform(.(M) = 反转 2x3 仿射矩阵
+warpAffine(.(src,M,dsize,flags=1,borderMode=0,borderValue) = 仿射变换
+warpPerspective(.(src,M,dsize,flags=1,borderMode=0,borderValue) = 透视变换
+remap(.(src,map1,map2,interpolation=1,borderMode=0,borderValue) = 重映射
+transform(.(src,m) = 对多通道点/向量 Mat 应用线性变换
+perspectiveTransform(.(src,m) = 对二维/三维点 Mat 应用透视变换
+floodFill(.(image,seedPoint,newVal,loDiff,upDiff,flags=4) = 漫水填充，修改 image，返回 area,rect
+HoughLines(.(image,rho,theta,threshold,srn=0,stn=0) = 标准 Hough 直线检测，返回 [[rho,theta],...]
+HoughLinesP(.(image,rho,theta,threshold,minLineLength=0,maxLineGap=0) = 概率 Hough 直线检测，返回 [[x1,y1,x2,y2],...]
+matchTemplate(.(image,templ,method=5) = 模板匹配，返回匹配得分矩阵
+cornerHarris(.(src,blockSize=2,ksize=3,k=0.04,borderType=4) = Harris 角点响应图
+goodFeaturesToTrack(.(image,maxCorners=100,qualityLevel=0.01,minDistance=1,blockSize=3,useHarrisDetector=false,k=0.04) = Shi-Tomasi/Harris 角点，返回 [[x,y],...]
+connectedComponentsWithStats(.(image,connectivity=8,ltype=4) = 连通域分析，返回 count,labels,stats,centroids
+connectedComponents(.(image,connectivity=8,ltype=4) = 连通域标签，返回 count,labels
+calcHist(.(image,histSize=256,range) = 单通道直方图，range 默认为 [0,256]
+distanceTransform(.(src,distanceType=2,maskSize=3) = 距离变换
+LUT(.(src,lut) = 查找表映射
+magnitude(.(x,y) = 根据二维向量 x/y 分量计算幅值
+phase(.(x,y,angleInDegrees=false) = 根据二维向量 x/y 分量计算相位角
+cartToPolar(.(x,y,angleInDegrees=false) = 笛卡尔坐标转极坐标，返回 magnitude,angle
+polarToCart(.(magnitude,angle,angleInDegrees=false) = 极坐标转笛卡尔坐标，返回 x,y
+patchNaNs(.(src,value=0) = 将浮点 Mat 中 NaN 替换为指定值，修改并返回 src
+transpose(.(src) = 转置矩阵
+rotate(.(src,rotateCode=0) = 旋转矩阵，ROTATE_90_CLOCKWISE / ROTATE_180 / ROTATE_90_COUNTERCLOCKWISE
+repeat(.(src,ny,nx) = 重复平铺矩阵
+reduce(.(src,dim=0,rtype=0,dtype=-1) = 按行/列归约，rtype 可为 REDUCE_SUM/AVG/MAX/MIN
+gemm(.(src1,src2,alpha=1,src3,beta=0,flags=0) = 广义矩阵乘法
+dft(.(src,flags=0,nonzeroRows=0) = 离散傅里叶变换，常用 DFT_COMPLEX_OUTPUT
+idft(.(src,flags=0,nonzeroRows=0) = 逆离散傅里叶变换，常用 DFT_SCALE | DFT_REAL_OUTPUT
+mulSpectrums(.(a,b,flags=0,conjB=false) = 频谱逐元素乘法
+dct(.(src,flags=0) = 离散余弦变换
+idct(.(src,flags=0) = 逆离散余弦变换
+getRectSubPix(.(src,patchSize,center,patchType=-1) = 提取亚像素矩形块
+convertMaps(.(map1,map2,dstMap1Type,nnInterpolation=false) = 转换 remap 映射，返回 map1,map2
+integral(.(src,sdepth=4) = 积分图，返回 rows+1,cols+1 的 Mat
+integral2(.(src,sdepth=6,sqdepth=6) = 积分图与平方积分图，返回 sum,sqsum
+kmeans(.(data,k,maxIter=10,epsilon=1,attempts=1,flags=2) = KMeans 聚类，返回 compactness,labels,centers
+determinant(.(src) = 计算矩阵行列式
+invert(.(src,flags=0) = 反转矩阵，返回 retVal,dst
+solve(.(src1,src2,flags=0) = 解线性方程组，返回 ok,dst
+eigen(.(src) = 特征值/特征向量分解，返回 ok,eigenvalues,eigenvectors
+SVDecomp(.(src,flags=0) = SVD 分解，返回 w,u,vt
+ORB_create(.(nfeatures=500) = 创建 ORB 特征检测器
+BFMatcher(.(normType=6,crossCheck=false) = 创建暴力匹配器
+VideoCapture(.(source=0) = 打开摄像头索引或视频文件
+VideoWriter(.(filename,fourcc,fps,frameSize,isColor=true) = 创建视频写入器，fourcc 可为 "MJPG" 等 4 字符串
+VideoWriter_fourcc(.(code) = 计算 fourcc，例如 cv2.VideoWriter_fourcc("MJPG")
+end intellisense**/

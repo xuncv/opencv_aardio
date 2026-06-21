@@ -1,0 +1,58 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 imgproc analysis utilities");
+
+var img = cv2.zeros(20,30,cv2.CV_8UC1);
+cv2.rectangle(img,[2,3],[7,8],255,cv2.FILLED);      // 5 x 5 = 25
+cv2.rectangle(img,[15,10],[25,18],255,cv2.FILLED);  // 10 x 8 = 80
+
+var count,labels,stats,centroids = cv2.connectedComponentsWithStats(img);
+$.expect(count,3,"connectedComponentsWithStats count includes background");
+$.expect(labels.shape,[20,30,1],"connectedComponentsWithStats labels shape");
+$.expect(stats.shape,[3,5,1],"connectedComponentsWithStats stats shape");
+$.expect(centroids.shape,[3,2,1],"connectedComponentsWithStats centroids shape");
+
+$.expect(stats.get(1,cv2.CC_STAT_LEFT),2,"component 1 left");
+$.expect(stats.get(1,cv2.CC_STAT_TOP),3,"component 1 top");
+$.expect(stats.get(1,cv2.CC_STAT_WIDTH),5,"component 1 width");
+$.expect(stats.get(1,cv2.CC_STAT_HEIGHT),5,"component 1 height");
+$.expect(stats.get(1,cv2.CC_STAT_AREA),25,"component 1 area");
+$.expect(stats.get(2,cv2.CC_STAT_AREA),80,"component 2 area");
+
+$.test(centroids.get(1,0) > 3.9 && centroids.get(1,0) < 4.1,"component 1 centroid x",centroids.get(1,0));
+$.test(centroids.get(1,1) > 4.9 && centroids.get(1,1) < 5.1,"component 1 centroid y",centroids.get(1,1));
+$.expect(labels.get(4,3),1,"labels value for component 1");
+$.expect(labels.get(12,16),2,"labels value for component 2");
+
+var count2,labels2 = cv2.connectedComponents(img);
+$.expect(count2,3,"connectedComponents count");
+$.expect(labels2.shape,[20,30,1],"connectedComponents labels shape");
+
+var dt = cv2.distanceTransform(img,cv2.DIST_L2,cv2.DIST_MASK_3);
+$.expect(dt.shape,img.shape,"distanceTransform shape");
+var minVal,maxVal,minLoc,maxLoc = cv2.minMaxLoc(dt);
+$.expect(minVal,0,"distanceTransform min");
+$.test(maxVal > 3.5,"distanceTransform max positive",maxVal);
+$.test(maxLoc[1] >= 15 && maxLoc[1] <= 24 && maxLoc[2] >= 10 && maxLoc[2] <= 17,"distanceTransform max inside larger component",maxLoc);
+
+var hist = cv2.calcHist(img);
+$.expect(hist.shape,[256,1,1],"calcHist default shape");
+$.expect(hist.get(0,0),495,"calcHist zero bin");
+$.expect(hist.get(255,0),105,"calcHist 255 bin");
+
+var smallHist = cv2.calcHist(img,2,[0,256]);
+$.expect(smallHist.shape,[2,1,1],"calcHist custom bins shape");
+$.expect(smallHist.get(0,0),495,"calcHist custom zero half");
+$.expect(smallHist.get(1,0),105,"calcHist custom high half");
+
+var lut = cv2.zeros(1,256,cv2.CV_8UC1);
+for(i=0;255;1){
+    lut.set(0,i,255-i);
+}
+var mapped = cv2.LUT(img,lut);
+$.expect(mapped.shape,img.shape,"LUT output shape");
+$.expect(mapped.get(0,0),255,"LUT maps 0 to 255");
+$.expect(mapped.get(3,2),0,"LUT maps 255 to 0");
+
+return $.report();

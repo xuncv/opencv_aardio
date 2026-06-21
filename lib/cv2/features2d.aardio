@@ -1,0 +1,17 @@
+namespace cv2.features2d{}
+namespace cv2;
+
+// Feature detection wrappers
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+FAST = function(image,threshold=10,nonmaxSuppression=true){
+    init();
+    return KeyPoints(..Aardio.OpenCvSharpBridge.Cv.FAST(_asNetMat(image),threshold,nonmaxSuppression));
+}
+
+AGAST = function(image,threshold=10,nonmaxSuppression=true,detectorType=3/*AGAST_OAST_9_16*/){
+    init();
+    return KeyPoints(..Aardio.OpenCvSharpBridge.Cv.AGAST(_asNetMat(image),threshold,nonmaxSuppression,detectorType));
+}
+
+agast = AGAST;

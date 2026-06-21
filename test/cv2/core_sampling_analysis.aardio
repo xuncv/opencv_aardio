@@ -1,0 +1,89 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 sampling / integral / clustering / moments");
+
+var near = function(actual,expected,eps=0.0001){
+    return math.abs(actual - expected) <= eps;
+}
+
+var img = cv2.zeros(8,8,cv2.CV_8UC1);
+var v = 0;
+for(y=0;7;1){
+    for(x=0;7;1){
+        img.set(y,x,v);
+        v++;
+    }
+}
+
+var patch = cv2.getRectSubPix(img,[3,3],[3,3]);
+$.expect(patch.shape,[3,3,1],"getRectSubPix shape");
+$.expect(patch.get(1,1),27,"getRectSubPix center value");
+$.expect(patch.get(0,0),18,"getRectSubPix top-left value");
+$.expect(patch.get(2,2),36,"getRectSubPix bottom-right value");
+
+var patch32 = cv2.getRectSubPix(img,[3,3],[3,3],cv2.CV_32FC1);
+$.expect(patch32.typeValue,cv2.CV_32FC1,"getRectSubPix patchType");
+$.test(near(patch32.get(1,1),27),"getRectSubPix patchType value");
+
+var mapX = cv2.zeros(8,8,cv2.CV_32FC1);
+var mapY = cv2.zeros(8,8,cv2.CV_32FC1);
+for(y=0;7;1){
+    for(x=0;7;1){
+        mapX.set(y,x,x);
+        mapY.set(y,x,y);
+    }
+}
+var map1,map2 = cv2.convertMaps(mapX,mapY,cv2.CV_16SC2,false);
+$.expect(map1.shape,[8,8,2],"convertMaps map1 shape");
+$.expect(map2.shape,[8,8,1],"convertMaps map2 shape");
+var remapped = cv2.remap(img,map1,map2,cv2.INTER_LINEAR);
+$.expect(cv2.countNonZero(cv2.absdiff(img,remapped)),0,"convertMaps fixed-point linear maps can remap identity");
+
+var m = cv2.Mat(2,3,cv2.CV_8UC1);
+m.set(0,0,1).set(0,1,2).set(0,2,3);
+m.set(1,0,4).set(1,1,5).set(1,2,6);
+var integ = cv2.integral(m,cv2.CV_32S);
+$.expect(integ.shape,[3,4,1],"integral shape is rows+1 cols+1");
+$.expect(integ.get(2,3),21,"integral full sum");
+$.expect(integ.get(1,2),3,"integral partial top-left 1x2 sum");
+$.expect(integ.get(2,2),12,"integral partial 2x2 sum");
+
+var integ2,sqsum = cv2.integral2(m);
+$.expect(integ2.shape,[3,4,1],"integral2 sum shape");
+$.expect(sqsum.shape,[3,4,1],"integral2 sqsum shape");
+$.test(near(integ2.get(2,3),21),"integral2 full sum");
+$.test(near(sqsum.get(2,3),91),"integral2 square sum");
+
+var data = cv2.Mat(6,1,cv2.CV_32FC1);
+data.set(0,0,0).set(1,0,1).set(2,0,2).set(3,0,20).set(4,0,21).set(5,0,22);
+var compact,labels,centers = cv2.kmeans(data,2,50,0.001,5,cv2.KMEANS_PP_CENTERS);
+$.expect(labels.shape,[6,1,1],"kmeans labels shape");
+$.expect(centers.shape,[2,1,1],"kmeans centers shape");
+$.test(compact <= 5,"kmeans compactness small for two tight clusters",compact);
+var c0 = centers.get(0,0);
+var c1 = centers.get(1,0);
+var lo = math.min(c0,c1);
+var hi = math.max(c0,c1);
+$.test(near(lo,1,0.1),"kmeans lower center near 1",lo);
+$.test(near(hi,21,0.1),"kmeans higher center near 21",hi);
+$.test(labels.get(0,0) == labels.get(1,0) && labels.get(1,0) == labels.get(2,0),"kmeans first cluster labels consistent");
+$.test(labels.get(3,0) == labels.get(4,0) && labels.get(4,0) == labels.get(5,0),"kmeans second cluster labels consistent");
+$.test(labels.get(0,0) != labels.get(3,0),"kmeans separates two clusters");
+
+var mask = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.rectangle(mask,[2,3],[8,9],255,cv2.FILLED);
+var mo = cv2.moments(mask,true);
+$.expect(mo.m00,36,"moments binary area");
+$.test(near(mo.m10 / mo.m00,4.5),"moments centroid x");
+$.test(near(mo.m01 / mo.m00,5.5),"moments centroid y");
+$.test(mo.mu20 > 0 && mo.mu02 > 0,"moments central moments positive");
+
+var contours = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE);
+$.expect(#contours,1,"moments contour source has one contour");
+var cmo = cv2.contourMoments(contours[1]);
+$.expect(cmo.m00,25,"contourMoments polygon area");
+$.test(near(cmo.m10 / cmo.m00,4.5),"contourMoments centroid x");
+$.test(near(cmo.m01 / cmo.m00,5.5),"contourMoments centroid y");
+
+return $.report();

@@ -1,0 +1,51 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 direct OpenCvSharp backend");
+
+var version = cv2.getVersionString();
+$.test(version == "4.5.3", "OpenCvSharp/OpenCV 版本", version);
+
+var img,err = cv2.imread("/assets/images/Lena.jpg",cv2.IMREAD_COLOR);
+$.test(img != null, "imread 读取 Lena", err);
+if(img){
+    $.expect(img.shape,[404,435,3],"imread shape");
+    $.test(!img.empty(),"Mat.empty 为 false");
+    $.expect(img.channels(),3,"Mat.channels");
+
+    var gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY);
+    $.expect(gray.shape,[404,435,1],"cvtColor BGR2GRAY");
+
+    var small = cv2.resize(img,[64,48]);
+    $.expect(small.shape,[48,64,3],"resize 到 64x48");
+
+    var blur = cv2.GaussianBlur(img,[3,3]);
+    $.expect(blur.shape,img.shape,"GaussianBlur 保持尺寸");
+
+    var med = cv2.medianBlur(gray,3);
+    $.expect(med.shape,gray.shape,"medianBlur 保持尺寸");
+
+    var ret,th = cv2.threshold(gray,127,255,cv2.THRESH_BINARY);
+    $.expect(ret,127,"threshold 返回阈值");
+    $.expect(th.shape,gray.shape,"threshold 输出尺寸");
+
+    var flipped = cv2.flip(img,-1);
+    $.expect(flipped.shape,img.shape,"flip 保持尺寸");
+
+    var border = cv2.copyMakeBorder(img,1,2,3,4,cv2.BORDER_CONSTANT,[0,0,255,0]);
+    $.expect(border.shape,[407,442,3],"copyMakeBorder 输出尺寸");
+
+    var outPath = io.tmpname("cv2_resize_",".jpg");
+    var ok = cv2.imwrite(outPath,small);
+    $.test(ok,"imwrite 保存文件");
+    $.test(io.exist(outPath) != null,"imwrite 文件存在",outPath);
+    io.remove(outPath);
+}
+
+var z = cv2.zeros(2,3,cv2.CV_8UC1);
+$.expect(z.shape,[2,3,1],"zeros shape");
+
+var o = cv2.ones(2,3,cv2.CV_8UC1);
+$.expect(o.shape,[2,3,1],"ones shape");
+
+return $.report();

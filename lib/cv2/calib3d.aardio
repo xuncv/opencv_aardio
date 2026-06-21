@@ -1,0 +1,102 @@
+namespace cv2.calib3d{}
+namespace cv2;
+
+// Calibration and 3D geometry helpers
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+Rodrigues = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Rodrigues(_asNetMat(src));
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+RQDecomp3x3 = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.RQDecomp3x3(_asNetMat(src));
+    return {x=r.X;y=r.Y;z=r.Z}, Mat(r.MtxR), Mat(r.MtxQ);
+}
+
+calibrationMatrixValues = function(cameraMatrix,imageSize,apertureWidth=0,apertureHeight=0){
+    init();
+    var width,height = _size2wh(imageSize);
+    var r = ..Aardio.OpenCvSharpBridge.Cv.CalibrationMatrixValues(_asNetMat(cameraMatrix),width,height,apertureWidth,apertureHeight);
+    return {fovX=r.FovX;fovY=r.FovY;focalLength=r.FocalLength;principalPoint=[r.PrincipalPointX,r.PrincipalPointY];aspectRatio=r.AspectRatio};
+}
+
+undistort = function(src,cameraMatrix,distCoeffs){
+    init();
+    if(!distCoeffs) distCoeffs = Mat();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Undistort(_asNetMat(src),_asNetMat(cameraMatrix),_asNetMat(distCoeffs)));
+}
+
+_projectPointInput = function(points,dims=2){
+    if(type.rget(points)=="cv2.Mat") return points;
+    return _pointsToMat(points,dims,6/*CV_64F*/);
+}
+
+_pointsTo2xNMat = function(points){
+    var m = Mat(2,#points,6/*CV_64F*/);
+    for(i,pt in points){
+        m.set(0,i-1,pt[1]);
+        m.set(1,i-1,pt[2]);
+    }
+    return m;
+}
+
+projectPoints = function(objectPoints,rvec,tvec,cameraMatrix,distCoeffs){
+    init();
+    if(!distCoeffs) distCoeffs = Mat();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.ProjectPoints(_asNetMat(_projectPointInput(objectPoints,3)),_asNetMat(rvec),_asNetMat(tvec),_asNetMat(cameraMatrix),_asNetMat(distCoeffs)));
+}
+
+undistortPoints = function(src,cameraMatrix,distCoeffs,r,p){
+    init();
+    if(!distCoeffs) distCoeffs = Mat();
+    if(!r) r = Mat();
+    if(!p) p = Mat();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.UndistortPoints(_asNetMat(_projectPointInput(src,2)),_asNetMat(cameraMatrix),_asNetMat(distCoeffs),_asNetMat(r),_asNetMat(p)));
+}
+
+convertPointsToHomogeneous = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ConvertPointsToHomogeneous(_asNetMat(_projectPointInput(src,2))));
+}
+
+convertPointsFromHomogeneous = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ConvertPointsFromHomogeneous(_asNetMat(src)));
+}
+
+findHomography = function(srcPoints,dstPoints,method=0,ransacReprojThreshold=3.0){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.FindHomography(_asNetMat(_projectPointInput(srcPoints,2)),_asNetMat(_projectPointInput(dstPoints,2)),method,ransacReprojThreshold);
+    return r.Ok, Mat(r.Mat);
+}
+
+findFundamentalMat = function(srcPoints,dstPoints,method=8/*FM_RANSAC*/,ransacReprojThreshold=3.0,confidence=0.99){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.FindFundamentalMat(_asNetMat(_projectPointInput(srcPoints,2)),_asNetMat(_projectPointInput(dstPoints,2)),method,ransacReprojThreshold,confidence);
+    return r.Ok, Mat(r.Mat);
+}
+
+triangulatePoints = function(projMatr1,projMatr2,projPoints1,projPoints2){
+    init();
+    if(type.rget(projPoints1)!="cv2.Mat") projPoints1 = _pointsTo2xNMat(projPoints1);
+    if(type.rget(projPoints2)!="cv2.Mat") projPoints2 = _pointsTo2xNMat(projPoints2);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.TriangulatePoints(_asNetMat(projMatr1),_asNetMat(projMatr2),_asNetMat(projPoints1),_asNetMat(projPoints2)));
+}
+
+solvePnP = function(objectPoints,imagePoints,cameraMatrix,distCoeffs,useExtrinsicGuess=false,flags=0/*SOLVEPNP_ITERATIVE*/){
+    init();
+    if(!distCoeffs) distCoeffs = Mat();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SolvePnP(_asNetMat(_projectPointInput(objectPoints,3)),_asNetMat(_projectPointInput(imagePoints,2)),_asNetMat(cameraMatrix),_asNetMat(distCoeffs),useExtrinsicGuess,flags);
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+initUndistortRectifyMap = function(cameraMatrix,distCoeffs,r,newCameraMatrix,size,m1type=5){
+    init();
+    if(!distCoeffs) distCoeffs = Mat();
+    if(!r) r = Mat();
+    if(!newCameraMatrix) newCameraMatrix = cameraMatrix;
+    var width,height = _size2wh(size);
+    var ret = ..Aardio.OpenCvSharpBridge.Cv.InitUndistortRectifyMap(_asNetMat(cameraMatrix),_asNetMat(distCoeffs),_asNetMat(r),_asNetMat(newCameraMatrix),width,height,m1type);
+    return Mat(ret.Mat1), Mat(ret.Mat2);
+}

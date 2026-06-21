@@ -1,0 +1,44 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 template matching and corner features");
+
+var hasNear = function(points,x,y,maxDist=1.5){
+    for(i,pt in points){
+        var dx = pt[1] - x;
+        var dy = pt[2] - y;
+        if(dx * dx + dy * dy <= maxDist * maxDist) return true;
+    }
+    return false;
+}
+
+var img = cv2.zeros(50,50,cv2.CV_8UC1);
+cv2.rectangle(img,[15,16],[27,28],255,1);
+cv2.line(img,[15,16],[26,27],180,1);
+
+var templ = img.roi(15,16,12,12).clone();
+var result = cv2.matchTemplate(img,templ,cv2.TM_SQDIFF_NORMED);
+$.expect(result.shape,[39,39,1],"matchTemplate result shape");
+
+var minVal,maxVal,minLoc,maxLoc = cv2.minMaxLoc(result);
+$.test(minVal < 0.001,"matchTemplate min value near zero",minVal);
+$.expect(minLoc,[15,16],"matchTemplate best location");
+$.test(maxVal > 0.9,"matchTemplate max value",maxVal);
+
+var harris = cv2.cornerHarris(img,2,3,0.04);
+$.expect(harris.shape,[50,50,1],"cornerHarris shape");
+$.expect(harris.typeValue,cv2.CV_32FC1,"cornerHarris output type");
+var hMin,hMax,hMinLoc,hMaxLoc = cv2.minMaxLoc(harris);
+$.test(hMax > 0.05,"cornerHarris response has strong corner",hMax);
+$.test(hMaxLoc[1] >= 14 && hMaxLoc[1] <= 28 && hMaxLoc[2] >= 15 && hMaxLoc[2] <= 29,"cornerHarris max location in target region",hMaxLoc);
+
+var corners = cv2.goodFeaturesToTrack(img,10,0.01,3);
+$.test(#corners >= 4,"goodFeaturesToTrack finds expected corners",corners);
+$.test(hasNear(corners,15,16),"goodFeaturesToTrack corner near top-left",corners);
+$.test(hasNear(corners,26,27),"goodFeaturesToTrack corner near bottom-right",corners);
+$.test(hasNear(corners,24,18) || hasNear(corners,17,25),"goodFeaturesToTrack diagonal/rectangle corner",corners);
+
+var cornersHarris = cv2.goodFeaturesToTrack(img,10,0.01,3,3,true,0.04);
+$.test(#cornersHarris >= 2,"goodFeaturesToTrack with Harris detector",cornersHarris);
+
+return $.report();

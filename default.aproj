@@ -3,49 +3,66 @@
 	<file name="main.aardio" path="main.aardio" comment="启动程序代码"/>
 	<folder name="资源文件" path="res" embed="true" local="false" ignored="false"/>
 	<folder name="tools" path="tools" embed="true" comment="目录" local="false" ignored="false">
-		<file name="readApi.aardio" path="tools\readApi.aardio" comment="tools\readApi.aardio"/>
-		<file name="enum2const.aardio" path="tools\enum2const.aardio" comment="tools\enum2const.aardio"/>
 		<file name="api.aardio" path="tools\api.aardio" comment="tools\api.aardio"/>
+		<file name="enum2const.aardio" path="tools\enum2const.aardio" comment="tools\enum2const.aardio"/>
+		<file name="readApi.aardio" path="tools\readApi.aardio" comment="tools\readApi.aardio"/>
 	</folder>
 	<folder name="test" path="test" embed="true" comment="目录" local="false" ignored="false">
-		<file name="aardio2.aardio" path="test\aardio2.aardio" comment="test\aardio2.aardio"/>
-		<file name="bitmap2Mat.aardio" path="test\bitmap2Mat.aardio" comment="test\bitmap2Mat.aardio"/>
-		<file name="coffee.aardio" path="test\coffee.aardio" comment="test\coffee.aardio"/>
-		<file name="common.aardio" path="test\common.aardio" comment="test\common.aardio"/>
-		<file name="contour.aardio" path="test\contour.aardio" comment="test\contour.aardio"/>
-		<file name="matTest.aardio" path="test\matTest.aardio" comment="test\matTest.aardio"/>
-		<file name="text2.aardio" path="test\text2.aardio" comment="test\text2.aardio"/>
-		<file name="textd.aardio" path="test\textd.aardio" comment="test\textd.aardio"/>
-		<file name="video.aardio" path="test\video.aardio" comment="test\video.aardio"/>
-		<folder name="core" path="test\core" comment="test\core" local="false" embed="false" ignored="false">
-			<file name="mat.aardio" path="test\core\mat.aardio" comment="test\core\mat.aardio"/>
-			<file name="sample.aardio" path="test\core\sample.aardio" comment="test\core\sample.aardio"/>
-		</folder>
-		<folder name="imgcodecs" path="test\imgcodecs" comment="test\imgcodecs" local="false" embed="false" ignored="false">
-			<file name="imgcodecs.aardio" path="test\imgcodecs\imgcodecs.aardio" comment="test\imgcodecs\imgcodecs.aardio"/>
-		</folder>
-		<folder name="imgproc" path="test\imgproc" comment="test\imgproc" local="false" embed="false" ignored="false">
-			<file name="blurWinform.aardio" path="test\imgproc\blurWinform.aardio" comment="test\imgproc\blurWinform.aardio"/>
-			<file name="clock.aardio" path="test\imgproc\clock.aardio" comment="test\imgproc\clock.aardio"/>
-			<file name="draw.aardio" path="test\imgproc\draw.aardio" comment="test\imgproc\draw.aardio"/>
-			<file name="hough.aardio" path="test\imgproc\hough.aardio" comment="test\imgproc\hough.aardio"/>
-			<file name="imgproc.aardio" path="test\imgproc\imgproc.aardio" comment="test\imgproc\imgproc.aardio"/>
-			<file name="morphology.aardio" path="test\imgproc\morphology.aardio" comment="test\imgproc\morphology.aardio"/>
-			<file name="person.aardio" path="test\imgproc\person.aardio" comment="test\imgproc\person.aardio"/>
-			<file name="threshold.aardio" path="test\imgproc\threshold.aardio" comment="test\imgproc\threshold.aardio"/>
-		</folder>
-		<folder name="video" path="test\video" comment="test\video" local="false" embed="false" ignored="false">
-			<file name="subtractor.aardio" path="test\video\subtractor.aardio" comment="test\video\subtractor.aardio"/>
+		<folder name="cv2" path="test\cv2" embed="false" comment="test\cv2" local="false" ignored="false">
+			<file name="api_batches_abc.aardio" path="test\cv2\api_batches_abc.aardio" comment="test\cv2\api_batches_abc.aardio"/>
+			<file name="core.aardio" path="test\cv2\core.aardio" comment="test\cv2\core.aardio"/>
+			<file name="core_arith.aardio" path="test\cv2\core_arith.aardio" comment="test\cv2\core_arith.aardio"/>
+			<file name="core_extra_more.aardio" path="test\cv2\core_extra_more.aardio" comment="test\cv2\core_extra_more.aardio"/>
+			<file name="core_extra50.aardio" path="test\cv2\core_extra50.aardio" comment="test\cv2\core_extra50.aardio"/>
+			<file name="core_frequency.aardio" path="test\cv2\core_frequency.aardio" comment="test\cv2\core_frequency.aardio"/>
+			<file name="core_io_channels_extra.aardio" path="test\cv2\core_io_channels_extra.aardio" comment="test\cv2\core_io_channels_extra.aardio"/>
+			<file name="core_linalg.aardio" path="test\cv2\core_linalg.aardio" comment="test\cv2\core_linalg.aardio"/>
+			<file name="core_matrix_ops.aardio" path="test\cv2\core_matrix_ops.aardio" comment="test\cv2\core_matrix_ops.aardio"/>
+			<file name="core_pca_shape.aardio" path="test\cv2\core_pca_shape.aardio" comment="test\cv2\core_pca_shape.aardio"/>
+			<file name="core_polar_math.aardio" path="test\cv2\core_polar_math.aardio" comment="test\cv2\core_polar_math.aardio"/>
+			<file name="core_sampling_analysis.aardio" path="test\cv2\core_sampling_analysis.aardio" comment="test\cv2\core_sampling_analysis.aardio"/>
+			<file name="core_shape_advanced.aardio" path="test\cv2\core_shape_advanced.aardio" comment="test\cv2\core_shape_advanced.aardio"/>
+			<file name="core_stats_transform.aardio" path="test\cv2\core_stats_transform.aardio" comment="test\cv2\core_stats_transform.aardio"/>
+			<file name="dnn_basic.aardio" path="test\cv2\dnn_basic.aardio" comment="test\cv2\dnn_basic.aardio"/>
+			<file name="dnn_caffe_relu.aardio" path="test\cv2\dnn_caffe_relu.aardio" comment="test\cv2\dnn_caffe_relu.aardio"/>
+			<file name="dnn_detection_postprocess.aardio" path="test\cv2\dnn_detection_postprocess.aardio" comment="test\cv2\dnn_detection_postprocess.aardio"/>
+			<file name="dnn_onnx_relu.aardio" path="test\cv2\dnn_onnx_relu.aardio" comment="test\cv2\dnn_onnx_relu.aardio"/>
+			<file name="dnn_postprocess.aardio" path="test\cv2\dnn_postprocess.aardio" comment="test\cv2\dnn_postprocess.aardio"/>
+			<file name="dnn_segmentation_postprocess.aardio" path="test\cv2\dnn_segmentation_postprocess.aardio" comment="test\cv2\dnn_segmentation_postprocess.aardio"/>
+			<file name="dnn_ssd_detection.aardio" path="test\cv2\dnn_ssd_detection.aardio" comment="test\cv2\dnn_ssd_detection.aardio"/>
+			<file name="dnn_visualization.aardio" path="test\cv2\dnn_visualization.aardio" comment="test\cv2\dnn_visualization.aardio"/>
+			<file name="features_orb_matcher.aardio" path="test\cv2\features_orb_matcher.aardio" comment="test\cv2\features_orb_matcher.aardio"/>
+			<file name="highgui.aardio" path="test\cv2\highgui.aardio" comment="test\cv2\highgui.aardio"/>
+			<file name="imgproc_analysis.aardio" path="test\cv2\imgproc_analysis.aardio" comment="test\cv2\imgproc_analysis.aardio"/>
+			<file name="imgproc_contours.aardio" path="test\cv2\imgproc_contours.aardio" comment="test\cv2\imgproc_contours.aardio"/>
+			<file name="imgproc_edges_transform.aardio" path="test\cv2\imgproc_edges_transform.aardio" comment="test\cv2\imgproc_edges_transform.aardio"/>
+			<file name="imgproc_features.aardio" path="test\cv2\imgproc_features.aardio" comment="test\cv2\imgproc_features.aardio"/>
+			<file name="imgproc_geometry_extra.aardio" path="test\cv2\imgproc_geometry_extra.aardio" comment="test\cv2\imgproc_geometry_extra.aardio"/>
+			<file name="imgproc_morph.aardio" path="test\cv2\imgproc_morph.aardio" comment="test\cv2\imgproc_morph.aardio"/>
+			<file name="imgproc_perspective_hough.aardio" path="test\cv2\imgproc_perspective_hough.aardio" comment="test\cv2\imgproc_perspective_hough.aardio"/>
+			<file name="imgproc_preprocess.aardio" path="test\cv2\imgproc_preprocess.aardio" comment="test\cv2\imgproc_preprocess.aardio"/>
+			<file name="imgproc_segmentation_extra.aardio" path="test\cv2\imgproc_segmentation_extra.aardio" comment="test\cv2\imgproc_segmentation_extra.aardio"/>
+			<file name="mat_core.aardio" path="test\cv2\mat_core.aardio" comment="test\cv2\mat_core.aardio"/>
+			<file name="run_all.aardio" path="test\cv2\run_all.aardio" comment="test\cv2\run_all.aardio"/>
+			<file name="video_photo_extra.aardio" path="test\cv2\video_photo_extra.aardio" comment="test\cv2\video_photo_extra.aardio"/>
+			<file name="videoio.aardio" path="test\cv2\videoio.aardio" comment="test\cv2\videoio.aardio"/>
 		</folder>
 	</folder>
 	<folder name="samples" path="samples" embed="true" comment="目录" local="false" ignored="false">
+		<file name="algorithmTest.aardio" path="samples\algorithmTest.aardio" comment="samples\algorithmTest.aardio"/>
+		<file name="barcode.aardio" path="samples\barcode.aardio" comment="samples\barcode.aardio"/>
 		<file name="cornCounter.aardio" path="samples\cornCounter.aardio" comment="samples\cornCounter.aardio"/>
+		<file name="dnn_minimal_caffe_relu.aardio" path="samples\dnn_minimal_caffe_relu.aardio" comment="samples\dnn_minimal_caffe_relu.aardio"/>
+		<file name="dnn_minimal_onnx_relu.aardio" path="samples\dnn_minimal_onnx_relu.aardio" comment="samples\dnn_minimal_onnx_relu.aardio"/>
+		<file name="dnn_postprocess_demo.aardio" path="samples\dnn_postprocess_demo.aardio" comment="samples\dnn_postprocess_demo.aardio"/>
 		<file name="faceMaskDetection.aardio" path="samples\faceMaskDetection.aardio" comment="samples\faceMaskDetection.aardio"/>
+		<file name="highgui_imshow.aardio" path="samples\highgui_imshow.aardio" comment="samples\highgui_imshow.aardio"/>
 		<file name="matchTemplate.aardio" path="samples\matchTemplate.aardio" comment="samples\matchTemplate.aardio"/>
 		<file name="scanQR.aardio" path="samples\scanQR.aardio" comment="samples\scanQR.aardio"/>
 		<file name="yolov4.aardio" path="samples\yolov4.aardio" comment="samples\yolov4.aardio"/>
 		<file name="yolov5.aardio" path="samples\yolov5.aardio" comment="samples\yolov5.aardio"/>
-		<file name="barcode.aardio" path="samples\barcode.aardio" comment="samples\barcode.aardio"/>
-		<file name="algorithmTest.aardio" path="samples\algorithmTest.aardio" comment="samples\algorithmTest.aardio"/>
+	</folder>
+	<folder name="docs" path="docs" embed="true" comment="目录" local="false" ignored="false">
+		<file name="dnn.md" path="docs\dnn.md" comment="docs\dnn.md"/>
 	</folder>
 </project>

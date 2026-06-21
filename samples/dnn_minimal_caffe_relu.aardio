@@ -1,0 +1,47 @@
+import cv2;
+import console;
+
+// Minimal DNN forward demo without downloading any external model.
+// It builds a tiny Caffe network: Input -> ReLU, then verifies the output.
+
+var input = cv2.Mat(2,2,cv2.CV_32FC1);
+input.set(0,0,-1).set(0,1,2).set(1,0,-3).set(1,1,4);
+
+var blob = cv2.blobFromImage(input,1.0,[2,2],[0,0,0],false,false);
+
+var prototxt = /**
+name: "relu_demo"
+input: "data"
+input_shape { dim: 1 dim: 1 dim: 2 dim: 2 }
+layer {
+  name: "relu"
+  type: "ReLU"
+  bottom: "data"
+  top: "relu"
+}
+**/;
+
+var protoPath = io.tmpname("cv2_dnn_relu_demo_",".prototxt");
+string.save(protoPath,prototxt);
+
+var net = cv2.readNetFromCaffe(protoPath);
+net.setPreferableBackend(cv2.DNN_BACKEND_OPENCV);
+net.setPreferableTarget(cv2.DNN_TARGET_CPU);
+net.setInput(blob,"data");
+
+var out = net.forward("relu");
+var values = out.toFloatArray();
+var sum = cv2.sum(out);
+
+io.remove(protoPath);
+
+var result = {
+    input = [-1,2,-3,4];
+    output = values;
+    expected = [0,2,0,4];
+    sum = sum;
+    shape = [out.dims,out.sizeAt(0),out.sizeAt(1),out.sizeAt(2),out.sizeAt(3)];
+};
+
+console.dump(result);
+return result;

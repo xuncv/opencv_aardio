@@ -1,0 +1,46 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 dnn detection postprocess");
+
+var box = cv2.dnnBoxXYWHToRect(0.5,0.5,0.4,0.2,[200,100],true);
+$.test(box.x == 60 && box.y == 40 && box.width == 80 && box.height == 20,"normalized xywh -> pixel rect");
+
+var clipped = cv2.dnnClipBox([-10,-5,30,20],[100,50]);
+$.test(clipped.x == 0 && clipped.y == 0 && clipped.width == 20 && clipped.height == 15,"clip box to image bounds");
+
+var detections = [
+    {classId=1;score=0.90;box=[0,0,100,100]},
+    {classId=1;score=0.80;box=[10,10,100,100]},
+    {classId=2;score=0.70;box=[10,10,100,100]},
+    {classId=1;score=0.20;box=[200,200,20,20]},
+];
+var kept = cv2.dnnNMSDetections(detections,0.5,0.4,true);
+$.expect(#kept,2,"class-aware NMS keeps best box per overlapped class");
+$.expect([kept[1].classId,kept[1].score],[1,0.90],"NMS results sorted by score");
+$.expect(kept[2].classId,2,"class-aware NMS does not suppress other class");
+
+var keptAll = cv2.dnnNMSDetections(detections,0.5,0.4,false);
+$.expect(#keptAll,1,"class-agnostic NMS suppresses all overlapped classes");
+$.expect(keptAll[1].score,0.90,"class-agnostic NMS keeps highest score");
+
+var rows = [
+    [0.5,0.5,0.4,0.2,0.90,0.10,0.80], // class 2 score 0.72
+    [0.52,0.5,0.4,0.2,0.85,0.10,0.75], // class 2 score 0.6375 suppressed
+    [0.2,0.2,0.2,0.2,0.80,0.70,0.10], // class 1 score 0.56
+    [0.9,0.9,0.2,0.2,0.20,0.99,0.01], // below conf threshold
+];
+var yolo = cv2.dnnDecodeYolo(rows,[200,100],0.5,0.4,["cat","dog"],true,true);
+$.expect(#yolo,2,"YOLO decode filters threshold and NMS");
+$.expect([yolo[1].classId,yolo[1].label],[2,"dog"],"YOLO best class and label");
+$.test(math.abs(yolo[1].score - 0.72) < 0.00001,"YOLO score = objectness * class score");
+$.test(yolo[1].x == 60 && yolo[1].y == 40 && yolo[1].width == 80 && yolo[1].height == 20,"YOLO normalized box converted to pixels");
+$.expect([yolo[2].classId,yolo[2].label],[1,"cat"],"YOLO keeps different class detection");
+
+var rowsPixel = [
+    [100,50,80,20,0.9,0.1,0.8]
+];
+var yoloPixel = cv2.dnnDecodeYolo(rowsPixel,[200,100],0.5,0.4,["cat","dog"],false,true);
+$.test(yoloPixel[1].x == 60 && yoloPixel[1].y == 40 && yoloPixel[1].width == 80 && yoloPixel[1].height == 20,"YOLO pixel box mode");
+
+return $.report();

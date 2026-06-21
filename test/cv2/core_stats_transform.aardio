@@ -1,0 +1,82 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2 core stats and transform");
+
+var near = function(actual,expected,eps=0.000001){
+    return math.abs(actual - expected) <= eps;
+}
+
+var expectShape = function(mat,shape,name){
+    $.expect(mat.shape,shape,name);
+}
+
+var m = cv2.Mat(2,2,cv2.CV_32FC1);
+m.set(0,0,1).set(0,1,2).set(1,0,3).set(1,1,4);
+
+var mean,stddev = cv2.meanStdDev(m);
+$.test(near(mean[1],2.5),"meanStdDev mean[0]");
+$.test(near(stddev[1],1.1180339887499,0.000001),"meanStdDev stddev[0]");
+$.expect([mean[2],mean[3],mean[4]],[0,0,0],"meanStdDev scalar tail mean");
+$.expect([stddev[2],stddev[3],stddev[4]],[0,0,0],"meanStdDev scalar tail stddev");
+
+$.test(near(cv2.norm(m,cv2.NORM_L1),10),"norm single Mat L1");
+$.test(near(cv2.norm(m,cv2.NORM_L2),math.sqrt(30)),"norm single Mat L2");
+$.test(near(cv2.norm(m,cv2.NORM_INF),4),"norm single Mat INF");
+
+var b = m.clone();
+b.set(0,0,2).set(1,1,1);
+$.test(near(cv2.norm(m,b,cv2.NORM_L1),4),"norm two Mat L1");
+$.test(near(cv2.norm(m,b,cv2.NORM_L2),math.sqrt(10)),"norm two Mat L2");
+$.test(near(cv2.norm(m,b,cv2.NORM_INF),3),"norm two Mat INF");
+
+var s = cv2.sumElems(m);
+$.expect(s,[10,0,0,0],"sumElems single channel");
+
+var tr = cv2.trace(m);
+$.expect(tr,[5,0,0,0],"trace single channel");
+
+var c0 = cv2.Mat(1,2,cv2.CV_32FC1);
+var c1 = cv2.Mat(1,2,cv2.CV_32FC1);
+var c2 = cv2.Mat(1,2,cv2.CV_32FC1);
+c0.set(0,0,1).set(0,1,10);
+c1.set(0,0,2).set(0,1,20);
+c2.set(0,0,3).set(0,1,30);
+var multi = cv2.merge([c0,c1,c2]);
+var sm = cv2.sumElems(multi);
+$.expect(sm,[11,22,33,0],"sumElems multi channel");
+
+var px = cv2.Mat(1,2,cv2.CV_32FC1);
+var py = cv2.Mat(1,2,cv2.CV_32FC1);
+px.set(0,0,1).set(0,1,3);
+py.set(0,0,2).set(0,1,4);
+var pts = cv2.merge([px,py]);
+expectShape(pts,[1,2,2],"point Mat shape before transform");
+
+var A = cv2.Mat(2,3,cv2.CV_32FC1);
+A.set(0,0,1).set(0,1,0).set(0,2,10).set(1,0,0).set(1,1,1).set(1,2,20);
+var tpts = cv2.transform(pts,A);
+expectShape(tpts,[1,2,2],"transform output shape");
+$.test(near(tpts.get(0,0,0),11),"transform point0 x");
+$.test(near(tpts.get(0,0,1),22),"transform point0 y");
+$.test(near(tpts.get(0,1,0),13),"transform point1 x");
+$.test(near(tpts.get(0,1,1),24),"transform point1 y");
+
+var P = cv2.eye(3,3,cv2.CV_32FC1);
+P.set(0,2,10).set(1,2,20);
+var ppts = cv2.perspectiveTransform(pts,P);
+expectShape(ppts,[1,2,2],"perspectiveTransform output shape");
+$.test(near(ppts.get(0,0,0),11),"perspectiveTransform point0 x");
+$.test(near(ppts.get(0,0,1),22),"perspectiveTransform point0 y");
+$.test(near(ppts.get(0,1,0),13),"perspectiveTransform point1 x");
+$.test(near(ppts.get(0,1,1),24),"perspectiveTransform point1 y");
+
+var P2 = cv2.eye(3,3,cv2.CV_32FC1);
+P2.set(2,0,0.5); // x' = x / (0.5*x + 1), y' = y / (0.5*x + 1)
+var p2 = cv2.perspectiveTransform(pts,P2);
+$.test(near(p2.get(0,0,0),1/1.5,0.00001),"perspectiveTransform homogeneous point0 x");
+$.test(near(p2.get(0,0,1),2/1.5,0.00001),"perspectiveTransform homogeneous point0 y");
+$.test(near(p2.get(0,1,0),3/2.5,0.00001),"perspectiveTransform homogeneous point1 x");
+$.test(near(p2.get(0,1,1),4/2.5,0.00001),"perspectiveTransform homogeneous point1 y");
+
+return $.report();

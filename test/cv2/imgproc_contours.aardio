@@ -1,0 +1,41 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 contours and drawing");
+
+var img = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.rectangle(img,[3,4],[13,14],255,cv2.FILLED);
+$.expect(cv2.countNonZero(img),100,"filled rectangle pixel count");
+
+var contours,hierarchy = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE);
+$.expect(#contours,1,"findContours external count");
+$.expect(#hierarchy,1,"findContours hierarchy count");
+$.expect(hierarchy[1],[-1,-1,-1,-1],"findContours hierarchy external single contour");
+
+var contour = contours[1];
+$.expect(contour.count,4,"Contour.count for rectangle");
+$.expect(contour.point(0),[3,4],"Contour.point zero-based");
+$.expect(contour.toArray(),[[3,4],[3,13],[12,13],[12,4]],"Contour.toArray rectangle points");
+$.expect(cv2.boundingRect(contour),[3,4,10,10],"cv2.boundingRect");
+$.expect(contour.boundingRect(),[3,4,10,10],"Contour.boundingRect method");
+$.expect(cv2.contourArea(contour),81,"cv2.contourArea rectangle");
+$.expect(contour.area(),81,"Contour.area method");
+$.expect(cv2.arcLength(contour,true),36,"cv2.arcLength rectangle");
+$.expect(contour.arcLength(true),36,"Contour.arcLength method");
+
+var approx = cv2.approxPolyDP(contour,1.0,true);
+$.expect(approx.count,4,"approxPolyDP count");
+var approx2 = contour.approxPolyDP(1.0,true);
+$.expect(approx2.count,4,"Contour.approxPolyDP method");
+
+var edge = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.drawContours(edge,contours,-1,255,1);
+$.expect(cv2.countNonZero(edge),36,"drawContours outline pixel count");
+
+var canvas = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.line(canvas,[0,0],[19,0],255,1);
+$.expect(cv2.countNonZero(canvas),20,"line horizontal count");
+cv2.circle(canvas,[10,10],3,255,cv2.FILLED);
+$.test(cv2.countNonZero(canvas) > 20,"circle filled increases nonzero",cv2.countNonZero(canvas));
+
+return $.report();

@@ -1,0 +1,114 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 API batches A/B/C");
+
+// Core A: abs / bitwise aliases / copyTo / system helpers
+var img = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.rectangle(img,[5,5],[15,15],255,cv2.FILLED);
+
+$.expect(cv2.abs(img).shape,[20,20,1],"abs shape");
+$.expect(cv2.bitwiseAnd(img,img).shape,[20,20,1],"bitwiseAnd alias");
+$.expect(cv2.bitwiseOr(img,img).shape,[20,20,1],"bitwiseOr alias");
+$.expect(cv2.bitwiseXor(img,img).shape,[20,20,1],"bitwiseXor alias");
+$.expect(cv2.bitwiseNot(img).shape,[20,20,1],"bitwiseNot alias");
+$.expect(cv2.copyTo(img).shape,[20,20,1],"copyTo without mask");
+$.test(cv2.sum(img)[1] > 0,"sum alias");
+$.expect(cv2.alignSize(13,8),16,"alignSize");
+$.test(cv2.getVersionMajor() >= 3,"OpenCV major version");
+$.test(cv2.getVersionMinor() >= 0,"OpenCV minor version");
+$.test(cv2.getVersionRevision() >= 0,"OpenCV revision version");
+$.test(cv2.getNumberOfCpus() >= 1,"getNumberOfCpus");
+$.test(#cv2.getCpuFeaturesLine() >= 0,"getCpuFeaturesLine");
+var oldOptimized = cv2.useOptimized();
+cv2.setUseOptimized(oldOptimized);
+$.expect(cv2.useOptimized(),oldOptimized,"useOptimized/setUseOptimized roundtrip");
+
+// imgproc A: gradients, sub-pixel corners, convex hull indices, connected components, back projection
+var dx,dy = cv2.spatialGradient(img);
+$.expect(dx.shape,[20,20,1],"spatialGradient dx");
+$.expect(dy.shape,[20,20,1],"spatialGradient dy");
+var corners = cv2.goodFeaturesToTrack(img,4,0.01,1);
+$.test(#corners > 0,"goodFeaturesToTrack synthetic corners");
+var refined = cv2.cornerSubPix(img,corners,[3,3]);
+$.expect(#refined,#corners,"cornerSubPix count");
+var contours = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE);
+$.test(#contours == 1,"findContours rectangle");
+var hullIdx = cv2.convexHullIndices(contours[1]);
+$.test(#hullIdx >= 4,"convexHullIndices count");
+var defects = cv2.convexityDefects(contours[1],hullIdx);
+$.test(type(defects)=="table","convexityDefects returns array");
+var cc,labels = cv2.connectedComponentsWithAlgorithm(img);
+$.expect(cc,2,"connectedComponentsWithAlgorithm count");
+$.expect(labels.shape,[20,20,1],"connectedComponentsWithAlgorithm labels");
+var cc2,labels2,stats,cent = cv2.connectedComponentsWithStatsWithAlgorithm(img);
+$.expect(cc2,2,"connectedComponentsWithStatsWithAlgorithm count");
+$.expect(stats.shape,[2,5,1],"connectedComponentsWithStatsWithAlgorithm stats");
+var hist = cv2.calcHist(img,256,[0,256]);
+$.expect(cv2.calcBackProject(img,hist,[0,256]).shape,[20,20,1],"calcBackProject shape");
+
+// imgproc_basic: CvtColorTwoPlane synthetic NV12 planes
+var y = cv2.zeros(4,4,cv2.CV_8UC1);
+var uv = cv2.zeros(2,2,cv2.CV_8UC2);
+$.expect(cv2.cvtColorTwoPlane(y,uv,91/*COLOR_YUV2BGR_NV12*/).shape,[4,4,3],"cvtColorTwoPlane NV12 shape");
+
+// features2d B: AGAST
+var agastKps = cv2.AGAST(img,5,true);
+$.test(agastKps.count >= 0,"AGAST returns KeyPoints");
+
+// photo B: inpaint / decolor / filters
+var color = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR);
+var mask = cv2.zeros(20,20,cv2.CV_8UC1);
+mask.set(10,10,255);
+$.expect(cv2.inpaint(color,mask).shape,[20,20,3],"inpaint shape");
+var gray,boost = cv2.decolor(color);
+$.expect(gray.shape,[20,20,1],"decolor gray");
+$.expect(boost.shape,[20,20,3],"decolor boost");
+$.expect(cv2.detailEnhance(color).shape,[20,20,3],"detailEnhance shape");
+$.expect(cv2.edgePreservingFilter(color).shape,[20,20,3],"edgePreservingFilter shape");
+var pgray,pcolor = cv2.pencilSketch(color);
+$.expect(pgray.shape,[20,20,1],"pencilSketch gray");
+$.expect(pcolor.shape,[20,20,3],"pencilSketch color");
+$.expect(cv2.stylization(color).shape,[20,20,3],"stylization shape");
+$.expect(cv2.fastNlMeansDenoisingMulti([img,img,img]).shape,[20,20,1],"fastNlMeansDenoisingMulti shape");
+$.expect(cv2.fastNlMeansDenoisingColoredMulti([color,color,color]).shape,[20,20,3],"fastNlMeansDenoisingColoredMulti shape");
+
+// imgcodecs B: Glob
+var matches = cv2.glob(io.fullpath('/test/cv2/*.aardio'));
+$.test(#matches > 0,"glob finds test files");
+
+// calib3d C: point conversion / homography / fundamental / projection / triangulation / pnp
+var cam = cv2.eye(3,3,cv2.CV_64FC1);
+cam.set(0,0,500).set(1,1,500).set(0,2,10).set(1,2,10);
+var rvec = cv2.zeros(3,1,cv2.CV_64FC1);
+var tvec = cv2.zeros(3,1,cv2.CV_64FC1);
+tvec.set(2,0,5);
+var objectPoints = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0.5,0.5,1],[1.5,0.5,0.5]];
+var projected = cv2.projectPoints(objectPoints,rvec,tvec,cam);
+$.expect(projected.shape,[6,1,2],"projectPoints shape");
+$.expect(cv2.undistortPoints([[10,10],[20,10]],cam).shape,[2,1,2],"undistortPoints shape");
+var homog = cv2.convertPointsToHomogeneous([[1,2],[3,4]]);
+$.expect(homog.shape,[2,1,3],"convertPointsToHomogeneous shape");
+$.expect(cv2.convertPointsFromHomogeneous(homog).shape,[2,1,2],"convertPointsFromHomogeneous shape");
+var okH,H = cv2.findHomography([[0,0],[1,0],[1,1],[0,1]],[[0,0],[2,0],[2,2],[0,2]]);
+$.test(okH,"findHomography ok");
+$.expect(H.shape,[3,3,1],"findHomography shape");
+var pts1 = []; var pts2 = [];
+for(i=0;7;1){
+    table.push(pts1,[i, i%3]);
+    table.push(pts2,[i+0.1, (i%3)+0.2]);
+}
+var okF,F = cv2.findFundamentalMat(pts1,pts2,cv2.FM_8POINT);
+$.test(okF,"findFundamentalMat ok");
+$.expect(F.shape,[3,3,1],"findFundamentalMat shape");
+var P1 = cv2.zeros(3,4,cv2.CV_64FC1);
+P1.set(0,0,1).set(1,1,1).set(2,2,1);
+var P2 = cv2.zeros(3,4,cv2.CV_64FC1);
+P2.set(0,0,1).set(1,1,1).set(2,2,1).set(0,3,1);
+$.expect(cv2.triangulatePoints(P1,P2,[[0,0],[1,1]],[[0.1,0],[1.1,1]]).shape,[4,2,1],"triangulatePoints shape");
+var imagePoints = [[10,10],[110,10],[110,110],[10,110],[51.6667,51.6667],[146.36,55.45]];
+var pr,pt = cv2.solvePnP(objectPoints,imagePoints,cam,null,false,cv2.SOLVEPNP_EPNP);
+$.expect(pr.shape,[3,1,1],"solvePnP rvec");
+$.expect(pt.shape,[3,1,1],"solvePnP tvec");
+
+return $.report();

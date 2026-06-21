@@ -1,0 +1,48 @@
+namespace cv2.video{}
+namespace cv2;
+
+// Video analysis / optical flow / tracking wrappers.
+// Public API remains under namespace cv2.
+
+buildOpticalFlowPyramid = function(image,winSize,maxLevel=3,withDerivatives=true){
+    init();
+    if(!winSize) winSize = [21,21];
+    var w,h = _size2wh(winSize);
+    var r = ..Aardio.OpenCvSharpBridge.Cv.BuildOpticalFlowPyramid(_asNetMat(image),w,h,maxLevel,withDerivatives);
+    return _pyramidArray(r);
+}
+
+calcOpticalFlowFarneback = function(prev,next,pyrScale=0.5,levels=3,winSize=15,iterations=3,polyN=5,polySigma=1.2,flags=0){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CalcOpticalFlowFarneback(_asNetMat(prev),_asNetMat(next),pyrScale,levels,winSize,iterations,polyN,polySigma,flags));
+}
+
+calcOpticalFlowPyrLK = function(prevImg,nextImg,prevPts,winSize,maxLevel=3,maxCount=30,epsilon=0.01,flags=0,minEigThreshold=0.0001){
+    init();
+    if(!winSize) winSize = [21,21];
+    var w,h = _size2wh(winSize);
+    var r = ..Aardio.OpenCvSharpBridge.Cv.CalcOpticalFlowPyrLK(_asNetMat(prevImg),_asNetMat(nextImg),_pointsToFlatArray(prevPts,2),w,h,maxLevel,maxCount,epsilon,flags,minEigThreshold);
+    return _pyrLKTable(r);
+}
+
+computeECC = function(templateImage,inputImage){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.ComputeECC(_asNetMat(templateImage),_asNetMat(inputImage));
+}
+
+findTransformECC = function(templateImage,inputImage,warpMatrix,motionType=0/*MOTION_TRANSLATION*/,maxCount=50,epsilon=0.001){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.FindTransformECC(_asNetMat(templateImage),_asNetMat(inputImage),_asNetMat(warpMatrix),motionType,maxCount,epsilon);
+}
+
+meanShift = function(probImage,window,maxCount=10,epsilon=1.0){
+    init();
+    var x,y,w,h = _rect4(window);
+    return _meanShiftTable(..Aardio.OpenCvSharpBridge.Cv.MeanShift(_asNetMat(probImage),x,y,w,h,maxCount,epsilon));
+}
+
+camShift = function(probImage,window,maxCount=10,epsilon=1.0){
+    init();
+    var x,y,w,h = _rect4(window);
+    return _camShiftTable(..Aardio.OpenCvSharpBridge.Cv.CamShift(_asNetMat(probImage),x,y,w,h,maxCount,epsilon));
+}
+
+CamShift = camShift;

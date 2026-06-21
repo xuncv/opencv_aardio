@@ -1,0 +1,51 @@
+namespace cv2.highgui{}
+namespace cv2;
+
+// HighGUI wrappers: simple OpenCV-style window helpers.
+// Example: cv2.imshow("dst",dst); cv2.waitKey(0); cv2.destroyAllWindows();
+
+imshow = function(winname,img){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.ImShow(winname,_asNetMat(img));
+    return img;
+}
+
+waitKey = function(delay=0){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.WaitKey(delay);
+}
+
+waitKeyEx = function(delay=0){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.WaitKeyEx(delay);
+}
+
+namedWindow = function(winname,flags=1/*WINDOW_AUTOSIZE*/){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.NamedWindow(winname,flags);
+    return true;
+}
+
+destroyWindow = function(winname){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.DestroyWindow(winname);
+    return true;
+}
+
+destroyAllWindows = function(){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.DestroyAllWindows();
+    return true;
+}
+
+moveWindow = function(winname,x,y){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.MoveWindow(winname,x,y);
+    return true;
+}
+
+resizeWindow = function(winname,width,height){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.ResizeWindow(winname,width,height);
+    return true;
+}

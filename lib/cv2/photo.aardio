@@ -1,0 +1,83 @@
+namespace cv2.photo{}
+namespace cv2;
+
+// Photo module: denoising and related wrappers
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+fastNlMeansDenoising = function(src,h=3,templateWindowSize=7,searchWindowSize=21){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.FastNlMeansDenoising(_asNetMat(src),h,templateWindowSize,searchWindowSize));
+}
+
+fastNlMeansDenoisingColored = function(src,h=3,hColor=3,templateWindowSize=7,searchWindowSize=21){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.FastNlMeansDenoisingColored(_asNetMat(src),h,hColor,templateWindowSize,searchWindowSize));
+}
+
+fastNlMeansDenoisingMulti = function(frames,imgToDenoiseIndex=1,temporalWindowSize=3,h=3,templateWindowSize=7,searchWindowSize=21){
+    init();
+    if(!frames || #frames < 3) error("frames 至少需要 3 帧 Mat",2);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.FastNlMeansDenoisingMulti3(_asNetMat(frames[1]),_asNetMat(frames[2]),_asNetMat(frames[3]),imgToDenoiseIndex,temporalWindowSize,h,templateWindowSize,searchWindowSize));
+}
+
+fastNlMeansDenoisingColoredMulti = function(frames,imgToDenoiseIndex=1,temporalWindowSize=3,h=3,hColor=3,templateWindowSize=7,searchWindowSize=21){
+    init();
+    if(!frames || #frames < 3) error("frames 至少需要 3 帧 Mat",2);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.FastNlMeansDenoisingColoredMulti3(_asNetMat(frames[1]),_asNetMat(frames[2]),_asNetMat(frames[3]),imgToDenoiseIndex,temporalWindowSize,h,hColor,templateWindowSize,searchWindowSize));
+}
+
+inpaint = function(src,mask,inpaintRadius=3.0,flags=1/*INPAINT_TELEA*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Inpaint(_asNetMat(src),_asNetMat(mask),inpaintRadius,flags));
+}
+
+inPaint = inpaint;
+
+// 返回 gray, boost 两个 Mat。
+decolor = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Decolor(_asNetMat(src));
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+detailEnhance = function(src,sigmaS=10.0,sigmaR=0.15){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.DetailEnhance(_asNetMat(src),sigmaS,sigmaR));
+}
+
+edgePreservingFilter = function(src,flags=1/*RECURS_FILTER*/,sigmaS=60.0,sigmaR=0.4){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.EdgePreservingFilter(_asNetMat(src),flags,sigmaS,sigmaR));
+}
+
+pencilSketch = function(src,sigmaS=60.0,sigmaR=0.07,shadeFactor=0.02){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.PencilSketch(_asNetMat(src),sigmaS,sigmaR,shadeFactor);
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+stylization = function(src,sigmaS=60.0,sigmaR=0.45){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Stylization(_asNetMat(src),sigmaS,sigmaR));
+}
+
+// TV-L1 去噪。当前封装接受 3 帧 Mat，常用于同一场景多帧去噪。
+denoiseTVL1 = function(frames){
+    init();
+    if(!frames || #frames < 3) error("frames 至少需要 3 帧 Mat",2);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.DenoiseTVL1(_asNetMat(frames[1]),_asNetMat(frames[2]),_asNetMat(frames[3])));
+}
+
+colorChange = function(src,mask,redMul=1.5,greenMul=1.5,blueMul=1.5){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ColorChange(_asNetMat(src),_asNetMat(mask),redMul,greenMul,blueMul));
+}
+
+illuminationChange = function(src,mask,alpha=0.2,beta=0.4){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.IlluminationChange(_asNetMat(src),_asNetMat(mask),alpha,beta));
+}
+
+seamlessClone = function(src,dst,mask,center,flags=1/*NORMAL_CLONE*/){
+    init();
+    var x,y = _point2(center);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.SeamlessClone(_asNetMat(src),_asNetMat(dst),_asNetMat(mask),x,y,flags));
+}
+
+textureFlattening = function(src,mask,lowThreshold=30.0,highThreshold=45.0,kernelSize=3){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.TextureFlattening(_asNetMat(src),_asNetMat(mask),lowThreshold,highThreshold,kernelSize));
+}

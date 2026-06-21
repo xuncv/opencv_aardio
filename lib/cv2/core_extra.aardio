@@ -1,0 +1,29 @@
+namespace cv2.core_extra{}
+namespace cv2;
+
+// Additional core algebra and polynomial helpers
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+mulTransposed = function(src,aTa,delta,scale=1,dtype=-1){
+    init();
+    if(aTa === null) aTa = false;
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.MulTransposed(_asNetMat(src),aTa,_asNetMat(delta),scale,dtype));
+}
+
+eigenNonSymmetric = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.EigenNonSymmetric(_asNetMat(src));
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+solveCubic = function(coeffs){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SolveCubic(_asNetMat(coeffs));
+    return r.RetVal, Mat(r.Mat);
+}
+
+solvePoly = function(coeffs,maxIters=300){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SolvePoly(_asNetMat(coeffs),maxIters);
+    return r.RetVal, Mat(r.Mat);
+}

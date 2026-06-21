@@ -1,0 +1,31 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 imgproc morphology operations");
+
+var src = cv2.zeros(5,5,cv2.CV_8UC1);
+src.set(2,2,255);
+
+var kernel = cv2.getStructuringElement(cv2.MORPH_RECT,[3,3]);
+$.expect(kernel.shape,[3,3,1],"getStructuringElement shape");
+$.expect(cv2.countNonZero(kernel),9,"getStructuringElement MORPH_RECT count");
+
+var dilated = cv2.dilate(src,kernel);
+$.expect(dilated.shape,src.shape,"dilate shape");
+$.expect(cv2.countNonZero(dilated),9,"dilate expands single pixel to 3x3");
+
+var eroded = cv2.erode(dilated,kernel);
+$.expect(eroded.shape,src.shape,"erode shape");
+$.expect(cv2.countNonZero(eroded),1,"erode shrinks 3x3 block to single pixel");
+$.expect(eroded.get(2,2),255,"erode center value");
+
+var opened = cv2.morphologyEx(dilated,cv2.MORPH_OPEN,kernel);
+$.expect(opened.shape,src.shape,"morphologyEx MORPH_OPEN shape");
+$.expect(cv2.countNonZero(opened),9,"morphologyEx MORPH_OPEN preserves 3x3 block");
+
+var smallNoise = cv2.zeros(5,5,cv2.CV_8UC1);
+smallNoise.set(0,0,255);
+var openedNoise = cv2.morphologyEx(smallNoise,cv2.MORPH_OPEN,kernel);
+$.expect(cv2.countNonZero(openedNoise),0,"morphologyEx MORPH_OPEN removes isolated noise");
+
+return $.report();

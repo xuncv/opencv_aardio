@@ -1,0 +1,50 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2 core polar/math helpers");
+
+var near = function(actual,expected,eps=0.001){
+    return math.abs(actual - expected) <= eps;
+}
+
+var x = cv2.zeros(2,3,cv2.CV_32FC1).setTo(3);
+var y = cv2.zeros(2,3,cv2.CV_32FC1).setTo(4);
+
+var mag = cv2.magnitude(x,y);
+$.expect(mag.shape,[2,3,1],"magnitude shape");
+$.test(near(mag.get(0,0),5),"magnitude value 3-4-5");
+$.expect(mag.typeValue,cv2.CV_32FC1,"magnitude keeps float type");
+
+var phaseRad = cv2.phase(x,y);
+$.expect(phaseRad.shape,[2,3,1],"phase radians shape");
+$.test(near(phaseRad.get(0,0),0.927295,0.002),"phase radians value");
+
+var phaseDeg = cv2.phase(x,y,true);
+$.expect(phaseDeg.shape,[2,3,1],"phase degrees shape");
+$.test(near(phaseDeg.get(0,0),53.1301,0.02),"phase degrees value");
+
+var mag2,angle2 = cv2.cartToPolar(x,y,true);
+$.expect(mag2.shape,[2,3,1],"cartToPolar magnitude shape");
+$.expect(angle2.shape,[2,3,1],"cartToPolar angle shape");
+$.test(near(mag2.get(1,2),5),"cartToPolar magnitude value");
+$.test(near(angle2.get(1,2),53.1301,0.02),"cartToPolar angle degrees value");
+
+var x2,y2 = cv2.polarToCart(mag2,angle2,true);
+$.expect(x2.shape,[2,3,1],"polarToCart x shape");
+$.expect(y2.shape,[2,3,1],"polarToCart y shape");
+$.test(near(x2.get(0,1),3,0.002),"polarToCart x value");
+$.test(near(y2.get(0,1),4,0.002),"polarToCart y value");
+
+var mag3,angle3 = cv2.cartToPolar(x,y,false);
+var x3,y3 = cv2.polarToCart(mag3,angle3,false);
+$.test(near(x3.get(1,1),3,0.002),"polarToCart radians x value");
+$.test(near(y3.get(1,1),4,0.002),"polarToCart radians y value");
+
+var nanMat = cv2.ones(2,2,cv2.CV_32FC1);
+nanMat.set(0,0,math.sqrt(-1));
+var patched = cv2.patchNaNs(nanMat,7);
+$.expect(patched.shape,[2,2,1],"patchNaNs shape");
+$.test(near(nanMat.get(0,0),7),"patchNaNs replaces NaN in place");
+$.test(near(nanMat.get(1,1),1),"patchNaNs keeps normal values");
+
+return $.report();

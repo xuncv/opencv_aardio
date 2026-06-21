@@ -1,0 +1,60 @@
+import cv2;
+import console;
+
+// DNN postprocess demo without any external model file.
+// It demonstrates classification, YOLO-like detection, SSD-like detection,
+// binary mask decoding, semantic segmentation decoding, and drawing detections.
+
+// 1. Classification
+var classLabels = ["cat","dog","bird"];
+var classScores = [1,3,2];
+var top2 = cv2.dnnDecodeClassification(classScores,classLabels,2,true);
+
+// 2. YOLO-like rows: [cx,cy,w,h,objectness,class1,class2]
+var detLabels = ["person","car"];
+var yoloRows = [
+    [0.5,0.5,0.4,0.2,0.90,0.10,0.80],
+    [0.2,0.2,0.2,0.2,0.80,0.70,0.10],
+    [0.51,0.50,0.4,0.2,0.70,0.05,0.90]
+];
+var yoloDetections = cv2.dnnDecodeYolo(yoloRows,[200,100],0.25,0.4,detLabels,true,true);
+
+// 3. SSD / Faster-RCNN DetectionOutput rows:
+// [imageId,classId,confidence,left,top,right,bottom]
+var ssdLabels = ["background","cat","dog"];
+var ssdRows = [
+    [0,2,0.90,0.10,0.20,0.50,0.70],
+    [0,2,0.80,0.12,0.22,0.52,0.72],
+    [0,1,0.70,0.60,0.10,0.90,0.40]
+];
+var ssdDetections = cv2.dnnDecodeSSD(ssdRows,[200,100],0.5,ssdLabels,true,0.4,true);
+
+// 4. Binary mask from logits.
+var binaryMask = cv2.dnnDecodeBinaryMask([-1,1,2,-2],2,2,0.5,true);
+
+// 5. Semantic segmentation argmax from CHW scores.
+var segValues = [
+    // class 1, H*W = 4
+    0.9,0.1,0.2,0.7,
+    // class 2
+    0.1,0.8,0.3,0.6
+];
+var seg = cv2.dnnDecodeSegmentation(segValues,2,2,2,["background","object"]);
+
+// 6. Draw detections to an image and save it.
+var img = cv2.zeros(100,200,cv2.CV_8UC3);
+cv2.dnnDrawDetections(img,yoloDetections,detLabels,cv2.dnnColorPalette(#detLabels),2,true);
+var outPath = io.fullpath("/out_dnn_postprocess_demo.jpg");
+cv2.imwrite(outPath,img);
+
+var result = {
+    classificationTop2 = top2;
+    yoloDetections = yoloDetections;
+    ssdDetections = ssdDetections;
+    binaryMask = binaryMask.data;
+    segmentationClassIds = seg.classIds;
+    outputImage = outPath;
+};
+
+console.dump(result);
+return result;

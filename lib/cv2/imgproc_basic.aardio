@@ -1,0 +1,145 @@
+namespace cv2.imgproc_basic{}
+namespace cv2;
+
+// Basic image processing: color conversion, resize, filters, edges, threshold
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+cvtColor = function(src,code,dstCn=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.CvtColor(_asNetMat(src),code,dstCn));
+}
+
+demosaicing = function(src,code,dstCn=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Demosaicing(_asNetMat(src),code,dstCn));
+}
+
+cvtColorTwoPlane = function(y,uv,code){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.CvtColorTwoPlane(_asNetMat(y),_asNetMat(uv),code));
+}
+
+resize = function(src,dsize,fx=0.0,fy=0.0,interpolation=1/*INTER_LINEAR*/){
+    init();
+    var width,height = _size2wh(dsize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Resize(_asNetMat(src),width,height,fx,fy,interpolation));
+}
+
+flip = function(src,flipCode){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Flip(_asNetMat(src),flipCode));
+}
+
+GaussianBlur = function(src,ksize,sigmaX=0.0,sigmaY=0.0,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var width,height = _size2wh(ksize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GaussianBlur(_asNetMat(src),width,height,sigmaX,sigmaY,borderType));
+}
+
+medianBlur = function(src,ksize){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.MedianBlur(_asNetMat(src),ksize));
+}
+
+equalizeHist = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.EqualizeHist(_asNetMat(src)));
+}
+
+adaptiveThreshold = function(src,maxValue=255,adaptiveMethod=0/*ADAPTIVE_THRESH_MEAN_C*/,thresholdType=0/*THRESH_BINARY*/,blockSize=11,C=2.0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.AdaptiveThreshold(_asNetMat(src),maxValue,adaptiveMethod,thresholdType,blockSize,C));
+}
+
+convertScaleAbs = function(src,alpha=1.0,beta=0.0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ConvertScaleAbs(_asNetMat(src),alpha,beta));
+}
+
+pyrDown = function(src,dsize,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var width,height = 0,0;
+    if(dsize) width,height = _size2wh(dsize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.PyrDown(_asNetMat(src),width,height,borderType));
+}
+
+pyrUp = function(src,dsize,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var width,height = 0,0;
+    if(dsize) width,height = _size2wh(dsize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.PyrUp(_asNetMat(src),width,height,borderType));
+}
+
+blur = function(src,ksize,anchor,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var width,height = _size2wh(ksize);
+    var anchorX,anchorY = -1,-1;
+    if(anchor) anchorX,anchorY = _size2wh(anchor);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Blur(_asNetMat(src),width,height,anchorX,anchorY,borderType));
+}
+
+boxFilter = function(src,ddepth,ksize,normalize=true,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var width,height = _size2wh(ksize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.BoxFilter(_asNetMat(src),ddepth,width,height,normalize,borderType));
+}
+
+filter2D = function(src,ddepth,kernel,anchor,delta=0.0,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var ax,ay = -1,-1;
+    if(anchor) ax,ay = _point2(anchor);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.Filter2D(_asNetMat(src),ddepth,_asNetMat(kernel),ax,ay,delta,borderType));
+}
+
+sepFilter2D = function(src,ddepth,kernelX,kernelY,anchor,delta=0.0,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var ax,ay = -1,-1;
+    if(anchor) ax,ay = _point2(anchor);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.SepFilter2D(_asNetMat(src),ddepth,_asNetMat(kernelX),_asNetMat(kernelY),ax,ay,delta,borderType));
+}
+
+bilateralFilter = function(src,d=5,sigmaColor=75.0,sigmaSpace=75.0,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.BilateralFilter(_asNetMat(src),d,sigmaColor,sigmaSpace,borderType));
+}
+
+pyrMeanShiftFiltering = function(src,sp=10.0,sr=20.0,maxLevel=1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.PyrMeanShiftFiltering(_asNetMat(src),sp,sr,maxLevel));
+}
+
+sqrBoxFilter = function(src,ddepth,ksize,normalize=true,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var width,height = _size2wh(ksize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.SqrBoxFilter(_asNetMat(src),ddepth,width,height,normalize,borderType));
+}
+
+getGaussianKernel = function(ksize,sigma,ktype=6/*CV_64F*/){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.GetGaussianKernel(ksize,sigma,ktype)); }
+getDerivKernels = function(dx,dy,ksize,normalize=false,ktype=5/*CV_32F*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.GetDerivKernels(dx,dy,ksize,normalize,ktype);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+getGaborKernel = function(ksize,sigma,theta,lambd,gamma,psi=0.0,ktype=6/*CV_64F*/){
+    init();
+    var width,height = _size2wh(ksize);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GetGaborKernel(width,height,sigma,theta,lambd,gamma,psi,ktype));
+}
+
+Sobel = function(src,ddepth,dx,dy,ksize=3,scale=1.0,delta=0.0,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Sobel(_asNetMat(src),ddepth,dx,dy,ksize,scale,delta,borderType));
+}
+
+spatialGradient = function(src,ksize=3,borderType=4/*BORDER_DEFAULT*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SpatialGradient(_asNetMat(src),ksize,borderType);
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+Scharr = function(src,ddepth,dx,dy,scale=1.0,delta=0.0,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Scharr(_asNetMat(src),ddepth,dx,dy,scale,delta,borderType));
+}
+
+Laplacian = function(src,ddepth,ksize=1,scale=1.0,delta=0.0,borderType=4/*BORDER_DEFAULT*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Laplacian(_asNetMat(src),ddepth,ksize,scale,delta,borderType));
+}
+
+Canny = function(src,threshold1,threshold2,apertureSize=3,L2gradient=false){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Canny(_asNetMat(src),threshold1,threshold2,apertureSize,L2gradient));
+}
+
+threshold = function(src,thresh,maxVal=255,thresholdType=0/*THRESH_BINARY*/){
+    init();
+    var ret = ..Aardio.OpenCvSharpBridge.Cv.Threshold(_asNetMat(src),thresh,maxVal,thresholdType);
+    return ret.RetVal, Mat(ret.Mat);
+}

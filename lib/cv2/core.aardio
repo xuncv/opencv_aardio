@@ -1,0 +1,329 @@
+namespace cv2.core{}
+namespace cv2;
+
+// Core matrix operations, arithmetic, linalg, transforms, DFT, PCA, integral, kmeans
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+add = function(src1,src2,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Add(_asNetMat(src1),_asNetMat(src2),dtype));
+}
+
+subtract = function(src1,src2,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Subtract(_asNetMat(src1),_asNetMat(src2),dtype));
+}
+
+multiply = function(src1,src2,scale=1.0,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Multiply(_asNetMat(src1),_asNetMat(src2),scale,dtype));
+}
+
+divide = function(src1,src2,scale=1.0,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Divide(_asNetMat(src1),_asNetMat(src2),scale,dtype));
+}
+
+absdiff = function(src1,src2){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Absdiff(_asNetMat(src1),_asNetMat(src2)));
+}
+
+addWeighted = function(src1,alpha,src2,beta,gamma=0.0,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.AddWeighted(_asNetMat(src1),alpha,_asNetMat(src2),beta,gamma,dtype));
+}
+
+abs = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Abs(_asNetMat(src)));
+}
+Abs = abs;
+
+copyTo = function(src,mask){
+    init();
+    if(mask) return Mat(..Aardio.OpenCvSharpBridge.Cv.CopyTo(_asNetMat(src),_asNetMat(mask)));
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.CopyToNoMask(_asNetMat(src)));
+}
+CopyTo = copyTo;
+
+bitwise_not = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.BitwiseNot(_asNetMat(src)));
+}
+
+bitwise_and = function(src1,src2){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.BitwiseAnd(_asNetMat(src1),_asNetMat(src2)));
+}
+
+bitwise_or = function(src1,src2){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.BitwiseOr(_asNetMat(src1),_asNetMat(src2)));
+}
+
+bitwise_xor = function(src1,src2){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.BitwiseXor(_asNetMat(src1),_asNetMat(src2)));
+}
+
+bitwiseNot = bitwise_not; BitwiseNot = bitwise_not;
+bitwiseAnd = bitwise_and; BitwiseAnd = bitwise_and;
+bitwiseOr = bitwise_or; BitwiseOr = bitwise_or;
+bitwiseXor = bitwise_xor; BitwiseXor = bitwise_xor;
+
+compare = function(src1,src2,cmpop=0/*CMP_EQ*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Compare(_asNetMat(src1),_asNetMat(src2),cmpop));
+}
+
+normalize = function(src,alpha=1.0,beta=0.0,normType=4/*NORM_L2*/,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Normalize(_asNetMat(src),alpha,beta,normType,dtype));
+}
+
+magnitude = function(x,y){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Magnitude(_asNetMat(x),_asNetMat(y)));
+}
+
+phase = function(x,y,angleInDegrees=false){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Phase(_asNetMat(x),_asNetMat(y),angleInDegrees));
+}
+
+cartToPolar = function(x,y,angleInDegrees=false){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.CartToPolar(_asNetMat(x),_asNetMat(y),angleInDegrees);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+
+polarToCart = function(magnitude,angle,angleInDegrees=false){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.PolarToCart(_asNetMat(magnitude),_asNetMat(angle),angleInDegrees);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+
+patchNaNs = function(src,value=0.0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.PatchNaNs(_asNetMat(src),value));
+}
+
+sqrt = function(src){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Sqrt(_asNetMat(src))); }
+exp = function(src){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Exp(_asNetMat(src))); }
+log = function(src){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Log(_asNetMat(src))); }
+pow = function(src,power){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Pow(_asNetMat(src),power)); }
+scaleAdd = function(src1,alpha,src2){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ScaleAdd(_asNetMat(src1),alpha,_asNetMat(src2))); }
+max = function(src1,src2){ init(); return Mat(type(src2)==type.number ? ..Aardio.OpenCvSharpBridge.Cv.MaxScalar(_asNetMat(src1),src2) : ..Aardio.OpenCvSharpBridge.Cv.Max(_asNetMat(src1),_asNetMat(src2))); }
+min = function(src1,src2){ init(); return Mat(type(src2)==type.number ? ..Aardio.OpenCvSharpBridge.Cv.MinScalar(_asNetMat(src1),src2) : ..Aardio.OpenCvSharpBridge.Cv.Min(_asNetMat(src1),_asNetMat(src2))); }
+
+minMaxIdx = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.MinMaxIdx(_asNetMat(src));
+    return {minVal=r.MinVal; maxVal=r.MaxVal; minIdx=[r.MinRow,r.MinCol]; maxIdx=[r.MaxRow,r.MaxCol]};
+}
+
+findNonZero = function(src){
+    init(); return _point2fArray(..Aardio.OpenCvSharpBridge.Cv.FindNonZero(_asNetMat(src)));
+}
+
+setIdentity = function(src,value=1){
+    init();
+    var v0,v1,v2,v3 = _scalar4(value);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.SetIdentity(_asNetMat(src),v0,v1,v2,v3));
+}
+
+completeSymm = function(src,lowerToUpper=false){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.CompleteSymm(_asNetMat(src),lowerToUpper)); }
+Mahalanobis = function(v1,v2,icovar){ init(); return ..Aardio.OpenCvSharpBridge.Cv.Mahalanobis(_asNetMat(v1),_asNetMat(v2),_asNetMat(icovar)); }
+randu = function(dst,low=0.0,high=1.0){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Randu(_asNetMat(dst),low,high)); }
+randn = function(dst,mean=0.0,stddev=1.0){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Randn(_asNetMat(dst),mean,stddev)); }
+randShuffle = function(dst,iterFactor=1.0){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.RandShuffle(_asNetMat(dst),iterFactor)); }
+sort = function(src,flags=0/*SORT_EVERY_ROW|SORT_ASCENDING*/){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Sort(_asNetMat(src),flags)); }
+sortIdx = function(src,flags=0/*SORT_EVERY_ROW|SORT_ASCENDING*/){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.SortIdx(_asNetMat(src),flags)); }
+calcCovarMatrix = function(samples,flags=9/*COVAR_ROWS|COVAR_NORMAL*/,ctype=6/*CV_64F*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.CalcCovarMatrix(_asNetMat(samples),flags,ctype);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+getOptimalDFTSize = function(vecsize){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetOptimalDFTSize(vecsize); }
+borderInterpolate = function(p,len,borderType=4/*BORDER_REFLECT_101*/){ init(); return ..Aardio.OpenCvSharpBridge.Cv.BorderInterpolate(p,len,borderType); }
+fastAtan2 = function(y,x){ init(); return ..Aardio.OpenCvSharpBridge.Cv.FastAtan2(y,x); }
+cubeRoot = function(value){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CubeRoot(value); }
+checkRange = function(src){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CheckRange(_asNetMat(src)); }
+PSNR = function(src1,src2){ init(); return ..Aardio.OpenCvSharpBridge.Cv.PSNR(_asNetMat(src1),_asNetMat(src2)); }
+
+transpose = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Transpose(_asNetMat(src)));
+}
+
+rotate = function(src,rotateCode=0/*ROTATE_90_CLOCKWISE*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Rotate(_asNetMat(src),rotateCode));
+}
+
+repeat = function(src,ny,nx){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Repeat(_asNetMat(src),ny,nx));
+}
+
+self["reduce"] = function(src,dim=0,rtype=0/*REDUCE_SUM*/,dtype=-1){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Reduce(_asNetMat(src),dim,rtype,dtype));
+}
+
+convertFp16 = function(src){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ConvertFp16(_asNetMat(src)));
+}
+
+format = function(src,fmt=0/*FORMAT_DEFAULT*/){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.Format(_asNetMat(src),fmt);
+}
+Format = format;
+
+alignSize = function(size,n){ init(); return ..Aardio.OpenCvSharpBridge.Cv.AlignSize(size,n); }
+getCpuTickCount = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetCpuTickCount(); }
+getNumberOfCpus = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetNumberOfCpus(); }
+getVersionMajor = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetVersionMajor(); }
+getVersionMinor = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetVersionMinor(); }
+getVersionRevision = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetVersionRevision(); }
+useOptimized = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.UseOptimized(); }
+setUseOptimized = function(onoff=true){ init(); ..Aardio.OpenCvSharpBridge.Cv.SetUseOptimized(onoff); }
+getCpuFeaturesLine = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetCpuFeaturesLine(); }
+checkHardwareSupport = function(feature){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CheckHardwareSupport(feature); }
+getHardwareFeatureName = function(feature){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetHardwareFeatureName(feature); }
+
+batchDistance = function(src1,src2,dtype=5/*CV_32F*/,normType=4/*NORM_L2*/,k=0){
+    init();
+    var rows1,rows2,cols = src1.rows,src2.rows,src1.cols;
+    var dist = Mat(rows1,rows2,dtype);
+    var nidx = k > 0 ? Mat(rows1,k,4/*CV_32SC1*/) : Mat();
+    for(i=0;rows1-1;1){
+        var vals = [];
+        for(j=0;rows2-1;1){
+            var d = 0;
+            if(normType == 2/*NORM_L1*/){
+                for(c=0;cols-1;1) d += ..math.abs(src1.get(i,c) - src2.get(j,c));
+            }
+            elseif(normType == 1/*NORM_INF*/){
+                for(c=0;cols-1;1) d = ..math.max(d, ..math.abs(src1.get(i,c) - src2.get(j,c)));
+            }
+            else {
+                for(c=0;cols-1;1){
+                    var diff = src1.get(i,c) - src2.get(j,c);
+                    d += diff * diff;
+                }
+                if(normType != 5/*NORM_L2SQR*/) d = ..math.sqrt(d);
+            }
+            dist.set(i,j,d);
+            vals[j+1] = d;
+        }
+        if(k > 0){
+            for(kk=0;k-1;1){
+                var best,bestVal = 0, 1e308;
+                for(j=1;#vals;1){
+                    if(vals[j] < bestVal){ bestVal = vals[j]; best = j-1; }
+                }
+                nidx.set(i,kk,best);
+                vals[best+1] = 1e308;
+            }
+        }
+    }
+    return dist,nidx;
+}
+
+insertChannel = function(src,dst,coi){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.InsertChannel(_asNetMat(src),_asNetMat(dst),coi));
+}
+
+mixChannels = function(src,dst,from=0,to=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.MixChannels1(_asNetMat(src),_asNetMat(dst),from,to));
+}
+
+gemm = function(src1,src2,alpha=1.0,src3,beta=0.0,flags=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Gemm(_asNetMat(src1),_asNetMat(src2),alpha,_asNetMat(src3),beta,flags));
+}
+
+determinant = function(src){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.Determinant(_asNetMat(src));
+}
+
+invert = function(src,flags=0/*DECOMP_LU*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Invert(_asNetMat(src),flags);
+    return r.RetVal,Mat(r.Mat);
+}
+
+solve = function(src1,src2,flags=0/*DECOMP_LU*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Solve(_asNetMat(src1),_asNetMat(src2),flags);
+    return r.Ok,Mat(r.Mat);
+}
+
+eigen = function(src){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Eigen(_asNetMat(src));
+    return r.Ok,Mat(r.Mat1),Mat(r.Mat2);
+}
+
+SVDecomp = function(src,flags=0){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SVDecomp(_asNetMat(src),flags);
+    return Mat(r.Mat1),Mat(r.Mat2),Mat(r.Mat3);
+}
+
+PCACompute = function(data,maxComponents=0){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.PCACompute(_asNetMat(data),maxComponents);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+
+PCAProject = function(data,mean,eigenvectors){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.PCAProject(_asNetMat(data),_asNetMat(mean),_asNetMat(eigenvectors)));
+}
+
+PCABackProject = function(data,mean,eigenvectors){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.PCABackProject(_asNetMat(data),_asNetMat(mean),_asNetMat(eigenvectors)));
+}
+
+dft = function(src,flags=0,nonzeroRows=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Dft(_asNetMat(src),flags,nonzeroRows));
+}
+
+idft = function(src,flags=0,nonzeroRows=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Idft(_asNetMat(src),flags,nonzeroRows));
+}
+
+mulSpectrums = function(a,b,flags=0,conjB=false){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.MulSpectrums(_asNetMat(a),_asNetMat(b),flags,conjB));
+}
+
+dct = function(src,flags=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Dct(_asNetMat(src),flags));
+}
+
+idct = function(src,flags=0){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Idct(_asNetMat(src),flags));
+}
+
+getRectSubPix = function(src,patchSize,center,patchType=-1){
+    init();
+    var width,height = _size2wh(patchSize);
+    var x,y = _point2(center);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.GetRectSubPix(_asNetMat(src),width,height,x,y,patchType));
+}
+
+convertMaps = function(map1,map2,dstMap1Type,nnInterpolation=false){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.ConvertMaps(_asNetMat(map1),_asNetMat(map2),dstMap1Type,nnInterpolation);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+
+integral = function(src,sdepth=4/*CV_32S*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Integral(_asNetMat(src),sdepth));
+}
+
+integral2 = function(src,sdepth=6/*CV_64F*/,sqdepth=6/*CV_64F*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Integral2(_asNetMat(src),sdepth,sqdepth);
+    return Mat(r.Mat1),Mat(r.Mat2);
+}
+
+integral3 = function(src,sdepth=6/*CV_64F*/,sqdepth=6/*CV_64F*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.Integral3(_asNetMat(src),sdepth,sqdepth);
+    return Mat(r.Mat1),Mat(r.Mat2),Mat(r.Mat3);
+}
+
+accumulate = function(src,dst){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.Accumulate(_asNetMat(src),_asNetMat(dst))); }
+accumulateSquare = function(src,dst){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.AccumulateSquare(_asNetMat(src),_asNetMat(dst))); }
+accumulateProduct = function(src1,src2,dst){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.AccumulateProduct(_asNetMat(src1),_asNetMat(src2),_asNetMat(dst))); }
+accumulateWeighted = function(src,dst,alpha){ init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.AccumulateWeighted(_asNetMat(src),_asNetMat(dst),alpha)); }
+
+kmeans = function(data,k,maxIter=10,epsilon=1.0,attempts=1,flags=2/*KMEANS_PP_CENTERS*/){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.KMeans(_asNetMat(data),k,maxIter,epsilon,attempts,flags);
+    return r.Compactness,Mat(r.Labels),Mat(r.Centers);
+}

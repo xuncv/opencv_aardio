@@ -1,0 +1,61 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 video/photo extra wrappers");
+
+var img = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.rectangle(img,[10,10],[25,25],255,cv2.FILLED);
+
+var img2 = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.rectangle(img2,[12,10],[27,25],255,cv2.FILLED);
+
+var color = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR);
+var mask = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.circle(mask,[20,20],8,255,cv2.FILLED);
+
+var levels,pyr = cv2.buildOpticalFlowPyramid(img,[15,15],2);
+$.test(levels >= 0,"buildOpticalFlowPyramid 返回层级数");
+$.test(#pyr >= 1,"buildOpticalFlowPyramid 返回金字塔 Mat 数组");
+$.expect(pyr[1].shape,[40,40,1],"金字塔首层尺寸");
+
+var flow = cv2.calcOpticalFlowFarneback(img,img2);
+$.expect(flow.shape,[40,40,2],"calcOpticalFlowFarneback 输出 2 通道 flow");
+
+var pts,status,errv = cv2.calcOpticalFlowPyrLK(img,img2,[[15,15],[20,20]]);
+$.expect(#pts,2,"calcOpticalFlowPyrLK 点数");
+$.expect(#status,2,"calcOpticalFlowPyrLK status 数量");
+$.expect(#errv,2,"calcOpticalFlowPyrLK err 数量");
+$.test(status[1] !== null,"calcOpticalFlowPyrLK status 可读");
+
+var ecc = cv2.computeECC(img,img);
+$.test(ecc > 0.99,"computeECC 相同图像接近 1");
+
+var warp = cv2.eye(2,3,cv2.CV_32FC1);
+var ecc2 = cv2.findTransformECC(img,img,warp,cv2.MOTION_TRANSLATION,10,0.01);
+$.test(ecc2 > 0.99,"findTransformECC 相同图像接近 1");
+$.expect(warp.shape,[2,3,1],"findTransformECC 保持 2x3 warp 矩阵");
+
+var iter,win = cv2.meanShift(img,[8,8,20,20]);
+$.test(iter >= 0,"meanShift 返回迭代次数");
+$.test(win.width > 0,"meanShift 返回窗口");
+
+var box,win2 = cv2.camShift(img,[8,8,20,20]);
+$.test(box.size[1] > 0,"camShift 返回旋转框");
+$.test(win2.width > 0,"camShift 返回更新窗口");
+
+var tv = cv2.denoiseTVL1([img,img,img]);
+$.expect(tv.shape,[40,40,1],"denoiseTVL1 输出尺寸");
+
+var cc = cv2.colorChange(color,mask);
+$.expect(cc.shape,[40,40,3],"colorChange 输出尺寸");
+
+var ic = cv2.illuminationChange(color,mask);
+$.expect(ic.shape,[40,40,3],"illuminationChange 输出尺寸");
+
+var sc = cv2.seamlessClone(color,color,mask,[20,20]);
+$.expect(sc.shape,[40,40,3],"seamlessClone 输出尺寸");
+
+var tf = cv2.textureFlattening(color,mask);
+$.expect(tf.shape,[40,40,3],"textureFlattening 输出尺寸");
+
+return $.report();

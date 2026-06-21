@@ -1,0 +1,14 @@
+import cv2;
+
+// HighGUI 示例：显示图像窗口，按任意键关闭。
+// 注意：cv2.waitKey(0) 会阻塞当前线程，直到窗口获得键盘输入。
+
+var dst = cv2.zeros(240,320,cv2.CV_8UC3);
+cv2.rectangle(dst,[30,40],[290,200],[0,255,0],3);
+cv2.putText(dst,"OpenCV HighGUI",[45,120],cv2.FONT_HERSHEY_SIMPLEX,0.8,[255,255,255],2);
+
+cv2.imshow("dst",dst);
+var key = cv2.waitKey(0);
+cv2.destroyAllWindows();
+
+return key;

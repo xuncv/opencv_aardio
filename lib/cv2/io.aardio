@@ -1,0 +1,55 @@
+namespace cv2.io{}
+namespace cv2;
+
+// Image codecs and image IO wrappers, similar to Python cv2.imgcodecs
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+imread = function(path,flags=1/*IMREAD_COLOR*/){
+    init();
+    var fullpath = ..io.fullpath(path);
+    if(!..io.exist(fullpath)) return null,"文件不存在: " + fullpath;
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.ImRead(fullpath,flags));
+}
+
+imwrite = function(path,img){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.ImWrite(..io.fullpath(path),_asNetMat(img));
+}
+
+haveImageReader = function(filename){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.HaveImageReader(filename);
+}
+
+haveImageWriter = function(filename){
+    init(); return ..Aardio.OpenCvSharpBridge.Cv.HaveImageWriter(filename);
+}
+
+imencode = function(ext,img){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.ImEncode(ext,_asNetMat(img));
+    var bytes = [];
+    for(i=0;r.Length-1;1) ..table.push(bytes,r.GetByte(i));
+    return bytes;
+}
+
+imdecode = function(bytes,flags=1/*IMREAD_COLOR*/){
+    init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ImDecodeBytes(bytes,flags));
+}
+
+glob = function(pattern,recursive=false){
+    init();
+    var arr = ..Aardio.OpenCvSharpBridge.Cv.Glob(pattern,recursive);
+    var ret = [];
+    for(i=0;#arr-1;1) ..table.push(ret,arr[i]);
+    return ret;
+}
+
+imreadmulti = function(path,flags=1/*IMREAD_COLOR*/){
+    init();
+    var mats = ..Aardio.OpenCvSharpBridge.Cv.ImReadMulti(..io.fullpath(path),flags);
+    var ret = [];
+    for(i=0;#mats-1;1) ..table.push(ret,Mat(mats[i]));
+    return ret;
+}
+
+imreadMulti = imreadmulti;

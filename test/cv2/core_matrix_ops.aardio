@@ -1,0 +1,85 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 matrix ops");
+
+var near = function(actual,expected,eps=0.0001){
+    return math.abs(actual - expected) <= eps;
+}
+
+var m = cv2.Mat(2,3,cv2.CV_32FC1);
+var value = 1;
+for(r=0;1;1){
+    for(c=0;2;1){
+        m.set(r,c,value);
+        value++;
+    }
+}
+
+$.expect(m.shape,[2,3,1],"source shape");
+$.expect(m.get(0,0),1,"source value 1");
+$.expect(m.get(1,2),6,"source value 6");
+
+var tr = cv2.transpose(m);
+$.expect(tr.shape,[3,2,1],"transpose shape");
+$.expect(tr.get(0,1),4,"transpose maps [1,0] to [0,1]");
+$.expect(tr.get(2,1),6,"transpose maps last value");
+
+var rot90 = cv2.rotate(m,cv2.ROTATE_90_CLOCKWISE);
+$.expect(rot90.shape,[3,2,1],"rotate 90 shape");
+$.expect(rot90.get(0,0),4,"rotate 90 top-left");
+$.expect(rot90.get(0,1),1,"rotate 90 top-right");
+$.expect(rot90.get(2,0),6,"rotate 90 bottom-left");
+
+var rot180 = cv2.rotate(m,cv2.ROTATE_180);
+$.expect(rot180.shape,[2,3,1],"rotate 180 shape");
+$.expect(rot180.get(0,0),6,"rotate 180 top-left");
+$.expect(rot180.get(1,2),1,"rotate 180 bottom-right");
+
+var rotCcw = cv2.rotate(m,cv2.ROTATE_90_COUNTERCLOCKWISE);
+$.expect(rotCcw.shape,[3,2,1],"rotate ccw shape");
+$.expect(rotCcw.get(0,0),3,"rotate ccw top-left");
+$.expect(rotCcw.get(2,1),4,"rotate ccw bottom-right");
+
+var rep = cv2.repeat(m,2,2);
+$.expect(rep.shape,[4,6,1],"repeat shape");
+$.expect(rep.get(0,0),1,"repeat block 1");
+$.expect(rep.get(0,3),1,"repeat horizontal tile");
+$.expect(rep.get(2,0),1,"repeat vertical tile");
+$.expect(rep.get(3,5),6,"repeat bottom-right tile");
+
+var sumCols = cv2.reduce(m,0,cv2.REDUCE_SUM,cv2.CV_32FC1);
+$.expect(sumCols.shape,[1,3,1],"reduce dim 0 shape");
+$.expect([sumCols.get(0,0),sumCols.get(0,1),sumCols.get(0,2)],[5,7,9],"reduce dim 0 sums columns");
+
+var sumRows = cv2.reduce(m,1,cv2.REDUCE_SUM,cv2.CV_32FC1);
+$.expect(sumRows.shape,[2,1,1],"reduce dim 1 shape");
+$.expect([sumRows.get(0,0),sumRows.get(1,0)],[6,15],"reduce dim 1 sums rows");
+
+var avgCols = cv2.reduce(m,0,cv2.REDUCE_AVG,cv2.CV_32FC1);
+$.test(near(avgCols.get(0,0),2.5) && near(avgCols.get(0,1),3.5) && near(avgCols.get(0,2),4.5),"reduce avg columns");
+
+var maxRows = cv2.reduce(m,1,cv2.REDUCE_MAX,cv2.CV_32FC1);
+$.expect([maxRows.get(0,0),maxRows.get(1,0)],[3,6],"reduce max rows");
+
+var minRows = cv2.reduce(m,1,cv2.REDUCE_MIN,cv2.CV_32FC1);
+$.expect([minRows.get(0,0),minRows.get(1,0)],[1,4],"reduce min rows");
+
+var a = cv2.Mat(2,3,cv2.CV_32FC1);
+var b = cv2.Mat(3,2,cv2.CV_32FC1);
+a.set(0,0,1).set(0,1,2).set(0,2,3).set(1,0,4).set(1,1,5).set(1,2,6);
+b.set(0,0,7).set(0,1,8).set(1,0,9).set(1,1,10).set(2,0,11).set(2,1,12);
+
+var g = cv2.gemm(a,b);
+$.expect(g.shape,[2,2,1],"gemm shape");
+$.expect([g.get(0,0),g.get(0,1),g.get(1,0),g.get(1,1)],[58,64,139,154],"gemm matrix product");
+
+var c = cv2.ones(2,2,cv2.CV_32FC1).setTo(10);
+var g2 = cv2.gemm(a,b,1,c,2);
+$.expect([g2.get(0,0),g2.get(0,1),g2.get(1,0),g2.get(1,1)],[78,84,159,174],"gemm alpha beta src3");
+
+var aT = cv2.transpose(a);
+var g3 = cv2.gemm(aT,b,1,null,0,cv2.GEMM_1_T);
+$.expect([g3.get(0,0),g3.get(0,1),g3.get(1,0),g3.get(1,1)],[58,64,139,154],"gemm transposed first input flag");
+
+return $.report();

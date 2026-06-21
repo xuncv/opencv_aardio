@@ -1,0 +1,63 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 linear algebra");
+
+var near = function(actual,expected,eps=0.000001){
+    return math.abs(actual - expected) <= eps;
+}
+
+var A = cv2.Mat(2,2,cv2.CV_64FC1);
+A.set(0,0,4).set(0,1,7).set(1,0,2).set(1,1,6);
+
+$.test(near(cv2.determinant(A),10),"determinant 2x2");
+
+var ret,inv = cv2.invert(A,cv2.DECOMP_LU);
+$.test(ret != 0,"invert returns non-zero for nonsingular matrix",ret);
+$.expect(inv.shape,[2,2,1],"invert shape");
+$.test(near(inv.get(0,0),0.6),"invert value 00");
+$.test(near(inv.get(0,1),-0.7),"invert value 01");
+$.test(near(inv.get(1,0),-0.2),"invert value 10");
+$.test(near(inv.get(1,1),0.4),"invert value 11");
+
+var ident = cv2.gemm(A,inv);
+$.test(near(ident.get(0,0),1),"A * inv(A) identity 00");
+$.test(near(ident.get(0,1),0),"A * inv(A) identity 01");
+$.test(near(ident.get(1,0),0),"A * inv(A) identity 10");
+$.test(near(ident.get(1,1),1),"A * inv(A) identity 11");
+
+var b = cv2.Mat(2,1,cv2.CV_64FC1);
+b.set(0,0,1).set(1,0,0);
+var ok,x = cv2.solve(A,b,cv2.DECOMP_LU);
+$.test(ok,"solve reports success");
+$.expect(x.shape,[2,1,1],"solve output shape");
+$.test(near(x.get(0,0),0.6),"solve x0");
+$.test(near(x.get(1,0),-0.2),"solve x1");
+var Ax = cv2.gemm(A,x);
+$.test(near(Ax.get(0,0),1),"solve verifies Ax b0");
+$.test(near(Ax.get(1,0),0),"solve verifies Ax b1");
+
+var S = cv2.Mat(2,2,cv2.CV_64FC1);
+S.set(0,0,3).set(0,1,1).set(1,0,1).set(1,1,3);
+var eok,eigenvalues,eigenvectors = cv2.eigen(S);
+$.test(eok,"eigen reports success");
+$.expect(eigenvalues.shape,[2,1,1],"eigenvalues shape");
+$.expect(eigenvectors.shape,[2,2,1],"eigenvectors shape");
+$.test(near(eigenvalues.get(0,0),4),"eigenvalue max");
+$.test(near(eigenvalues.get(1,0),2),"eigenvalue min");
+$.test(near(math.abs(eigenvectors.get(0,0)),0.70710678,0.00001),"eigenvector normalized component");
+
+var w,u,vt = cv2.SVDecomp(A);
+$.expect(w.shape,[2,1,1],"SVD singular values shape");
+$.expect(u.shape,[2,2,1],"SVD U shape");
+$.expect(vt.shape,[2,2,1],"SVD Vt shape");
+$.test(w.get(0,0) > w.get(1,0),"SVD singular values sorted descending");
+$.test(near(w.get(0,0),10.19994217,0.0001),"SVD first singular value");
+$.test(near(w.get(1,0),0.98039772,0.0001),"SVD second singular value");
+
+var sA = cv2.Mat(2,2,cv2.CV_64FC1);
+sA.set(0,0,1).set(0,1,2).set(1,0,2).set(1,1,4);
+var sret,sinv = cv2.invert(sA,cv2.DECOMP_LU);
+$.test(sret == 0,"invert singular matrix returns zero",sret);
+
+return $.report();

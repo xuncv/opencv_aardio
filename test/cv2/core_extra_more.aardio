@@ -1,0 +1,84 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 extra more APIs");
+var near = function(a,b,eps=1e-5){ return math.abs(a-b) <= eps; }
+
+var m = cv2.Mat(2,2,cv2.CV_32FC1);
+m.set(0,0,1).set(0,1,2).set(1,0,3).set(1,1,4);
+
+var mt = cv2.mulTransposed(m,false);
+$.expect(mt.shape,[2,2,1],"mulTransposed shape");
+$.test(near(mt.get(0,0),5) && near(mt.get(0,1),11) && near(mt.get(1,1),25),"mulTransposed values");
+
+var nonsym = m.convertTo(cv2.CV_64FC1);
+var ev,vec = cv2.eigenNonSymmetric(nonsym);
+$.expect(ev.shape,[2,1,1],"eigenNonSymmetric values shape");
+$.expect(vec.shape,[2,2,1],"eigenNonSymmetric vectors shape");
+
+var coeff = cv2.Mat(1,4,cv2.CV_64FC1);
+coeff.set(0,0,1).set(0,1,-6).set(0,2,11).set(0,3,-6);
+var rootsCount,roots = cv2.solveCubic(coeff);
+$.expect(rootsCount,3,"solveCubic root count");
+$.expect(roots.shape,[3,1,1],"solveCubic roots shape");
+var polyErr,polyRoots = cv2.solvePoly(coeff);
+$.test(polyErr >= 0,"solvePoly error is non-negative");
+$.expect(polyRoots.shape,[3,1,2],"solvePoly complex roots shape");
+
+var img = cv2.zeros(16,16,cv2.CV_8UC1);
+cv2.rectangle(img,[4,4],[12,12],255,cv2.FILLED);
+var den = cv2.fastNlMeansDenoising(img);
+$.expect(den.shape,img.shape,"fastNlMeansDenoising shape");
+var color = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR);
+var denColor = cv2.fastNlMeansDenoisingColored(color);
+$.expect(denColor.shape,color.shape,"fastNlMeansDenoisingColored shape");
+
+var kps = cv2.FAST(img,5,true);
+$.test(kps.count >= 0,"FAST returns KeyPoints object");
+
+var draw = cv2.zeros(16,16,cv2.CV_8UC1);
+cv2.drawMarker(draw,[8,8],255,cv2.MARKER_CROSS,5,1);
+$.test(cv2.countNonZero(draw) > 0,"drawMarker draws pixels");
+var ok,p1,p2 = cv2.clipLine([16,16],[-5,8],[20,8]);
+$.test(ok,"clipLine intersects rectangle");
+$.expect(p1,[0,8],"clipLine clipped start");
+$.expect(p2,[15,8],"clipLine clipped end");
+
+var rv = cv2.Mat(3,1,cv2.CV_64FC1);
+rv.set(0,0,0).set(1,0,0).set(2,0,0);
+var R,jac = cv2.Rodrigues(rv);
+$.expect(R.shape,[3,3,1],"Rodrigues matrix shape");
+$.expect(jac.shape,[3,9,1],"Rodrigues jacobian shape");
+$.test(near(R.get(0,0),1) && near(R.get(1,1),1) && near(R.get(2,2),1),"Rodrigues zero vector is identity");
+
+var angles,R2,Q = cv2.RQDecomp3x3(cv2.eye(3,3,cv2.CV_64FC1));
+$.test(near(angles.x,0) && near(angles.y,0) && near(angles.z,0),"RQDecomp3x3 identity angles");
+$.expect(R2.shape,[3,3,1],"RQDecomp3x3 R shape");
+$.expect(Q.shape,[3,3,1],"RQDecomp3x3 Q shape");
+
+var cam = cv2.eye(3,3,cv2.CV_64FC1);
+cam.set(0,0,500).set(1,1,500).set(0,2,8).set(1,2,8);
+var values = cv2.calibrationMatrixValues(cam,[16,16],1,1);
+$.test(values.fovX > 0 && values.fovY > 0,"calibrationMatrixValues fov");
+$.expect(values.principalPoint,[0.5,0.5],"calibrationMatrixValues principal point");
+var und = cv2.undistort(img,cam);
+$.expect(und.shape,img.shape,"undistort shape");
+var map1,map2 = cv2.initUndistortRectifyMap(cam,,,cam,[16,16]);
+$.expect(map1.shape,[16,16,1],"initUndistortRectifyMap map1 shape");
+$.expect(map2.shape,[16,16,1],"initUndistortRectifyMap map2 shape");
+
+var w1 = cv2.ones(16,16,cv2.CV_32FC1);
+var w2 = cv2.zeros(16,16,cv2.CV_32FC1);
+var blend = cv2.blendLinear(img,img,w1,w2);
+$.expect(blend.shape,img.shape,"blendLinear shape");
+$.expect(cv2.countNonZero(cv2.absdiff(blend,img)),0,"blendLinear one-zero weights equals src1");
+
+$.test(cv2.getFontScaleFromHeight(cv2.FONT_HERSHEY_SIMPLEX,12,1) > 0,"getFontScaleFromHeight positive");
+$.expect(cv2.cvRound(1.6),2,"cvRound");
+$.expect(cv2.cvFloor(1.6),1,"cvFloor");
+$.expect(cv2.cvCeil(1.2),2,"cvCeil");
+
+$.expect(cv2.MARKER_CROSS,0,"MARKER_CROSS constant");
+$.expect(cv2.MARKER_TRIANGLE_DOWN,6,"MARKER_TRIANGLE_DOWN constant");
+
+return $.report();

@@ -1,0 +1,205 @@
+namespace cv2._helpers{}
+namespace cv2;
+
+// Shared conversion helpers and small result-table adapters. Split from cv2/_.aardio.
+
+_asNetMat = function(mat){
+    if(type.rget(mat)=="cv2.Mat") return mat.net;
+    return mat;
+}
+
+_size2wh = function(dsize){
+    if(!dsize) return 0,0;
+    if(type(dsize)==type.table){
+        if(dsize.width !== null) return dsize.width,dsize.height;
+        if(dsize.right !== null) return dsize.right,dsize.bottom; // aardio ::SIZE is often RECT-like in older code
+        return dsize[1],dsize[2];
+    }
+    return 0,0;
+}
+
+_point2 = function(pt){
+    return _size2wh(pt);
+}
+
+_rect4 = function(rc){
+    if(!rc) return 0,0,0,0;
+    if(type(rc)==type.table){
+        if(rc.x !== null) return rc.x,rc.y,rc.width,rc.height;
+        if(rc.left !== null) return rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top;
+        return rc[1],rc[2],rc[3],rc[4];
+    }
+    return 0,0,0,0;
+}
+
+_points4 = function(points){
+    if(!points || #points != 4) error("需要 4 个点，例如 [[0,0],[10,0],[10,10],[0,10]]",2);
+    var x0,y0 = _point2(points[1]);
+    var x1,y1 = _point2(points[2]);
+    var x2,y2 = _point2(points[3]);
+    var x3,y3 = _point2(points[4]);
+    return x0,y0,x1,y1,x2,y2,x3,y3;
+}
+
+_points3 = function(points){
+    if(!points || #points != 3) error("需要 3 个点，例如 [[0,0],[10,0],[0,10]]",2);
+    var x0,y0 = _point2(points[1]);
+    var x1,y1 = _point2(points[2]);
+    var x2,y2 = _point2(points[3]);
+    return x0,y0,x1,y1,x2,y2;
+}
+
+_scalar4 = function(color){
+    if(!color) return 0,0,0,0;
+    if(type.rget(color)=="Scalar") return color.b,color.g,color.r,color.a;
+    if(type(color)==type.table) return color[1] : color.b : 0, color[2] : color.g : 0, color[3] : color.r : 0, color[4] : color.a : 0;
+    return color,color,color,color;
+}
+
+_momentsTable = function(r){
+    return {
+        m00=r.M00; m10=r.M10; m01=r.M01; m20=r.M20; m11=r.M11; m02=r.M02;
+        m30=r.M30; m21=r.M21; m12=r.M12; m03=r.M03;
+        mu20=r.Mu20; mu11=r.Mu11; mu02=r.Mu02; mu30=r.Mu30; mu21=r.Mu21; mu12=r.Mu12; mu03=r.Mu03;
+        nu20=r.Nu20; nu11=r.Nu11; nu02=r.Nu02; nu30=r.Nu30; nu21=r.Nu21; nu12=r.Nu12; nu03=r.Nu03;
+    };
+}
+
+_point2fArray = function(r){
+    var ret = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(ret,[r.GetX(i),r.GetY(i)]);
+    }
+    return ret;
+}
+
+_intArray = function(r){
+    var ret = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(ret,r.Get(i));
+    }
+    return ret;
+}
+
+_vec4iArray = function(r){
+    var ret = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(ret,[r.Get0(i),r.Get1(i),r.Get2(i),r.Get3(i)]);
+    }
+    return ret;
+}
+
+_pointsToFlatArray = function(points,dims=2){
+    var ret = [];
+    if(!points) return ret;
+    for(i,pt in points){
+        if(dims == 3){
+            ..table.push(ret,pt[1]); ..table.push(ret,pt[2]); ..table.push(ret,pt[3]);
+        }
+        else {
+            ..table.push(ret,pt[1]); ..table.push(ret,pt[2]);
+        }
+    }
+    return ret;
+}
+
+_pointsToMat = function(points,dims=2,tp=6/*CV_64F*/){
+    var m = Mat(#points,dims,tp);
+    for(i,pt in points){
+        var row = i - 1;
+        for(c=1;dims;1){
+            m.set(row,c-1,pt[c]);
+        }
+    }
+    return m;
+}
+
+_rectTable = function(r){
+    return { x=r.X; y=r.Y; width=r.Width; height=r.Height; [1]=r.X; [2]=r.Y; [3]=r.Width; [4]=r.Height };
+}
+
+_rotatedRectTable = function(r){
+    return { center=[r.CenterX,r.CenterY]; size=[r.Width,r.Height]; angle=r.Angle };
+}
+
+_meanShiftTable = function(r){
+    return r.Iterations,_rectTable(r.Window);
+}
+
+_camShiftTable = function(r){
+    return _rotatedRectTable(r.Box),_rectTable(r.Window);
+}
+
+_pyrLKTable = function(r){
+    var points = [];
+    var status = [];
+    var err = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(points,[r.GetX(i),r.GetY(i)]);
+        ..table.push(status,r.GetStatus(i));
+        ..table.push(err,r.GetErr(i));
+    }
+    return points,status,err;
+}
+
+_matArray = function(r){
+    var ret = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(ret,Mat(r.GetMat(i)));
+    }
+    return ret;
+}
+
+_pyramidArray = function(r){
+    return r.Levels,_matArray(r);
+}
+
+_perfProfileTable = function(r){
+    var timings = [];
+    for(i=0;r.Count-1;1){
+        ..table.push(timings,r.GetTiming(i));
+    }
+    return r.Ticks,timings;
+}
+
+_circleTable = function(r){
+    return { center=[r.CenterX,r.CenterY]; radius=r.Radius };
+}
+
+_line2DTable = function(r){
+    return { vx=r.Vx; vy=r.Vy; x0=r.X0; y0=r.Y0 };
+}
+
+_convexIntersectionTable = function(r){
+    return r.Area, _point2fArray(r.Points);
+}
+
+_rotatedRectIntersectionTable = function(r){
+    return r.Type, _point2fArray(r.Points);
+}
+
+_rotatedRectArgs = function(rotatedRect){
+    if(!rotatedRect) error("rotatedRect 不能为空",2);
+    var center = rotatedRect.center;
+    var size = rotatedRect.size;
+    if(!center || !size) error("rotatedRect 需要包含 center=[x,y] 与 size=[width,height]",2);
+    return center[1],center[2],size[1],size[2],rotatedRect.angle : 0;
+}
+
+_huMomentsFromTable = function(m){
+    var n20,n11,n02 = m.nu20,m.nu11,m.nu02;
+    var n30,n21,n12,n03 = m.nu30,m.nu21,m.nu12,m.nu03;
+    var a = n30 - 3 * n12;
+    var b = 3 * n21 - n03;
+    var c = n30 + n12;
+    var d = n21 + n03;
+    return [
+        n20 + n02,
+        (n20 - n02) ** 2 + 4 * n11 ** 2,
+        a ** 2 + b ** 2,
+        c ** 2 + d ** 2,
+        a * c * (c ** 2 - 3 * d ** 2) + b * d * (3 * c ** 2 - d ** 2),
+        (n20 - n02) * (c ** 2 - d ** 2) + 4 * n11 * c * d,
+        b * c * (c ** 2 - 3 * d ** 2) - a * d * (3 * c ** 2 - d ** 2)
+    ];
+}

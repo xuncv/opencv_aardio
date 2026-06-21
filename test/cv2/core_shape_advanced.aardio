@@ -1,0 +1,81 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2 advanced shape / CLAHE");
+
+var near = function(actual,expected,eps=1e-6){
+    return math.abs(actual - expected) <= eps;
+}
+
+var mask1 = cv2.zeros(50,50,cv2.CV_8UC1);
+cv2.rectangle(mask1,[10,10],[30,30],255,cv2.FILLED);
+var contours1 = cv2.findContours(mask1);
+var c1 = contours1[1];
+var hull1 = cv2.convexHull(c1);
+
+var mask2 = cv2.zeros(50,50,cv2.CV_8UC1);
+cv2.rectangle(mask2,[20,20],[40,40],255,cv2.FILLED);
+var contours2 = cv2.findContours(mask2);
+var c2 = contours2[1];
+var hull2 = cv2.convexHull(c2);
+
+var hu1 = cv2.HuMoments(c1);
+$.expect(#hu1,7,"HuMoments 返回 7 个不变量");
+$.test(near(hu1[1],1/6,1e-6),"正方形轮廓 HuMoment[1] 约 1/6",hu1[1]);
+$.test(near(hu1[2],0,1e-12),"正方形轮廓 HuMoment[2] 接近 0",hu1[2]);
+
+var huMethod = c1.HuMoments();
+$.expect(#huMethod,7,"Contour.HuMoments 方法");
+$.test(near(huMethod[1],hu1[1],1e-12),"Contour.HuMoments 与全局函数一致");
+
+var imgHu = cv2.HuMoments(mask1,true);
+$.expect(#imgHu,7,"图像 moments 也可计算 HuMoments");
+$.test(imgHu[1] > 0,"图像 HuMoment[1] 为正");
+
+$.expect(cv2.pointPolygonTest(c1,[20,20],false),1,"pointPolygonTest 点在内部");
+$.expect(cv2.pointPolygonTest(c1,[10,10],false),0,"pointPolygonTest 点在边界");
+$.expect(cv2.pointPolygonTest(c1,[5,5],false),-1,"pointPolygonTest 点在外部");
+$.test(cv2.pointPolygonTest(c1,[20,20],true) > 0,"pointPolygonTest measureDist 内部为正");
+$.test(cv2.pointPolygonTest(c1,[5,5],true) < 0,"pointPolygonTest measureDist 外部为负");
+$.expect(c1.pointPolygonTest([20,20],false),1,"Contour.pointPolygonTest 方法");
+
+var area,pts = cv2.intersectConvexConvex(hull1,hull2);
+$.test(near(area,81,1e-6),"intersectConvexConvex 交集面积",area);
+$.expect(#pts,4,"intersectConvexConvex 返回交集多边形顶点");
+$.test(pts[1][1] >= 20 && pts[1][1] <= 30,"intersectConvexConvex 顶点 x 在预期范围");
+
+var rect1 = {center=[20,20]; size=[20,20]; angle=0};
+var rect2 = {center=[30,20]; size=[20,20]; angle=0};
+var typ,rpts = cv2.rotatedRectangleIntersection(rect1,rect2);
+$.expect(typ,cv2.INTERSECT_PARTIAL,"rotatedRectangleIntersection 部分相交");
+$.expect(#rpts,4,"rotatedRectangleIntersection 部分相交返回 4 点");
+
+var typFull,rptsFull = cv2.rotatedRectangleIntersection(rect1,rect1);
+$.expect(typFull,cv2.INTERSECT_FULL,"rotatedRectangleIntersection 完全重合");
+$.expect(#rptsFull,4,"完全重合返回矩形 4 点");
+
+var rectFar = {center=[100,100]; size=[20,20]; angle=0};
+var typNone,rptsNone = cv2.rotatedRectangleIntersection(rect1,rectFar);
+$.expect(typNone,cv2.INTERSECT_NONE,"rotatedRectangleIntersection 不相交");
+$.expect(#rptsNone,0,"不相交返回空点集");
+
+var gray = cv2.zeros(16,16,cv2.CV_8UC1);
+for(y=0;15;1){
+    for(x=0;15;1){
+        gray.set(y,x,x*16);
+    }
+}
+var clahe1 = cv2.applyCLAHE(gray,2.0,[4,4]);
+$.expect(clahe1.shape,[16,16,1],"applyCLAHE 输出 shape");
+$.test(clahe1.get(0,0) >= 0,"applyCLAHE 可读取结果值");
+
+var clahe = cv2.createCLAHE(2.0,[4,4]);
+$.expect(clahe.clipLimit,2.0,"CLAHE.clipLimit 初始值");
+clahe.clipLimit = 3.0;
+$.expect(clahe.clipLimit,3.0,"CLAHE.clipLimit 可写");
+var clahe2 = clahe.apply(gray);
+$.expect(clahe2.shape,[16,16,1],"CLAHE.apply 输出 shape");
+clahe.collectGarbage();
+clahe.release();
+
+return $.report();

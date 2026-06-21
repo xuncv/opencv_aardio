@@ -1,0 +1,68 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 PCA 与轮廓几何分析");
+
+var near = function(actual, expected, eps=1e-5){
+    return math.abs(actual - expected) <= eps;
+}
+
+var data = cv2.Mat(4,2,cv2.CV_32FC1);
+data.set(0,0,0).set(0,1,0);
+data.set(1,0,1).set(1,1,1);
+data.set(2,0,2).set(2,1,2);
+data.set(3,0,3).set(3,1,3);
+
+var mean,eigenvectors = cv2.PCACompute(data,1);
+$.expect(mean.shape,[1,2,1],"PCACompute mean shape");
+$.expect(eigenvectors.shape,[1,2,1],"PCACompute eigenvectors shape");
+$.test(near(mean.get(0,0),1.5) && near(mean.get(0,1),1.5),"PCACompute mean value");
+$.test(near(math.abs(eigenvectors.get(0,0)),0.70710678,1e-4),"PCACompute eigenvector x");
+$.test(near(math.abs(eigenvectors.get(0,1)),0.70710678,1e-4),"PCACompute eigenvector y");
+
+var projected = cv2.PCAProject(data,mean,eigenvectors);
+$.expect(projected.shape,[4,1,1],"PCAProject shape");
+$.test(near(math.abs(projected.get(0,0)),2.1213203,1e-4),"PCAProject first distance");
+$.test(near(math.abs(projected.get(3,0)),2.1213203,1e-4),"PCAProject last distance");
+
+var restored = cv2.PCABackProject(projected,mean,eigenvectors);
+$.expect(restored.shape,[4,2,1],"PCABackProject shape");
+$.test(near(restored.get(0,0),0,1e-4) && near(restored.get(0,1),0,1e-4),"PCABackProject first point");
+$.test(near(restored.get(3,0),3,1e-4) && near(restored.get(3,1),3,1e-4),"PCABackProject last point");
+
+var mean2,eigenvectors2 = cv2.PCACompute(data,2);
+$.expect(eigenvectors2.shape,[2,2,1],"PCACompute maxComponents=2 shape");
+
+var mask = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.rectangle(mask,[10,12],[24,28],255,cv2.FILLED);
+var contours = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE);
+$.test(#contours == 1,"准备单个矩形轮廓");
+var contour = contours[1];
+
+var hull = cv2.convexHull(contour);
+$.test(hull.count == 4,"convexHull 返回 4 个角点");
+$.test(cv2.isContourConvex(hull),"isContourConvex hull");
+$.test(cv2.matchShapes(contour,contour,cv2.CONTOURS_MATCH_I1) == 0,"matchShapes self I1");
+$.test(cv2.matchShapes(contour,hull,cv2.CONTOURS_MATCH_I2) < 1e-10,"matchShapes contour vs hull");
+
+var rect = cv2.minAreaRect(contour);
+$.test(near(rect.center[1],16.5,1e-4) && near(rect.center[2],19.5,1e-4),"minAreaRect center");
+$.test(near(rect.size[1] * rect.size[2],195,1e-4),"minAreaRect area from size");
+
+var box = cv2.boxPoints(rect);
+$.test(#box == 4,"boxPoints count");
+var xs = [box[1][1],box[2][1],box[3][1],box[4][1]];
+var ys = [box[1][2],box[2][2],box[3][2],box[4][2]];
+table.sort(xs); table.sort(ys);
+$.test(near(xs[1],10,1e-4) && near(xs[#xs],23,1e-4),"boxPoints x extent");
+$.test(near(ys[1],12,1e-4) && near(ys[#ys],27,1e-4),"boxPoints y extent");
+
+var circle = cv2.minEnclosingCircle(contour);
+$.test(near(circle.center[1],16.5,1e-4) && near(circle.center[2],19.5,1e-4),"minEnclosingCircle center");
+$.test(circle.radius > 9 && circle.radius < 11,"minEnclosingCircle radius");
+
+var line = cv2.fitLine(contour);
+$.test(near(math.abs(line.vy),1,1e-4) || near(math.abs(line.vx),1,1e-4),"fitLine unit direction roughly axis-aligned");
+$.test(near(line.x0,16.5,1e-4) && near(line.y0,19.5,1e-4),"fitLine point near center");
+
+return $.report();

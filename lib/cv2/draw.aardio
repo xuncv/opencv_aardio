@@ -1,0 +1,21 @@
+namespace cv2.draw{}
+namespace cv2;
+
+// Drawing helpers not already grouped with imgproc drawing
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+drawMarker = function(img,position,color=255,markerType=0,markerSize=20,thickness=1,lineType=8){
+    init();
+    var x,y = _point2(position);
+    var v0,v1,v2,v3 = _scalar4(color);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.DrawMarker(_asNetMat(img),x,y,v0,v1,v2,v3,markerType,markerSize,thickness,lineType));
+}
+
+clipLine = function(size,pt1,pt2){
+    init();
+    var width,height = _size2wh(size);
+    var x1,y1 = _point2(pt1);
+    var x2,y2 = _point2(pt2);
+    var r = ..Aardio.OpenCvSharpBridge.Cv.ClipLine(width,height,x1,y1,x2,y2);
+    return r.Ok, [r.X1,r.Y1], [r.X2,r.Y2];
+}

@@ -10,7 +10,7 @@
 ### 使用方法:
 
 1. 下载项目源码
-2. 前往 https://github.com/xuncv/opencv-plugin/releases  
+2. 前往 https://github.com/xuncv/opencv-plugin/releases
    下载最新dll文件,复制到`/lib/cv2/.res/`中
 
 ### OpenCV-aardio中文文档(编写中)
@@ -35,6 +35,44 @@ cv2.waitKey(0)
 ##### YOLO
 
 ![](./images/detect.jpg)
+
+### DNN / AI 推理支持
+
+当前 `cv2.dnn` 已封装 OpenCV DNN 的基础推理接口，并提供分类、检测、分割常用后处理工具：
+
+```aardio
+import cv2;
+
+var net = cv2.readNetFromONNX("/models/model.onnx");
+var img = cv2.imread("/images/test.jpg");
+var blob = cv2.blobFromImage(img,1/255,[224,224],[0,0,0],true,false);
+
+net.setInput(blob);
+var out = net.forward();
+
+var top5 = cv2.dnnDecodeClassification(out,["cat","dog","bird"],5,true);
+```
+
+已支持：
+
+- `blobFromImage / blobFromImages`
+- `readNet / readNetFromONNX / readNetFromCaffe / readNetFromDarknet / readNetFromTensorflow / readNetFromTorch`
+- `Net.setInput / Net.forward / Net.forwardLayers`
+- `Mat.toFloatArray / Mat.toDoubleArray`
+- 分类后处理：`softmax / argmax / topK / dnnDecodeClassification`
+- 检测后处理：`NMSBoxes / dnnDecodeYolo / dnnDecodeSSD / dnnDecodeFasterRCNN / dnnDrawDetections`
+- 分割后处理：`dnnDecodeBinaryMask / dnnDecodeSegmentation`
+
+详细说明见：[`docs/dnn.md`](./docs/dnn.md)
+
+可运行示例：
+
+```text
+samples/dnn_minimal_caffe_relu.aardio
+samples/dnn_minimal_onnx_relu.aardio
+samples/dnn_postprocess_demo.aardio
+samples/highgui_imshow.aardio
+```
 
 ### 期望解决的问题：
 

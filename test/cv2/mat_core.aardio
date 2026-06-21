@@ -1,0 +1,68 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 Mat/core matrix operations");
+
+var z = cv2.zeros(2,3,cv2.CV_8UC1);
+$.expect(z.shape,[2,3,1],"zeros shape");
+$.expect(z.typeValue,cv2.CV_8UC1,"zeros typeValue");
+$.expect(z.get(0,0),0,"zeros initial value");
+
+z.setTo(7);
+$.expect(z.get(0,0),7,"Mat.setTo scalar");
+$.expect(z.get(1,2),7,"Mat.get zero-based row/col");
+$.expect(#z.toBytes(),6,"Mat.toBytes length");
+
+z.set(1,2,42);
+$.expect(z.get(1,2),42,"Mat.set single-channel value");
+
+var cloned = z.clone();
+$.expect(cloned.shape,z.shape,"Mat.clone shape");
+$.expect(cloned.get(1,2),42,"Mat.clone value");
+
+var row0 = z.row(0);
+$.expect(row0.shape,[1,3,1],"Mat.row shape");
+var col1 = z.col(1);
+$.expect(col1.shape,[2,1,1],"Mat.col shape");
+var roi = z.roi(1,0,2,2);
+$.expect(roi.shape,[2,2,1],"Mat.roi shape");
+
+var f32 = z.convertTo(cv2.CV_32FC1);
+$.expect(f32.shape,z.shape,"Mat.convertTo shape");
+$.expect(f32.typeValue,cv2.CV_32FC1,"Mat.convertTo CV_32FC1");
+$.expect(f32.get(1,2),42,"Mat.convertTo value");
+
+var mn,mx,minLoc,maxLoc = cv2.minMaxLoc(z);
+$.expect(mn,7,"minMaxLoc min value");
+$.expect(mx,42,"minMaxLoc max value");
+$.expect(maxLoc,[2,1],"minMaxLoc max location x,y");
+
+var mean = cv2.mean(z);
+$.test(mean[1] > 12.8 && mean[1] < 12.9,"mean value",mean);
+
+var mask = cv2.inRange(z,5,10);
+$.expect(mask.shape,z.shape,"inRange mask shape");
+$.expect(cv2.countNonZero(mask),5,"countNonZero inRange mask");
+
+var a = cv2.zeros(2,2,cv2.CV_8UC1).setTo(10);
+var b = cv2.zeros(2,2,cv2.CV_8UC1).setTo(20);
+var c = cv2.zeros(2,2,cv2.CV_8UC1).setTo(30);
+var merged = cv2.merge([a,b,c]);
+$.expect(merged.shape,[2,2,3],"merge three channels shape");
+$.expect(merged.get(0,0,0),10,"merge channel 0 value");
+$.expect(merged.get(0,0,1),20,"merge channel 1 value");
+$.expect(merged.get(0,0,2),30,"merge channel 2 value");
+
+var channels = cv2.split(merged);
+$.expect(#channels,3,"split channel count");
+$.expect(channels[1].shape,[2,2,1],"split channel shape");
+$.expect(cv2.mean(channels[1])[1],10,"split channel 0 mean");
+$.expect(cv2.mean(channels[2])[1],20,"split channel 1 mean");
+$.expect(cv2.mean(channels[3])[1],30,"split channel 2 mean");
+
+var hc = cv2.hconcat(a,b);
+$.expect(hc.shape,[2,4,1],"hconcat shape");
+var vc = cv2.vconcat(a,b);
+$.expect(vc.shape,[4,2,1],"vconcat shape");
+
+return $.report();

@@ -1,0 +1,118 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2.dnn ONNX minimal ReLU");
+
+// Minimal protobuf writer for an ONNX model:
+//   input(data, float[1,1,2,2]) -> Relu -> output(relu, float[1,1,2,2])
+// It avoids any external model file or Python dependency.
+var pbVarint = function(n){
+    var bytes = [];
+    while(n >= 0x80){
+        table.push(bytes,(n & 0x7F) | 0x80);
+        n = n >> 7;
+    }
+    table.push(bytes,n);
+    return string.pack(bytes);
+}
+
+var pbTag = function(field,wire){
+    return pbVarint((field << 3) | wire);
+}
+
+var pbInt = function(field,n){
+    return pbTag(field,0) ++ pbVarint(n);
+}
+
+var pbStr = function(field,s){
+    return pbTag(field,2) ++ pbVarint(#s) ++ s;
+}
+
+var pbMsg = function(field,msg){
+    return pbTag(field,2) ++ pbVarint(#msg) ++ msg;
+}
+
+var onnxDim = function(v){
+    // TensorShapeProto.Dimension.dim_value = field 1
+    return pbInt(1,v);
+}
+
+var onnxShape = function(dims){
+    var s = "";
+    for(i,v in dims){
+        // TensorShapeProto.dim = field 1 repeated
+        s ++= pbMsg(1,onnxDim(v));
+    }
+    return s;
+}
+
+var onnxTensorType = function(dims){
+    // TensorProto.DataType.FLOAT = 1, shape = field 2
+    var tensorType = pbInt(1,1) ++ pbMsg(2,onnxShape(dims));
+    // TypeProto.tensor_type = field 1
+    return pbMsg(1,tensorType);
+}
+
+var onnxValueInfo = function(name,dims){
+    // ValueInfoProto.name = 1, type = 2
+    return pbStr(1,name) ++ pbMsg(2,onnxTensorType(dims));
+}
+
+var makeReluOnnx = function(path){
+    var dims = [1,1,2,2];
+
+    // NodeProto.input = 1, output = 2, name = 3, op_type = 4
+    var node = pbStr(1,"data") ++ pbStr(2,"relu") ++ pbStr(3,"relu_node") ++ pbStr(4,"Relu");
+
+    // GraphProto.node = 1, name = 2, input = 11, output = 12
+    var graph = pbMsg(1,node)
+        ++ pbStr(2,"relu_graph")
+        ++ pbMsg(11,onnxValueInfo("data",dims))
+        ++ pbMsg(12,onnxValueInfo("relu",dims));
+
+    // OperatorSetIdProto.version = field 2
+    var opset = pbInt(2,13);
+
+    // ModelProto.ir_version = 1, producer_name = 2, graph = 7, opset_import = 8
+    var model = pbInt(1,7)
+        ++ pbStr(2,"opencv_aardio_test")
+        ++ pbMsg(7,graph)
+        ++ pbMsg(8,opset);
+
+    string.save(path,model);
+    return path;
+}
+
+var img = cv2.Mat(2,2,cv2.CV_32FC1);
+img.set(0,0,-1).set(0,1,2).set(1,0,-3).set(1,1,4);
+
+var blob = cv2.blobFromImage(img,1.0,[2,2],[0,0,0],false,false);
+
+var onnxPath = io.tmpname("cv2_dnn_relu_",".onnx");
+makeReluOnnx(onnxPath);
+
+$.test(io.exist(onnxPath),"minimal onnx file written");
+$.test(#string.load(onnxPath) > 0,"minimal onnx file has bytes");
+
+var net = cv2.readNetFromONNX(onnxPath);
+$.test(!net.empty(),"readNetFromONNX returns non-empty net");
+
+var names = net.getLayerNames();
+$.test(#names >= 1,"ONNX net has layers");
+
+net.setInput(blob,"data");
+var out = net.forward("relu");
+
+$.expect(out.dims,4,"ONNX ReLU output is 4D");
+$.expect([out.sizeAt(0),out.sizeAt(1),out.sizeAt(2),out.sizeAt(3)],[1,1,2,2],"ONNX ReLU output shape");
+
+var values = out.toFloatArray();
+$.test(#values == 4,"ONNX ReLU output value count");
+$.test(values[1] == 0 && values[2] == 2 && values[3] == 0 && values[4] == 4,"ONNX ReLU output values");
+
+var s = cv2.sum(out);
+$.test(s[1] == 6,"ONNX ReLU output sum");
+
+io.remove(onnxPath);
+
+return $.report();

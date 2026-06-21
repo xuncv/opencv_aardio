@@ -1,0 +1,155 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2 extra 50 interfaces");
+
+var near = function(a,b,eps=0.0001){
+    return math.abs(a-b) <= eps;
+}
+
+var m = cv2.Mat(2,2,cv2.CV_32FC1);
+m.set(0,0,1).set(0,1,4).set(1,0,9).set(1,1,16);
+
+var sq = cv2.sqrt(m);
+$.test(near(sq.get(0,1),2),"sqrt");
+
+var e = cv2.exp(cv2.ones(1,1,cv2.CV_32FC1));
+var l = cv2.log(e);
+$.test(near(l.get(0,0),1,0.001),"exp + log");
+
+var pw = cv2.pow(m,2);
+$.test(near(pw.get(1,1),256),"pow");
+
+var base = cv2.ones(2,2,cv2.CV_32FC1);
+var sc = cv2.scaleAdd(m,2,base);
+$.test(near(sc.get(1,1),33),"scaleAdd");
+
+var mx = cv2.max(m,5);
+var mn = cv2.min(m,5);
+$.test(mx.get(0,0)==5 && mx.get(1,1)==16,"max scalar");
+$.test(mn.get(0,0)==1 && mn.get(1,1)==5,"min scalar");
+
+var mm = cv2.minMaxIdx(m);
+$.test(mm.minVal==1 && mm.maxVal==16,"minMaxIdx values");
+$.expect(mm.minIdx,[0,0],"minMaxIdx min index");
+$.expect(mm.maxIdx,[1,1],"minMaxIdx max index");
+
+var mask = cv2.zeros(3,3,cv2.CV_8UC1);
+mask.set(0,1,255).set(2,2,255);
+var nz = cv2.findNonZero(mask);
+$.expect(nz,[[1,0],[2,2]],"findNonZero");
+
+var eye = cv2.zeros(3,3,cv2.CV_32FC1);
+cv2.setIdentity(eye,2);
+$.test(eye.get(0,0)==2 && eye.get(1,1)==2 && eye.get(0,1)==0,"setIdentity");
+
+var sym = cv2.zeros(2,2,cv2.CV_32FC1);
+sym.set(1,0,7);
+cv2.completeSymm(sym,true);
+$.test(sym.get(0,1)==7 && sym.get(1,0)==7,"completeSymm");
+
+var v1 = cv2.Mat(1,2,cv2.CV_64FC1);
+v1.set(0,0,0).set(0,1,0);
+var v2 = cv2.Mat(1,2,cv2.CV_64FC1);
+v2.set(0,0,3).set(0,1,4);
+var ic = cv2.eye(2,2,cv2.CV_64FC1);
+$.test(near(cv2.Mahalanobis(v1,v2,ic),5),"Mahalanobis");
+
+var rnd = cv2.zeros(3,3,cv2.CV_32FC1);
+cv2.randu(rnd,2,3);
+$.test(rnd.get(0,0) >= 2 && rnd.get(0,0) < 3,"randu range");
+cv2.randn(rnd,0,1);
+$.test(rnd.shape[1]==3 && rnd.shape[2]==3,"randn shape");
+
+var shuffle = cv2.zeros(1,5,cv2.CV_32FC1);
+for(i=0;4;1) shuffle.set(0,i,i+1);
+cv2.randShuffle(shuffle);
+var sumShuffle = 0;
+for(i=0;4;1) sumShuffle += shuffle.get(0,i);
+$.test(sumShuffle==15,"randShuffle preserves values");
+
+var row = cv2.Mat(1,4,cv2.CV_32FC1);
+row.set(0,0,3).set(0,1,1).set(0,2,4).set(0,3,2);
+var sorted = cv2.sort(row,cv2.SORT_EVERY_ROW | cv2.SORT_ASCENDING);
+$.expect([sorted.get(0,0),sorted.get(0,1),sorted.get(0,2),sorted.get(0,3)],[1,2,3,4],"sort");
+var sortIdx = cv2.sortIdx(row,cv2.SORT_EVERY_ROW | cv2.SORT_ASCENDING);
+$.expect([sortIdx.get(0,0),sortIdx.get(0,1),sortIdx.get(0,2),sortIdx.get(0,3)],[1,3,0,2],"sortIdx");
+
+var samples = cv2.Mat(3,2,cv2.CV_32FC1);
+samples.set(0,0,0).set(0,1,0).set(1,0,1).set(1,1,1).set(2,0,2).set(2,1,2);
+var cov,mean = cv2.calcCovarMatrix(samples,cv2.COVAR_ROWS | cv2.COVAR_NORMAL,cv2.CV_64F);
+$.test(cov.shape[1]==2 && mean.shape[2]==2 && near(mean.get(0,0),1),"calcCovarMatrix");
+
+$.test(cv2.getOptimalDFTSize(31) >= 31,"getOptimalDFTSize");
+$.test(cv2.borderInterpolate(-1,10,cv2.BORDER_REFLECT_101)==1,"borderInterpolate");
+$.test(near(cv2.fastAtan2(1,1),45,0.1),"fastAtan2");
+$.test(near(cv2.cubeRoot(27),3,0.001),"cubeRoot");
+$.test(cv2.checkRange(m),"checkRange");
+$.test(cv2.PSNR(mask,mask) > 100,"PSNR identical");
+
+var kernel = cv2.Mat(1,1,cv2.CV_32FC1).set(0,0,1);
+var f = cv2.filter2D(m,-1,kernel);
+$.test(f.get(1,1)==16,"filter2D identity");
+var sep = cv2.sepFilter2D(m,-1,kernel,kernel);
+$.test(sep.get(1,1)==16,"sepFilter2D identity");
+var bf = cv2.bilateralFilter(mask,3,10,10);
+$.expect(bf.shape,mask.shape,"bilateralFilter shape");
+var sqr = cv2.sqrBoxFilter(m,-1,[1,1]);
+$.test(sqr.get(1,1)==256,"sqrBoxFilter 1x1");
+var gk = cv2.getGaussianKernel(3,1,cv2.CV_64F);
+$.expect(gk.shape,[3,1,1],"getGaussianKernel shape");
+var kx,ky = cv2.getDerivKernels(1,0,3,false,cv2.CV_32F);
+$.expect(kx.shape,[3,1,1],"getDerivKernels kx shape");
+$.expect(ky.shape,[3,1,1],"getDerivKernels ky shape");
+var gabor = cv2.getGaborKernel([3,3],1,0,2,1,0,cv2.CV_64F);
+$.expect(gabor.shape,[3,3,1],"getGaborKernel shape");
+var sch = cv2.Scharr(m,cv2.CV_32F,1,0);
+$.expect(sch.shape,m.shape,"Scharr shape");
+
+var img = cv2.zeros(16,16,cv2.CV_8UC1);
+img.set(8,8,255);
+var wp = cv2.warpPolar(img,[16,16],[8,8],8,cv2.INTER_NEAREST,cv2.WARP_POLAR_LINEAR);
+$.expect(wp.shape,[16,16,1],"warpPolar shape");
+var lp = cv2.linearPolar(img,[8,8],8,cv2.INTER_NEAREST);
+$.expect(lp.shape,img.shape,"linearPolar shape");
+var logp = cv2.logPolar(img,[8,8],8,cv2.INTER_NEAREST);
+$.expect(logp.shape,img.shape,"logPolar shape");
+var th,bin = cv2.threshold(img,1,255,cv2.THRESH_BINARY_INV);
+var dist,labels = cv2.distanceTransformWithLabels(bin,cv2.DIST_L2,cv2.DIST_MASK_3);
+$.expect(dist.shape,img.shape,"distanceTransformWithLabels dist shape");
+$.expect(labels.shape,img.shape,"distanceTransformWithLabels labels shape");
+var color = cv2.applyColorMap(img,cv2.COLORMAP_JET);
+$.expect(color.shape,[16,16,3],"applyColorMap shape");
+var hist = cv2.calcHist(img,4,[0,256]);
+$.test(near(cv2.compareHist(hist,hist,cv2.HISTCMP_CORREL),1),"compareHist self");
+var shift,response = cv2.phaseCorrelate(cv2.ones(8,8,cv2.CV_32FC1),cv2.ones(8,8,cv2.CV_32FC1));
+$.test(#shift==2 && response!==null,"phaseCorrelate result");
+var hann = cv2.createHanningWindow([8,8],cv2.CV_32F);
+$.expect(hann.shape,[8,8,1],"createHanningWindow shape");
+
+var draw = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.putText(draw,"A",[2,22]);
+$.test(cv2.countNonZero(draw)>0,"putText draws");
+cv2.ellipse(draw,[20,20],[8,5]);
+cv2.arrowedLine(draw,[1,1],[38,38]);
+$.test(cv2.countNonZero(draw)>0,"ellipse + arrowedLine draw");
+var textSize,baseLine = cv2.getTextSize("A");
+$.test(textSize[1]>0 && textSize[2]>0 && baseLine>=0,"getTextSize");
+var contour = cv2.ellipse2Poly([20,20],[8,5],0,0,180,30);
+$.test(contour.count > 0,"ellipse2Poly");
+var draw2 = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.polylines(draw2,contour,true);
+$.test(cv2.countNonZero(draw2)>0,"polylines contour");
+var draw3 = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.fillPoly(draw3,contour);
+$.test(cv2.countNonZero(draw3)>0,"fillPoly contour");
+var draw4 = cv2.zeros(40,40,cv2.CV_8UC1);
+cv2.fillConvexPoly(draw4,contour);
+$.test(cv2.countNonZero(draw4)>0,"fillConvexPoly contour");
+var triArea,tri = cv2.minEnclosingTriangle(contour);
+$.test(triArea>0 && #tri==3,"minEnclosingTriangle");
+
+var build = cv2.getBuildInformation();
+$.test(#build > 100,"getBuildInformation");
+
+return $.report();

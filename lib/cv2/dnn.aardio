@@ -1,0 +1,506 @@
+namespace cv2.dnn{}
+namespace cv2;
+
+// OpenCV DNN wrappers. Public API is compatible with Python-cv2 style names where possible.
+
+_dnnPath = function(path){
+    if(path === null || path == "") return "";
+    return ..io.fullpath(path);
+}
+
+class DnnNet{
+    ctor(net){
+        ..cv2.init();
+        this.net = net || ..Aardio.OpenCvSharpBridge.Cv.DnnNet();
+        ..table.gc(this,"release");
+    };
+    empty = function(){ return this.net.Empty(); }
+    setInput = function(blob,name=""){
+        this.net.SetInput(..cv2._asNetMat(blob),name);
+        return this;
+    }
+    forward = function(outputName=""){
+        return ..cv2.Mat(this.net.Forward(outputName));
+    }
+    forwardLayers = function(outBlobNames){
+        return ..cv2._matArray(this.net.ForwardLayers(outBlobNames));
+    }
+    getLayerNames = function(){ return this.net.GetLayerNames(); }
+    getUnconnectedOutLayersNames = function(){ return this.net.GetUnconnectedOutLayersNames(); }
+    setPreferableBackend = function(backend){ this.net.SetPreferableBackend(backend); return this; }
+    setPreferableTarget = function(target){ this.net.SetPreferableTarget(target); return this; }
+    getPerfProfile = function(){ return ..cv2._perfProfileTable(this.net.GetPerfProfile()); }
+    dump = function(){ return this.net.Dump(); }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.DnnNet._metaProperty;
+}
+
+namespace DnnNet{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.DnnNet";
+    )
+}
+
+Net = function(){ return DnnNet(); }
+
+blobFromImage = function(image,scaleFactor=1.0,size,mean,swapRB=false,crop=false){
+    init();
+    var width,height = _size2wh(size);
+    var m0,m1,m2,m3 = _scalar4(mean);
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.BlobFromImage(_asNetMat(image),scaleFactor,width,height,m0,m1,m2,m3,swapRB,crop));
+}
+
+blobFromImages = function(images,scaleFactor=1.0,size,mean,swapRB=false,crop=false){
+    init();
+    var width,height = _size2wh(size);
+    var m0,m1,m2,m3 = _scalar4(mean);
+    var nets = [];
+    for(i,img in images){
+        ..table.push(nets,_asNetMat(img));
+    }
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.BlobFromImages(nets,scaleFactor,width,height,m0,m1,m2,m3,swapRB,crop));
+}
+
+readNet = function(model,config="",framework=""){
+    init();
+    return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNet(_dnnPath(model),_dnnPath(config),framework));
+}
+
+readNetFromONNX = function(path){
+    init();
+    return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNetFromOnnx(_dnnPath(path)));
+}
+readNetFromOnnx = readNetFromONNX;
+
+readNetFromCaffe = function(prototxt,caffeModel=""){
+    init();
+    return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNetFromCaffe(_dnnPath(prototxt),_dnnPath(caffeModel)));
+}
+
+readNetFromDarknet = function(cfgFile,darknetModel=""){
+    init();
+    return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNetFromDarknet(_dnnPath(cfgFile),_dnnPath(darknetModel)));
+}
+
+readNetFromTensorflow = function(model,config=""){
+    init();
+    return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNetFromTensorflow(_dnnPath(model),_dnnPath(config)));
+}
+
+readNetFromTorch = function(model){
+    init();
+    return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNetFromTorch(_dnnPath(model)));
+}
+
+NMSBoxes = function(boxes,scores,scoreThreshold=0.0,nmsThreshold=0.0,eta=1.0,topK=0){
+    init();
+    var flat = [];
+    for(i,b in boxes){
+        var x,y,w,h = _rect4(b);
+        ..table.push(flat,x); ..table.push(flat,y); ..table.push(flat,w); ..table.push(flat,h);
+    }
+    return _intArray(..Aardio.OpenCvSharpBridge.Cv.NMSBoxes(flat,scores,scoreThreshold,nmsThreshold,eta,topK));
+}
+
+nmsBoxes = NMSBoxes;
+
+_dnnArray = function(scores){
+    if(!scores) return [];
+    if(type.rget(scores)=="cv2.Mat") return scores.toFloatArray();
+    return scores;
+}
+
+dnnSoftmax = function(scores){
+    scores = _dnnArray(scores);
+    var ret = [];
+    if(!#scores) return ret;
+
+    var maxVal = scores[1];
+    for(i=2;#scores;1){
+        if(scores[i] > maxVal) maxVal = scores[i];
+    }
+
+    var sum = 0.0;
+    for(i=1;#scores;1){
+        var v = ..math.exp(scores[i] - maxVal);
+        ..table.push(ret,v);
+        sum += v;
+    }
+
+    if(sum){
+        for(i=1;#ret;1){
+            ret[i] = ret[i] / sum;
+        }
+    }
+    return ret;
+}
+
+dnnArgMax = function(scores){
+    scores = _dnnArray(scores);
+    if(!#scores) return null,null;
+
+    var maxIndex = 1;
+    var maxVal = scores[1];
+    for(i=2;#scores;1){
+        if(scores[i] > maxVal){
+            maxVal = scores[i];
+            maxIndex = i;
+        }
+    }
+    return maxIndex,maxVal;
+}
+
+dnnTopK = function(scores,k=5){
+    scores = _dnnArray(scores);
+    var items = [];
+    for(i=1;#scores;1){
+        ..table.push(items,{index=i;score=scores[i]});
+    }
+    ..table.sort(items,lambda(next) owner.score > next.score);
+    if(k < #items) return ..table.slice(items,1,k);
+    return items;
+}
+
+dnnDecodeClassification = function(scores,labels,topK=5,applySoftmax=true){
+    var probs = applySoftmax ? dnnSoftmax(scores) : _dnnArray(scores);
+    var items = dnnTopK(probs,topK);
+    for(i,item in items){
+        item.probability = item.score;
+        item.label = labels ? labels[item.index] : null;
+    }
+    return items;
+}
+
+_dnnScoreOf = function(det){
+    if(det.score !== null) return det.score;
+    if(det.confidence !== null) return det.confidence;
+    if(det.probability !== null) return det.probability;
+    return 0.0;
+}
+
+_dnnClassOf = function(det){
+    if(det.classId !== null) return det.classId;
+    if(det.classIndex !== null) return det.classIndex;
+    if(det.index !== null) return det.index;
+    return 0;
+}
+
+_dnnRectObject = function(x,y,w,h){
+    return {x=x;y=y;width=w;height=h;left=x;top=y;right=x+w;bottom=y+h};
+}
+
+dnnBoxXYWHToRect = function(cx,cy,w,h,imgSize,normalized=false){
+    if(normalized){
+        var iw,ih = _size2wh(imgSize);
+        cx *= iw; w *= iw;
+        cy *= ih; h *= ih;
+    }
+    return _dnnRectObject(cx - w / 2, cy - h / 2, w, h);
+}
+
+dnnClipBox = function(box,imgSize){
+    var imgW,imgH = _size2wh(imgSize);
+    var x,y,w,h = _rect4(box);
+    if(x < 0){ w += x; x = 0; }
+    if(y < 0){ h += y; y = 0; }
+    if(x + w > imgW) w = imgW - x;
+    if(y + h > imgH) h = imgH - y;
+    if(w < 0) w = 0;
+    if(h < 0) h = 0;
+    return _dnnRectObject(x,y,w,h);
+}
+
+dnnNMSDetections = function(detections,scoreThreshold=0.0,nmsThreshold=0.45,classAware=true,topK=0){
+    var groups = {};
+    for(i,det in detections){
+        var score = _dnnScoreOf(det);
+        if(score >= scoreThreshold){
+            var key = classAware ? tostring(_dnnClassOf(det)) : "__all__";
+            if(!groups[key]) groups[key] = [];
+            ..table.push(groups[key],det);
+        }
+    }
+
+    var kept = [];
+    for(key,items in groups){
+        var boxes = [];
+        var scores = [];
+        for(i,det in items){
+            ..table.push(boxes,det.box ? det.box : [det.x,det.y,det.width,det.height]);
+            ..table.push(scores,_dnnScoreOf(det));
+        }
+        var idx = NMSBoxes(boxes,scores,scoreThreshold,nmsThreshold,1.0,topK);
+        for(i,zeroIndex in idx){
+            var det = items[zeroIndex + 1];
+            if(det) ..table.push(kept,det);
+        }
+    }
+
+    ..table.sort(kept,lambda(next) _dnnScoreOf(owner) > _dnnScoreOf(next));
+    return kept;
+}
+
+dnnDecodeYolo = function(rows,imgSize,confThreshold=0.25,nmsThreshold=0.45,labels,normalized=true,classAware=true){
+    if(normalized === null) normalized = true;
+    if(classAware === null) classAware = true;
+
+    var detections = [];
+    for(i,row in rows){
+        if(#row >= 6){
+            var cx,cy,w,h = row[1],row[2],row[3],row[4];
+            var objectness = row[5];
+            var bestClass = 1;
+            var bestClassScore = row[6];
+            for(j=7;#row;1){
+                if(row[j] > bestClassScore){
+                    bestClassScore = row[j];
+                    bestClass = j - 5;
+                }
+            }
+            var score = objectness * bestClassScore;
+            if(score >= confThreshold){
+                var box = dnnBoxXYWHToRect(cx,cy,w,h,imgSize,normalized);
+                box = dnnClipBox(box,imgSize);
+                var det = {
+                    classId = bestClass;
+                    label = labels ? labels[bestClass] : null;
+                    score = score;
+                    confidence = score;
+                    objectness = objectness;
+                    classScore = bestClassScore;
+                    box = box;
+                    x = box.x;
+                    y = box.y;
+                    width = box.width;
+                    height = box.height;
+                };
+                ..table.push(detections,det);
+            }
+        }
+    }
+    return dnnNMSDetections(detections,confThreshold,nmsThreshold,classAware);
+}
+
+dnnDecodeYOLO = dnnDecodeYolo;
+
+_dnnRowsFromMat = function(output,rowWidth){
+    if(type.rget(output)!="cv2.Mat") return output;
+
+    var values = output.toFloatArray();
+    var rows = [];
+    if(!rowWidth || rowWidth <= 0) return rows;
+
+    for(pos=1;#values;rowWidth){
+        var row = [];
+        for(j=0;rowWidth-1;1){
+            if(values[pos+j] !== null) ..table.push(row,values[pos+j]);
+        }
+        if(#row == rowWidth) ..table.push(rows,row);
+    }
+    return rows;
+}
+
+/*
+Decode SSD / Faster-RCNN style detection output.
+Common row format: [imageId, classId, confidence, left, top, right, bottom]
+When normalized is true, box coordinates are multiplied by image width/height.
+*/
+dnnDecodeDetections = function(output,imgSize,confThreshold=0.5,labels,normalized=true,nmsThreshold=0.0,classAware=true){
+    if(normalized === null) normalized = true;
+    if(nmsThreshold === null) nmsThreshold = 0.0;
+    if(classAware === null) classAware = true;
+
+    var rows = _dnnRowsFromMat(output,7);
+    var imgW,imgH = _size2wh(imgSize);
+    var detections = [];
+
+    for(i,row in rows){
+        if(#row >= 7){
+            var imageId = row[1];
+            var classId = row[2];
+            var score = row[3];
+            if(score >= confThreshold){
+                var left,top,right,bottom = row[4],row[5],row[6],row[7];
+                if(normalized){
+                    left *= imgW; right *= imgW;
+                    top *= imgH; bottom *= imgH;
+                }
+                var box = dnnClipBox([left,top,right-left,bottom-top],imgSize);
+                var det = {
+                    imageId = imageId;
+                    classId = classId;
+                    // SSD/Faster-RCNN detection output usually uses model class id, often 0-based with background=0.
+                    label = labels ? (labels[classId + 1] || labels[classId]) : null;
+                    score = score;
+                    confidence = score;
+                    box = box;
+                    x = box.x;
+                    y = box.y;
+                    width = box.width;
+                    height = box.height;
+                };
+                ..table.push(detections,det);
+            }
+        }
+    }
+
+    if(nmsThreshold > 0) return dnnNMSDetections(detections,confThreshold,nmsThreshold,classAware);
+    ..table.sort(detections,lambda(next) _dnnScoreOf(owner) > _dnnScoreOf(next));
+    return detections;
+}
+
+dnnDecodeSSD = dnnDecodeDetections;
+dnnDecodeFasterRCNN = dnnDecodeDetections;
+
+_dnnSigmoidValue = function(v){
+    return 1.0 / (1.0 + ..math.exp(-v));
+}
+
+/*
+Apply sigmoid to a number, array, or cv2.Mat output.
+*/
+dnnSigmoid = function(values){
+    if(type(values)=="number") return _dnnSigmoidValue(values);
+    values = _dnnArray(values);
+    var ret = [];
+    for(i,v in values){
+        ..table.push(ret,_dnnSigmoidValue(v));
+    }
+    return ret;
+}
+
+/*
+Decode binary mask logits/probabilities to a flat mask and CV_8UC1 Mat.
+values: array or cv2.Mat, row-major order.
+Return data uses 0/1, mask Mat uses 0/255.
+*/
+dnnDecodeBinaryMask = function(values,width,height,threshold=0.5,applySigmoid=false){
+    values = _dnnArray(values);
+    var data = [];
+    var mask = Mat(height,width,CV_8UC1);
+    var pos = 1;
+    for(y=0;height-1;1){
+        for(x=0;width-1;1){
+            var v = values[pos] : 0;
+            if(applySigmoid) v = _dnnSigmoidValue(v);
+            var one = v >= threshold ? 1 : 0;
+            ..table.push(data,one);
+            mask.set(y,x,one ? 255 : 0);
+            pos++;
+        }
+    }
+    return {width=width;height=height;data=data;mask=mask};
+}
+
+dnnDecodeMask = dnnDecodeBinaryMask;
+
+/*
+Decode semantic segmentation logits/probabilities in NCHW/CHW order.
+For cv2.Mat input, 4D output is interpreted as [N,C,H,W], 3D as [C,H,W].
+For array input, numClasses,width,height must be specified.
+Return classIds are 1-based indexes matching aardio arrays.
+*/
+dnnDecodeSegmentation = function(output,width,height,numClasses,labels){
+    var values = null;
+    if(type.rget(output)=="cv2.Mat"){
+        values = output.toFloatArray();
+        if(output.dims == 4){
+            if(numClasses === null) numClasses = output.sizeAt(1);
+            if(height === null) height = output.sizeAt(2);
+            if(width === null) width = output.sizeAt(3);
+        }
+        elseif(output.dims == 3){
+            if(numClasses === null) numClasses = output.sizeAt(0);
+            if(height === null) height = output.sizeAt(1);
+            if(width === null) width = output.sizeAt(2);
+        }
+    }
+    else{
+        values = output;
+    }
+
+    var classIds = [];
+    var scores = [];
+    var labelMap = labels ? [] : null;
+    var area = width * height;
+
+    for(p=1;area;1){
+        var bestClass = 1;
+        var bestScore = values[p] : 0;
+        for(c=2;numClasses;1){
+            var v = values[(c-1) * area + p] : 0;
+            if(v > bestScore){
+                bestScore = v;
+                bestClass = c;
+            }
+        }
+        ..table.push(classIds,bestClass);
+        ..table.push(scores,bestScore);
+        if(labelMap) ..table.push(labelMap,labels[bestClass]);
+    }
+
+    return {width=width;height=height;numClasses=numClasses;classIds=classIds;scores=scores;labels=labelMap};
+}
+
+_dnnDefaultPalette = [
+    [0,255,0],      // green
+    [255,0,0],      // blue
+    [0,0,255],      // red
+    [0,255,255],    // yellow
+    [255,0,255],    // magenta
+    [255,255,0],    // cyan
+    [128,128,255],
+    [128,255,128],
+    [255,128,128]
+];
+
+/*
+Return a BGR color palette for drawing DNN detections.
+*/
+dnnColorPalette = function(count=9){
+    var ret = [];
+    if(count < 1) count = #_dnnDefaultPalette;
+    for(i=1;count;1){
+        ..table.push(ret,_dnnDefaultPalette[((i-1) % #_dnnDefaultPalette) + 1]);
+    }
+    return ret;
+}
+
+_dnnColorOf = function(classId,colors){
+    colors = colors || _dnnDefaultPalette;
+    if(!#colors) return [0,255,0];
+    var idx = tonumber(classId) : 1;
+    if(idx < 1) idx = 1;
+    return colors[((idx-1) % #colors) + 1];
+}
+
+/*
+Draw decoded detections on image in-place and return image.
+Detection can use det.box=[x,y,width,height] or det.x/det.y/det.width/det.height.
+*/
+dnnDrawDetections = function(img,detections,labels,colors,thickness=2,showLabel=true){
+    if(!img || !detections) return img;
+    for(i,det in detections){
+        var box = det.box ? det.box : [det.x,det.y,det.width,det.height];
+        var x,y,w,h = _rect4(box);
+        var classId = _dnnClassOf(det);
+        var color = _dnnColorOf(classId,colors);
+        rectangle(img,[x,y],[x+w,y+h],color,thickness);
+
+        if(showLabel){
+            var label = det.label || (labels ? labels[classId] : null) || tostring(classId);
+            var score = _dnnScoreOf(det);
+            var text = label;
+            if(score) text = text + " " + ..string.format("%.2f",score);
+            var ty = y - 3;
+            if(ty < 10) ty = y + 12;
+            putText(img,text,[x,ty],0/*FONT_HERSHEY_SIMPLEX*/,0.45,color,1);
+        }
+    }
+    return img;
+}

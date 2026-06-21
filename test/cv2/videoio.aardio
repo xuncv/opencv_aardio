@@ -1,0 +1,47 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 videoio");
+
+var videoPath = io.fullpath("/test/cv2/_tmp_video.avi");
+io.remove(videoPath);
+
+var fourcc = cv2.VideoWriter_fourcc("MJPG");
+$.test(fourcc != 0,"VideoWriter_fourcc MJPG");
+
+var writer = cv2.VideoWriter(videoPath,"MJPG",5,[64,48],true);
+$.test(writer.isOpened(),"VideoWriter.isOpened");
+
+for(i=1;5;1){
+    var frame = cv2.zeros(48,64,cv2.CV_8UC3).setTo([i*20,50,100]);
+    cv2.rectangle(frame,[5+i,5],[20+i,20],[255,255,255],cv2.FILLED);
+    writer.write(frame);
+}
+writer.release();
+$.test(io.exist(videoPath),"VideoWriter output file exists");
+
+var cap = cv2.VideoCapture(videoPath);
+$.test(cap.isOpened(),"VideoCapture file isOpened");
+$.expect(cap.get(cv2.CAP_PROP_FRAME_WIDTH),64,"CAP_PROP_FRAME_WIDTH");
+$.expect(cap.get(cv2.CAP_PROP_FRAME_HEIGHT),48,"CAP_PROP_FRAME_HEIGHT");
+$.expect(cap.get(cv2.CAP_PROP_FRAME_COUNT),5,"CAP_PROP_FRAME_COUNT");
+$.expect(cap.get(cv2.CAP_PROP_FPS),5,"CAP_PROP_FPS");
+
+var ok,frame = cap.read();
+$.test(ok,"VideoCapture.read ok");
+$.expect(frame.shape,[48,64,3],"VideoCapture.read frame shape");
+$.test(cv2.mean(frame)[1] > 0,"VideoCapture.read frame data");
+
+cap.set(cv2.CAP_PROP_POS_FRAMES,0);
+$.expect(cap.get(cv2.CAP_PROP_POS_FRAMES),0,"CAP_PROP_POS_FRAMES set/get");
+
+var grabbed = cap.grab();
+$.test(grabbed,"VideoCapture.grab ok");
+var ok2,frame2 = cap.retrieve();
+$.test(ok2,"VideoCapture.retrieve ok");
+$.expect(frame2.shape,[48,64,3],"VideoCapture.retrieve frame shape");
+
+cap.release();
+io.remove(videoPath);
+
+return $.report();

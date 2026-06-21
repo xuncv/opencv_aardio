@@ -1,0 +1,58 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 dnn caffe relu forward");
+
+// Minimal Caffe model without external weight file.
+// It verifies a real DNN forward path:
+// readNetFromCaffe -> setInput -> forward.
+var proto = /**
+name: "relu_test"
+input: "data"
+input_shape { dim: 1 dim: 1 dim: 2 dim: 2 }
+layer {
+  name: "relu"
+  type: "ReLU"
+  bottom: "data"
+  top: "relu"
+}
+**/;
+
+var protoPath = io.tmpname("cv2_dnn_relu_",".prototxt");
+string.save(protoPath,proto);
+
+var src = cv2.Mat(2,2,cv2.CV_32FC1);
+src.set(0,0,-1).set(0,1,2).set(1,0,-3).set(1,1,4);
+
+var blob = cv2.blobFromImage(src,1.0,[2,2],[0,0,0],false,false);
+$.expect([blob.dims,blob.sizeAt(0),blob.sizeAt(1),blob.sizeAt(2),blob.sizeAt(3)],[4,1,1,2,2],"blob shape for 1x1x2x2 input");
+
+var net = cv2.readNetFromCaffe(protoPath);
+$.test(!net.empty(),"readNetFromCaffe loads minimal prototxt");
+
+var layerNames = net.getLayerNames();
+$.test(#layerNames >= 1,"getLayerNames returns relu layer");
+
+net.setPreferableBackend(cv2.DNN_BACKEND_OPENCV);
+net.setPreferableTarget(cv2.DNN_TARGET_CPU);
+net.setInput(blob,"data");
+
+var out = net.forward("relu");
+$.expect([out.dims,out.sizeAt(0),out.sizeAt(1),out.sizeAt(2),out.sizeAt(3)],[4,1,1,2,2],"forward output shape");
+
+var s = cv2.sum(out);
+$.expect(s[1],6,"ReLU output sum should be 0+2+0+4");
+$.expect(s[2],0,"ReLU output channel 2 sum is zero");
+var fa = out.toFloatArray();
+var da = out.toDoubleArray();
+$.test(#fa == 4 && fa[1] == 0 && fa[2] == 2 && fa[3] == 0 && fa[4] == 4,"ReLU output toFloatArray");
+$.test(#da == 4 && da[1] == 0 && da[2] == 2 && da[3] == 0 && da[4] == 4,"ReLU output toDoubleArray");
+
+var ticks,timings = net.getPerfProfile();
+$.test(ticks >= 0,"getPerfProfile returns ticks");
+$.test(#timings >= 1,"getPerfProfile returns per-layer timings");
+
+net.release();
+io.remove(protoPath);
+
+return $.report();

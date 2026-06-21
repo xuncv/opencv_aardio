@@ -1,0 +1,329 @@
+namespace cv2._types{}
+namespace cv2;
+
+// Public wrapper classes and object-like types, similar to Python cv2 object wrappers.
+
+class Contour{
+    ctor(netContour){
+        this.net = netContour;
+    };
+    toArray = function(){
+        var ret = [];
+        for(i=0;this.net.Count-1;1){
+            ..table.push(ret,[this.net.GetX(i),this.net.GetY(i)]);
+        }
+        return ret;
+    }
+    point = function(index){
+        return [this.net.GetX(index),this.net.GetY(index)];
+    }
+    area = function(oriented=false){ return this.net.Area(oriented); }
+    arcLength = function(closed=true){ return this.net.ArcLength(closed); }
+    boundingRect = function(){
+        var r = this.net.BoundingRect();
+        return [r.X,r.Y,r.Width,r.Height];
+    }
+    approxPolyDP = function(epsilon,closed=true){
+        return ..cv2.Contour(this.net.ApproxPolyDP(epsilon,closed));
+    }
+    convexHull = function(clockwise=false){ return ..cv2.convexHull(this,clockwise); }
+    isConvex = function(){ return ..cv2.isContourConvex(this); }
+    moments = function(binaryImage=false){ return ..cv2.contourMoments(this,binaryImage); }
+    HuMoments = function(binaryImage=false){ return ..cv2.HuMoments(this,binaryImage); }
+    pointPolygonTest = function(pt,measureDist=false){ return ..cv2.pointPolygonTest(this,pt,measureDist); }
+    minAreaRect = function(){ return ..cv2.minAreaRect(this); }
+    minEnclosingCircle = function(){ return ..cv2.minEnclosingCircle(this); }
+    fitLine = function(distType=2/*DIST_L2*/,param=0.0,reps=0.01,aeps=0.01){ return ..cv2.fitLine(this,distType,param,reps,aeps); }
+    @..cv2.Contour._metaProperty;
+}
+
+namespace Contour{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.Contour";
+        count = { _get = function(){ return owner.net.Count; } };
+    )
+}
+
+class VideoCapture{
+    ctor(source=0){
+        ..cv2.init();
+        if(type(source)==type.number){
+            this.net = ..Aardio.OpenCvSharpBridge.Cv.VideoCaptureIndex(source);
+        }
+        else {
+            this.net = ..Aardio.OpenCvSharpBridge.Cv.VideoCaptureFile(..io.fullpath(source));
+        }
+        ..table.gc(this,"release");
+    };
+    isOpened = function(){ return this.net.IsOpened(); }
+    read = function(){
+        var r = this.net.Read();
+        return r.Ok, ..cv2.Mat(r.Frame);
+    }
+    grab = function(){ return this.net.Grab(); }
+    retrieve = function(){
+        var r = this.net.Retrieve();
+        return r.Ok, ..cv2.Mat(r.Frame);
+    }
+    get = function(propId){ return this.net.Get(propId); }
+    set = function(propId,value){ return this.net.Set(propId,value); }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.VideoCapture._metaProperty;
+}
+
+namespace VideoCapture{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.VideoCapture";
+    )
+}
+
+class VideoWriter{
+    ctor(filename,fourcc,fps,frameSize,isColor=true){
+        ..cv2.init();
+        if(type(fourcc)==type.string) fourcc = ..Aardio.OpenCvSharpBridge.Cv.VideoWriterFourCC(fourcc);
+        var width,height = ..cv2._size2wh(frameSize);
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.VideoWriter(..io.fullpath(filename),fourcc,fps,width,height,isColor);
+        ..table.gc(this,"release");
+    };
+    isOpened = function(){ return this.net.IsOpened(); }
+    write = function(image){ this.net.Write(..cv2._asNetMat(image)); return this; }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.VideoWriter._metaProperty;
+}
+
+namespace VideoWriter{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.VideoWriter";
+    )
+}
+
+VideoWriter_fourcc = function(code){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.VideoWriterFourCC(code);
+}
+
+class KeyPoints{
+    ctor(netKeyPoints){
+        this.net = netKeyPoints;
+    };
+    get = function(index){
+        var kp = this.net.Get(index);
+        return {pt=[kp.X,kp.Y]; size=kp.Size; angle=kp.Angle; response=kp.Response; octave=kp.Octave; classId=kp.ClassId};
+    }
+    toArray = function(){
+        var ret = [];
+        for(i=0;this.net.Count-1;1){
+            ..table.push(ret,this.get(i));
+        }
+        return ret;
+    }
+    @..cv2.KeyPoints._metaProperty;
+}
+
+namespace KeyPoints{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.KeyPoints";
+        count = { _get = function(){ return owner.net.Count; } };
+    )
+}
+
+class Matches{
+    ctor(netMatches){
+        this.net = netMatches;
+    };
+    get = function(index){
+        var m = this.net.Get(index);
+        return {queryIdx=m.QueryIdx; trainIdx=m.TrainIdx; imgIdx=m.ImgIdx; distance=m.Distance};
+    }
+    toArray = function(){
+        var ret = [];
+        for(i=0;this.net.Count-1;1){
+            ..table.push(ret,this.get(i));
+        }
+        return ret;
+    }
+    @..cv2.Matches._metaProperty;
+}
+
+namespace Matches{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.Matches";
+        count = { _get = function(){ return owner.net.Count; } };
+    )
+}
+
+class CLAHE{
+    ctor(clipLimit=40.0,tileGridSize){
+        ..cv2.init();
+        var width,height = 8,8;
+        if(tileGridSize) width,height = ..cv2._size2wh(tileGridSize);
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.CreateCLAHE(clipLimit,width,height);
+        ..table.gc(this,"release");
+    };
+    apply = function(src){ return ..cv2.Mat(this.net.Apply(..cv2._asNetMat(src))); }
+    collectGarbage = function(){ this.net.CollectGarbage(); }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.CLAHE._metaProperty;
+}
+
+namespace CLAHE{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.CLAHE";
+        clipLimit = {
+            _get = function(){ return owner.net.ClipLimit; };
+            _set = function(v){ owner.net.ClipLimit = v; };
+        };
+    )
+}
+
+createCLAHE = function(clipLimit=40.0,tileGridSize){ return CLAHE(clipLimit,tileGridSize); }
+
+class ORB{
+    ctor(nfeatures=500){
+        ..cv2.init();
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.ORBCreate(nfeatures);
+        ..table.gc(this,"release");
+    };
+    detectAndCompute = function(image){
+        var r = this.net.DetectAndCompute(..cv2._asNetMat(image));
+        return ..cv2.KeyPoints(r.Keypoints), ..cv2.Mat(r.Descriptors);
+    }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.ORB._metaProperty;
+}
+
+namespace ORB{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.ORB";
+    )
+}
+
+class BFMatcher{
+    ctor(normType=6/*NORM_HAMMING*/,crossCheck=false){
+        ..cv2.init();
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.BFMatcher(normType,crossCheck);
+        ..table.gc(this,"release");
+    };
+    match = function(queryDescriptors,trainDescriptors){
+        return ..cv2.Matches(this.net.Match(..cv2._asNetMat(queryDescriptors),..cv2._asNetMat(trainDescriptors)));
+    }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.BFMatcher._metaProperty;
+}
+
+namespace BFMatcher{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.BFMatcher";
+    )
+}
+
+ORB_create = function(nfeatures=500){
+    return ORB(nfeatures);
+}
+
+drawKeypoints = function(image,keypoints){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.DrawKeypoints(_asNetMat(image),keypoints.net));
+}
+
+drawMatches = function(img1,keypoints1,img2,keypoints2,matches){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.DrawMatches(_asNetMat(img1),keypoints1.net,_asNetMat(img2),keypoints2.net,matches.net));
+}
+
+class Mat{
+    ctor(rows,cols,tp){
+        ..cv2.init();
+        if(rows === null){
+            this.net = ..Aardio.OpenCvSharpBridge.Cv.Mat();
+        }
+        elseif(type.rget(rows)=="cv2.Mat"){
+            this.net = rows.net;
+        }
+        elseif(type(rows)==type.number){
+            this.net = ..Aardio.OpenCvSharpBridge.Cv.MatCreate(rows,cols,tp : ..cv2.CV_8UC1);
+        }
+        else {
+            // NetMat returned by bridge.
+            this.net = rows;
+        }
+        ..table.gc(this,"release");
+    };
+    clone = function(){ return ..cv2.Mat(this.net.Clone()); }
+    row = function(y){ return ..cv2.Mat(this.net.Row(y)); }
+    col = function(x){ return ..cv2.Mat(this.net.Col(x)); }
+    rowRange = function(startRow,endRow){ return ..cv2.Mat(this.net.RowRange(startRow,endRow)); }
+    colRange = function(startCol,endCol){ return ..cv2.Mat(this.net.ColRange(startCol,endCol)); }
+    roi = function(x,y,width,height){ return ..cv2.Mat(this.net.Roi(x,y,width,height)); }
+    convertTo = function(rtype,alpha=1.0,beta=0.0){ return ..cv2.Mat(this.net.ConvertTo(rtype,alpha,beta)); }
+    reshape = function(cn,rows=0){ return ..cv2.Mat(this.net.Reshape(cn,rows)); }
+    setTo = function(color){
+        var v0,v1,v2,v3 = ..cv2._scalar4(color);
+        this.net.SetTo(v0,v1,v2,v3);
+        return this;
+    }
+    get = function(row,col,channel=0){ return this.net.GetDouble(row,col,channel); }
+    set = function(row,col,value){ this.net.SetDouble(row,col,value); return this; }
+    toBytes = function(){ return this.net.ToBytes(); }
+    toFloatArray = function(){ return [..table.unpack(this.net.ToFloatArray())]; }
+    toDoubleArray = function(){ return [..table.unpack(this.net.ToDoubleArray())]; }
+    sizeAt = function(dimension){ return this.net.SizeAt(dimension); }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    empty = function(){ return this.net.Empty(); }
+    channels = function(){ return this.net.Channels(); }
+    dump = function(){ return this.net.Dump(); }
+    tostring = function(){ return tostring(this.net); }
+    @..cv2.Mat._metaProperty;
+}
+
+namespace Mat{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.Mat";
+        rows = { _get = function(){ return owner.net.Rows; } };
+        cols = { _get = function(){ return owner.net.Cols; } };
+        width = { _get = function(){ return owner.net.Width; } };
+        height = { _get = function(){ return owner.net.Height; } };
+        shape = { _get = function(){ return [owner.net.Height,owner.net.Width,owner.net.Channels()]; } };
+        dims = { _get = function(){ return owner.net.Dims; } };
+        total = { _get = function(){ return owner.net.Total; } };
+        totalValues = { _get = function(){ return owner.net.TotalValues; } };
+        typeValue = { _get = function(){ return owner.net.TypeValue; } };
+        typeName = { _get = function(){ return owner.net.TypeName; } };
+        depth = { _get = function(){ return owner.net.Depth; } };
+        elemSize = { _get = function(){ return owner.net.ElemSize; } };
+        elemSize1 = { _get = function(){ return owner.net.ElemSize1; } };
+        isContinuous = { _get = function(){ return owner.net.IsContinuous; } };
+        isSubmatrix = { _get = function(){ return owner.net.IsSubmatrix; } };
+        _tostring = function(){ return owner.tostring(); }
+    )
+}

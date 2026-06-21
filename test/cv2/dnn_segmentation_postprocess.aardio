@@ -1,0 +1,38 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2 DNN segmentation postprocess helpers");
+
+$.test(math.abs(cv2.dnnSigmoid(0) - 0.5) < 0.000001,"sigmoid number");
+
+var sig = cv2.dnnSigmoid([-1,0,1]);
+$.expect(#sig,3,"sigmoid array length");
+$.test(sig[1] < sig[2] && sig[2] < sig[3],"sigmoid array order");
+
+var bin = cv2.dnnDecodeBinaryMask([-1,1,2,-2],2,2,0.5,true);
+$.expect(bin.width,2,"binary mask width");
+$.expect(bin.height,2,"binary mask height");
+$.expect(bin.data,[0,1,1,0],"binary mask data from logits");
+$.expect(bin.mask.get(0,0),0,"binary mask Mat zero");
+$.expect(bin.mask.get(0,1),255,"binary mask Mat one");
+
+var m = cv2.Mat(2,2,cv2.CV_32FC1);
+m.set(0,0,-1).set(0,1,1).set(1,0,2).set(1,1,-2);
+var binFromMat = cv2.dnnDecodeMask(m,2,2,0.5,true);
+$.expect(binFromMat.data,[0,1,1,0],"binary mask supports Mat input");
+
+// Channel-first scores: [class1 pixels..., class2 pixels...]
+var segValues = [
+    0.9,0.1,0.2,0.7,
+    0.1,0.8,0.3,0.6
+];
+var labels = ["background","object"];
+var seg = cv2.dnnDecodeSegmentation(segValues,2,2,2,labels);
+$.expect(seg.width,2,"segmentation width");
+$.expect(seg.height,2,"segmentation height");
+$.expect(seg.numClasses,2,"segmentation class count");
+$.expect(seg.classIds,[1,2,2,1],"segmentation argmax class ids");
+$.expect(seg.labels,["background","object","object","background"],"segmentation labels");
+$.test(seg.scores[1] == 0.9 && seg.scores[2] == 0.8 && seg.scores[3] == 0.3 && seg.scores[4] == 0.7,"segmentation scores");
+
+return $.report();

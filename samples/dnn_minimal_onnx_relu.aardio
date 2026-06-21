@@ -1,0 +1,80 @@
+import cv2;
+import console;
+
+// A self-contained ONNX DNN sample.
+// It dynamically writes a minimal ONNX protobuf model:
+//   input(data, float[1,1,2,2]) -> Relu -> output(relu, float[1,1,2,2])
+// No external model file is required.
+
+var pbVarint = function(n){
+    var bytes = [];
+    while(n >= 0x80){
+        table.push(bytes,(n & 0x7F) | 0x80);
+        n = n >> 7;
+    }
+    table.push(bytes,n);
+    return string.pack(bytes);
+}
+
+var pbTag = function(field,wire){ return pbVarint((field << 3) | wire); }
+var pbInt = function(field,n){ return pbTag(field,0) ++ pbVarint(n); }
+var pbStr = function(field,s){ return pbTag(field,2) ++ pbVarint(#s) ++ s; }
+var pbMsg = function(field,msg){ return pbTag(field,2) ++ pbVarint(#msg) ++ msg; }
+
+var onnxDim = function(v){ return pbInt(1,v); }
+
+var onnxShape = function(dims){
+    var s = "";
+    for(i,v in dims){
+        s ++= pbMsg(1,onnxDim(v));
+    }
+    return s;
+}
+
+var onnxTensorType = function(dims){
+    var tensorType = pbInt(1,1) ++ pbMsg(2,onnxShape(dims)); // FLOAT + shape
+    return pbMsg(1,tensorType);
+}
+
+var onnxValueInfo = function(name,dims){
+    return pbStr(1,name) ++ pbMsg(2,onnxTensorType(dims));
+}
+
+var makeReluOnnx = function(path){
+    var dims = [1,1,2,2];
+    var node = pbStr(1,"data") ++ pbStr(2,"relu") ++ pbStr(3,"relu_node") ++ pbStr(4,"Relu");
+    var graph = pbMsg(1,node)
+        ++ pbStr(2,"relu_graph")
+        ++ pbMsg(11,onnxValueInfo("data",dims))
+        ++ pbMsg(12,onnxValueInfo("relu",dims));
+    var opset = pbInt(2,13);
+    var model = pbInt(1,7)
+        ++ pbStr(2,"opencv_aardio_sample")
+        ++ pbMsg(7,graph)
+        ++ pbMsg(8,opset);
+    string.save(path,model);
+}
+
+var img = cv2.Mat(2,2,cv2.CV_32FC1);
+img.set(0,0,-1).set(0,1,2).set(1,0,-3).set(1,1,4);
+
+var blob = cv2.blobFromImage(img,1.0,[2,2],[0,0,0],false,false);
+var onnxPath = io.tmpname("cv2_dnn_relu_",".onnx");
+makeReluOnnx(onnxPath);
+
+var net = cv2.readNetFromONNX(onnxPath);
+net.setInput(blob,"data");
+var out = net.forward("relu");
+
+var result = {
+    model = onnxPath;
+    input = img.toFloatArray();
+    output = out.toFloatArray();
+    expected = [0,2,0,4];
+    shape = [out.dims,out.sizeAt(0),out.sizeAt(1),out.sizeAt(2),out.sizeAt(3)];
+    sum = cv2.sum(out);
+}
+
+console.dump(result);
+io.remove(onnxPath);
+return result;

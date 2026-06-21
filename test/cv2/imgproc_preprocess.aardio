@@ -1,0 +1,42 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 preprocessing and pyramid operations");
+
+var img = cv2.zeros(32,32,cv2.CV_8UC1);
+cv2.rectangle(img,[8,8],[24,24],128,cv2.FILLED);
+$.expect(cv2.countNonZero(img),16 * 16,"source rectangle nonzero count");
+
+var eq = cv2.equalizeHist(img);
+$.expect(eq.shape,img.shape,"equalizeHist shape");
+$.expect(eq.typeValue,cv2.CV_8UC1,"equalizeHist output type");
+var eqMin,eqMax = cv2.minMaxLoc(eq);
+$.expect(eqMin,0,"equalizeHist min value");
+$.expect(eqMax,255,"equalizeHist max value");
+$.expect(cv2.countNonZero(eq),cv2.countNonZero(img),"equalizeHist keeps foreground support");
+
+var athMean = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2);
+$.expect(athMean.shape,img.shape,"adaptiveThreshold MEAN shape");
+$.expect(athMean.typeValue,cv2.CV_8UC1,"adaptiveThreshold output type");
+var athCount = cv2.countNonZero(athMean);
+$.test(athCount > 0 && athCount < 32 * 32,"adaptiveThreshold produces binary mask",athCount);
+
+var athGauss = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2);
+$.expect(athGauss.shape,img.shape,"adaptiveThreshold GAUSSIAN shape");
+$.test(cv2.countNonZero(athGauss) > 0,"adaptiveThreshold GAUSSIAN non-empty");
+
+var f32 = img.convertTo(cv2.CV_32FC1,2,-100);
+var abs8 = cv2.convertScaleAbs(f32,1,0);
+$.expect(abs8.shape,img.shape,"convertScaleAbs shape");
+$.expect(abs8.typeValue,cv2.CV_8UC1,"convertScaleAbs output type");
+$.expect(abs8.get(0,0),100,"convertScaleAbs background value");
+$.expect(abs8.get(10,10),156,"convertScaleAbs foreground value");
+
+var pd = cv2.pyrDown(img);
+$.expect(pd.shape,[16,16,1],"pyrDown default half size");
+$.expect(pd.typeValue,cv2.CV_8UC1,"pyrDown output type");
+var pu = cv2.pyrUp(pd,[32,32]);
+$.expect(pu.shape,img.shape,"pyrUp explicit size");
+$.test(cv2.countNonZero(pu) > 0,"pyrUp keeps image content");
+
+return $.report();

@@ -1,0 +1,56 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 affine/remap/floodFill operations");
+
+var img = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.rectangle(img,[5,6],[12,14],120,cv2.FILLED);
+$.expect(cv2.countNonZero(img),56,"source rectangle non-zero count");
+
+var M = cv2.getAffineTransform(
+    [[0,0],[20,0],[0,20]],
+    [[2,3],[22,3],[2,23]]
+);
+$.expect(M.shape,[2,3,1],"getAffineTransform shape");
+$.test(M.get(0,2) > 1.9 && M.get(0,2) < 2.1,"getAffineTransform tx",M.get(0,2));
+$.test(M.get(1,2) > 2.9 && M.get(1,2) < 3.1,"getAffineTransform ty",M.get(1,2));
+
+var shifted = cv2.warpAffine(img,M,[24,26],cv2.INTER_NEAREST);
+$.expect(shifted.shape,[26,24,1],"warpAffine translated shape");
+$.expect(shifted.get(9,7),120,"warpAffine translated sample");
+
+var inv = cv2.invertAffineTransform(M);
+$.expect(inv.shape,[2,3,1],"invertAffineTransform shape");
+var restored = cv2.warpAffine(shifted,inv,[20,20],cv2.INTER_NEAREST);
+$.expect(cv2.countNonZero(cv2.absdiff(img,restored)),0,"invertAffineTransform restores image");
+
+var mapX = cv2.zeros(20,20,cv2.CV_32FC1);
+var mapY = cv2.zeros(20,20,cv2.CV_32FC1);
+for(y=0;19;1){
+    for(x=0;19;1){
+        mapX.set(y,x,x);
+        mapY.set(y,x,y);
+    }
+}
+var remapped = cv2.remap(img,mapX,mapY,cv2.INTER_NEAREST);
+$.expect(remapped.shape,img.shape,"remap identity shape");
+$.expect(cv2.countNonZero(cv2.absdiff(img,remapped)),0,"remap identity diff");
+
+var borderMapped = cv2.remap(img,mapX,mapY,cv2.INTER_NEAREST,cv2.BORDER_CONSTANT,33);
+$.expect(borderMapped.get(0,0),img.get(0,0),"remap constant border unused when in range");
+
+var fill = cv2.zeros(10,10,cv2.CV_8UC1);
+cv2.rectangle(fill,[2,2],[8,8],10,cv2.FILLED);
+var area,rect = cv2.floodFill(fill,[3,3],200,0,0,4);
+$.expect(area,36,"floodFill filled area");
+$.expect(rect,[2,2,6,6],"floodFill rect");
+$.expect(fill.get(3,3),200,"floodFill modifies seed component");
+$.expect(fill.get(0,0),0,"floodFill keeps background");
+$.expect(cv2.countNonZero(fill),36,"floodFill non-zero count");
+
+var area2,rect2 = cv2.floodFill(fill,[0,0],55,0,0,4 | cv2.FLOODFILL_FIXED_RANGE);
+$.expect(area2,64,"floodFill background area with FIXED_RANGE flag");
+$.expect(rect2,[0,0,10,10],"floodFill background rect");
+$.expect(fill.get(0,0),55,"floodFill background new value");
+
+return $.report();

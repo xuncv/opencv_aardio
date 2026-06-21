@@ -1,0 +1,47 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 frequency transforms");
+
+var near = function(actual,expected,eps=0.0001){
+    return math.abs(actual - expected) <= eps;
+}
+
+var m = cv2.Mat(2,2,cv2.CV_32FC1);
+m.set(0,0,1).set(0,1,2).set(1,0,3).set(1,1,4);
+
+var spec = cv2.dft(m,cv2.DFT_COMPLEX_OUTPUT);
+$.expect(spec.shape,[2,2,2],"dft complex output shape");
+$.test(near(spec.get(0,0,0),10) && near(spec.get(0,0,1),0),"dft dc component");
+$.test(near(spec.get(0,1,0),-2) && near(spec.get(0,1,1),0),"dft horizontal frequency");
+$.test(near(spec.get(1,0,0),-4) && near(spec.get(1,0,1),0),"dft vertical frequency");
+
+var rec = cv2.idft(spec,cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT);
+$.expect(rec.shape,[2,2,1],"idft real output shape");
+$.test(near(rec.get(0,0),1) && near(rec.get(0,1),2) && near(rec.get(1,0),3) && near(rec.get(1,1),4),"idft reconstructs source");
+
+var recByDft = cv2.dft(spec,cv2.DFT_INVERSE | cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT);
+$.expect(recByDft.shape,[2,2,1],"dft inverse real output shape");
+$.test(near(recByDft.get(0,0),1) && near(recByDft.get(1,1),4),"dft inverse flags reconstruct source");
+
+var power = cv2.mulSpectrums(spec,spec,0,true);
+$.expect(power.shape,[2,2,2],"mulSpectrums shape");
+$.test(near(power.get(0,0,0),100) && near(power.get(0,0,1),0),"mulSpectrums conj gives dc power");
+$.test(near(power.get(0,1,0),4) && near(power.get(1,0,0),16),"mulSpectrums frequency powers");
+
+var dct = cv2.dct(m);
+$.expect(dct.shape,[2,2,1],"dct shape");
+$.test(near(dct.get(0,0),5),"dct dc coefficient");
+
+var idct = cv2.idct(dct);
+$.expect(idct.shape,[2,2,1],"idct shape");
+$.test(near(idct.get(0,0),1,0.0002) && near(idct.get(0,1),2,0.0002) && near(idct.get(1,0),3,0.0002) && near(idct.get(1,1),4,0.0002),"idct reconstructs source");
+
+var dctInv = cv2.dct(dct,cv2.DCT_INVERSE);
+$.test(near(dctInv.get(0,0),1,0.0002) && near(dctInv.get(1,1),4,0.0002),"dct inverse flag reconstructs source");
+
+var rows = cv2.dft(m,cv2.DFT_ROWS | cv2.DFT_COMPLEX_OUTPUT);
+$.expect(rows.shape,[2,2,2],"dft rows shape");
+$.test(near(rows.get(0,0,0),3) && near(rows.get(1,0,0),7),"dft rows computes per-row dc");
+
+return $.report();

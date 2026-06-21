@@ -1,0 +1,1091 @@
+namespace cv2._bridgeSource;
+
+// C# source for Aardio.OpenCvSharpBridge.
+// Split from cv2/_.aardio to keep the public API aggregator small and easier to maintain.
+source = /***
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using OpenCvSharp;
+using OpenCvSharp.Dnn;
+
+namespace Aardio.OpenCvSharpBridge {
+    public sealed class NetMat : IDisposable {
+        public Mat Value;
+        public NetMat(){ Value = new Mat(); }
+        public NetMat(Mat mat){ Value = mat ?? new Mat(); }
+        public int Rows { get { return Value.Rows; } }
+        public int Cols { get { return Value.Cols; } }
+        public int Width { get { return Value.Cols; } }
+        public int Height { get { return Value.Rows; } }
+        public int TypeValue { get { return Value.Type().Value; } }
+        public string TypeName { get { return Value.Type().ToString(); } }
+        public int Depth { get { return Value.Depth(); } }
+        public long ElemSize { get { return (long)Value.ElemSize(); } }
+        public long ElemSize1 { get { return (long)Value.ElemSize1(); } }
+        public bool IsContinuous { get { return Value.IsContinuous(); } }
+        public bool IsSubmatrix { get { return Value.IsSubmatrix(); } }
+        public int Channels(){ return Value.Channels(); }
+        public int Dims { get { return Value.Dims; } }
+        public int SizeAt(int dimension){ return Value.Size(dimension); }
+        public long Total { get { return (long)Value.Total(); } }
+        public long TotalValues { get { return (long)Value.Total() * (long)Value.Channels(); } }
+        public bool Empty(){ return Value.Empty(); }
+        public NetMat Clone(){ return new NetMat(Value.Clone()); }
+        public NetMat Row(int y){ return new NetMat(Value.Row(y)); }
+        public NetMat Col(int x){ return new NetMat(Value.Col(x)); }
+        public NetMat RowRange(int start, int end){ return new NetMat(Value.RowRange(start, end)); }
+        public NetMat ColRange(int start, int end){ return new NetMat(Value.ColRange(start, end)); }
+        public NetMat Roi(int x, int y, int width, int height){ return new NetMat(new Mat(Value, new Rect(x, y, width, height))); }
+        public NetMat ConvertTo(int rtype, double alpha, double beta){ var dst = new Mat(); Value.ConvertTo(dst, new MatType(rtype), alpha, beta); return new NetMat(dst); }
+        public NetMat Reshape(int cn, int rows){ return new NetMat(Value.Reshape(cn, rows)); }
+        public NetMat SetTo(double v0, double v1, double v2, double v3){ Value.SetTo(new Scalar(v0, v1, v2, v3)); return this; }
+        public double GetDouble(int row, int col, int channel){
+            if(Value.Channels() > 1){
+                using(var single = new Mat()){
+                    Cv2.ExtractChannel(Value, single, channel);
+                    return GetSingleDouble(single, row, col);
+                }
+            }
+            return GetSingleDouble(Value, row, col);
+        }
+        public void SetDouble(int row, int col, double value){
+            if(Value.Channels() != 1) throw new NotSupportedException("SetDouble only supports single-channel Mat; use Split/Merge for multi-channel Mat.");
+            switch(Value.Depth()){
+                case 0: Value.Set(row, col, (byte)value); break;
+                case 1: Value.Set(row, col, (sbyte)value); break;
+                case 2: Value.Set(row, col, (ushort)value); break;
+                case 3: Value.Set(row, col, (short)value); break;
+                case 4: Value.Set(row, col, (int)value); break;
+                case 5: Value.Set(row, col, (float)value); break;
+                case 6: Value.Set(row, col, (double)value); break;
+                default: throw new NotSupportedException("Unsupported Mat depth: " + Value.Depth());
+            }
+        }
+        public byte[] ToBytes(){
+            var m = Value.IsContinuous() ? Value : Value.Clone();
+            try{
+                long len64 = (long)m.Total() * (long)m.ElemSize();
+                if(len64 > int.MaxValue) throw new InvalidOperationException("Mat is too large to copy into a byte array.");
+                var bytes = new byte[(int)len64];
+                Marshal.Copy(m.Data, bytes, 0, bytes.Length);
+                return bytes;
+            }
+            finally{
+                if(!Object.ReferenceEquals(m, Value)) m.Dispose();
+            }
+        }
+        public float[] ToFloatArray(){
+            Mat converted = null;
+            var m = Value;
+            if(m.Depth() != 5/*CV_32F*/){
+                converted = new Mat();
+                m.ConvertTo(converted, MatType.CV_32F);
+                m = converted;
+            }
+            if(!m.IsContinuous()){
+                var cloned = m.Clone();
+                if(converted != null) converted.Dispose();
+                converted = cloned;
+                m = converted;
+            }
+            try{
+                long len64 = (long)m.Total() * (long)m.Channels();
+                if(len64 > int.MaxValue) throw new InvalidOperationException("Mat is too large to copy into a float array.");
+                var values = new float[(int)len64];
+                Marshal.Copy(m.Data, values, 0, values.Length);
+                return values;
+            }
+            finally{
+                if(converted != null) converted.Dispose();
+            }
+        }
+        public double[] ToDoubleArray(){
+            Mat converted = null;
+            var m = Value;
+            if(m.Depth() != 6/*CV_64F*/){
+                converted = new Mat();
+                m.ConvertTo(converted, MatType.CV_64F);
+                m = converted;
+            }
+            if(!m.IsContinuous()){
+                var cloned = m.Clone();
+                if(converted != null) converted.Dispose();
+                converted = cloned;
+                m = converted;
+            }
+            try{
+                long len64 = (long)m.Total() * (long)m.Channels();
+                if(len64 > int.MaxValue) throw new InvalidOperationException("Mat is too large to copy into a double array.");
+                var values = new double[(int)len64];
+                Marshal.Copy(m.Data, values, 0, values.Length);
+                return values;
+            }
+            finally{
+                if(converted != null) converted.Dispose();
+            }
+        }
+        private static double GetSingleDouble(Mat m, int row, int col){
+            switch(m.Depth()){
+                case 0: return m.Get<byte>(row, col);
+                case 1: return m.Get<sbyte>(row, col);
+                case 2: return m.Get<ushort>(row, col);
+                case 3: return m.Get<short>(row, col);
+                case 4: return m.Get<int>(row, col);
+                case 5: return m.Get<float>(row, col);
+                case 6: return m.Get<double>(row, col);
+                default: throw new NotSupportedException("Unsupported Mat depth: " + m.Depth());
+            }
+        }
+        public string Dump(){ return Value.Dump(); }
+        public override string ToString(){ return Value.ToString(); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class ThresholdResult {
+        public double RetVal;
+        public NetMat Mat;
+        public ThresholdResult(double retVal, Mat mat){ RetVal = retVal; Mat = new NetMat(mat); }
+    }
+
+    public sealed class TwoMatResult {
+        public NetMat Mat1;
+        public NetMat Mat2;
+        public TwoMatResult(Mat mat1, Mat mat2){ Mat1 = new NetMat(mat1); Mat2 = new NetMat(mat2); }
+    }
+
+    public sealed class ThreeMatResult {
+        public NetMat Mat1;
+        public NetMat Mat2;
+        public NetMat Mat3;
+        public ThreeMatResult(Mat mat1, Mat mat2, Mat mat3){ Mat1 = new NetMat(mat1); Mat2 = new NetMat(mat2); Mat3 = new NetMat(mat3); }
+    }
+
+    public sealed class MatWithRetValResult {
+        public double RetVal;
+        public NetMat Mat;
+        public MatWithRetValResult(double retVal, Mat mat){ RetVal = retVal; Mat = new NetMat(mat); }
+    }
+
+    public sealed class BoolMatResult {
+        public bool Ok;
+        public NetMat Mat;
+        public BoolMatResult(bool ok, Mat mat){ Ok = ok; Mat = new NetMat(mat); }
+    }
+
+    public sealed class BoolTwoMatResult {
+        public bool Ok;
+        public NetMat Mat1;
+        public NetMat Mat2;
+        public BoolTwoMatResult(bool ok, Mat mat1, Mat mat2){ Ok = ok; Mat1 = new NetMat(mat1); Mat2 = new NetMat(mat2); }
+    }
+
+    public sealed class MinMaxResult {
+        public double MinVal;
+        public double MaxVal;
+        public int MinX;
+        public int MinY;
+        public int MaxX;
+        public int MaxY;
+        public MinMaxResult(double minVal, double maxVal, Point minLoc, Point maxLoc){
+            MinVal = minVal; MaxVal = maxVal;
+            MinX = minLoc.X; MinY = minLoc.Y; MaxX = maxLoc.X; MaxY = maxLoc.Y;
+        }
+    }
+
+    public sealed class MinMaxIdxResult {
+        public double MinVal;
+        public double MaxVal;
+        public int MinRow;
+        public int MinCol;
+        public int MaxRow;
+        public int MaxCol;
+        public MinMaxIdxResult(double minVal, double maxVal, int[] minIdx, int[] maxIdx){
+            MinVal = minVal; MaxVal = maxVal;
+            MinRow = minIdx != null && minIdx.Length > 0 ? minIdx[0] : 0;
+            MinCol = minIdx != null && minIdx.Length > 1 ? minIdx[1] : 0;
+            MaxRow = maxIdx != null && maxIdx.Length > 0 ? maxIdx[0] : 0;
+            MaxCol = maxIdx != null && maxIdx.Length > 1 ? maxIdx[1] : 0;
+        }
+    }
+
+    public sealed class TextSizeResult {
+        public int Width;
+        public int Height;
+        public int BaseLine;
+        public TextSizeResult(Size size, int baseLine){ Width = size.Width; Height = size.Height; BaseLine = baseLine; }
+    }
+
+    public sealed class RQDecompResult {
+        public double X;
+        public double Y;
+        public double Z;
+        public NetMat MtxR;
+        public NetMat MtxQ;
+        public RQDecompResult(Vec3d angles, Mat mtxR, Mat mtxQ){ X = angles.Item0; Y = angles.Item1; Z = angles.Item2; MtxR = new NetMat(mtxR); MtxQ = new NetMat(mtxQ); }
+    }
+
+    public sealed class CalibrationMatrixValuesResult {
+        public double FovX;
+        public double FovY;
+        public double FocalLength;
+        public double PrincipalPointX;
+        public double PrincipalPointY;
+        public double AspectRatio;
+        public CalibrationMatrixValuesResult(double fovx, double fovy, double focalLength, Point2d principalPoint, double aspectRatio){
+            FovX = fovx; FovY = fovy; FocalLength = focalLength;
+            PrincipalPointX = principalPoint.X; PrincipalPointY = principalPoint.Y; AspectRatio = aspectRatio;
+        }
+    }
+
+    public sealed class ClipLineResult {
+        public bool Ok;
+        public int X1;
+        public int Y1;
+        public int X2;
+        public int Y2;
+        public ClipLineResult(bool ok, Point pt1, Point pt2){ Ok = ok; X1 = pt1.X; Y1 = pt1.Y; X2 = pt2.X; Y2 = pt2.Y; }
+    }
+
+    public sealed class PhaseCorrelateResult {
+        public double X;
+        public double Y;
+        public double Response;
+        public PhaseCorrelateResult(Point2d point, double response){ X = point.X; Y = point.Y; Response = response; }
+    }
+
+    public sealed class ScalarResult {
+        public double Val0;
+        public double Val1;
+        public double Val2;
+        public double Val3;
+        public ScalarResult(Scalar s){ Val0 = s.Val0; Val1 = s.Val1; Val2 = s.Val2; Val3 = s.Val3; }
+    }
+
+    public sealed class ScalarPairResult {
+        public ScalarResult First;
+        public ScalarResult Second;
+        public ScalarPairResult(Scalar first, Scalar second){ First = new ScalarResult(first); Second = new ScalarResult(second); }
+    }
+
+    public sealed class ByteArrayResult {
+        public byte[] Data;
+        public ByteArrayResult(byte[] data){ Data = data ?? new byte[0]; }
+        public int Length { get { return Data.Length; } }
+        public int GetByte(int index){ return Data[index]; }
+        public byte[] ToArray(){ return Data; }
+    }
+
+    public sealed class MomentsResult {
+        public double M00, M10, M01, M20, M11, M02, M30, M21, M12, M03;
+        public double Mu20, Mu11, Mu02, Mu30, Mu21, Mu12, Mu03;
+        public double Nu20, Nu11, Nu02, Nu30, Nu21, Nu12, Nu03;
+        public MomentsResult(Moments m){
+            M00 = m.M00; M10 = m.M10; M01 = m.M01; M20 = m.M20; M11 = m.M11; M02 = m.M02;
+            M30 = m.M30; M21 = m.M21; M12 = m.M12; M03 = m.M03;
+            Mu20 = m.Mu20; Mu11 = m.Mu11; Mu02 = m.Mu02; Mu30 = m.Mu30; Mu21 = m.Mu21; Mu12 = m.Mu12; Mu03 = m.Mu03;
+            Nu20 = m.Nu20; Nu11 = m.Nu11; Nu02 = m.Nu02; Nu30 = m.Nu30; Nu21 = m.Nu21; Nu12 = m.Nu12; Nu03 = m.Nu03;
+        }
+    }
+
+    public sealed class RectResult {
+        public int X;
+        public int Y;
+        public int Width;
+        public int Height;
+        public RectResult(Rect r){ X = r.X; Y = r.Y; Width = r.Width; Height = r.Height; }
+    }
+
+    public sealed class Point2fArrayResult {
+        public Point2f[] Points;
+        public Point2fArrayResult(Point2f[] points){ Points = points ?? new Point2f[0]; }
+        public int Count { get { return Points.Length; } }
+        public double GetX(int index){ return Points[index].X; }
+        public double GetY(int index){ return Points[index].Y; }
+    }
+
+    public sealed class IntArrayResult {
+        public int[] Values;
+        public IntArrayResult(int[] values){ Values = values ?? new int[0]; }
+        public int Count { get { return Values.Length; } }
+        public int Get(int index){ return Values[index]; }
+    }
+
+    public sealed class Vec4iArrayResult {
+        public Vec4i[] Values;
+        public Vec4iArrayResult(Vec4i[] values){ Values = values ?? new Vec4i[0]; }
+        public int Count { get { return Values.Length; } }
+        public int Get0(int index){ return Values[index].Item0; }
+        public int Get1(int index){ return Values[index].Item1; }
+        public int Get2(int index){ return Values[index].Item2; }
+        public int Get3(int index){ return Values[index].Item3; }
+    }
+
+    public sealed class ConvexIntersectionResult {
+        public double Area;
+        public Point2fArrayResult Points;
+        public ConvexIntersectionResult(double area, Point2f[] points){ Area = area; Points = new Point2fArrayResult(points); }
+    }
+
+    public sealed class RotatedRectIntersectionResult {
+        public int Type;
+        public Point2fArrayResult Points;
+        public RotatedRectIntersectionResult(RectanglesIntersectTypes type, Point2f[] points){ Type = (int)type; Points = new Point2fArrayResult(points); }
+    }
+
+    public sealed class RotatedRectResult {
+        public double CenterX;
+        public double CenterY;
+        public double Width;
+        public double Height;
+        public double Angle;
+        public RotatedRectResult(RotatedRect r){ CenterX = r.Center.X; CenterY = r.Center.Y; Width = r.Size.Width; Height = r.Size.Height; Angle = r.Angle; }
+    }
+
+    public sealed class MeanShiftResult {
+        public int Iterations;
+        public RectResult Window;
+        public MeanShiftResult(int iterations, Rect window){ Iterations = iterations; Window = new RectResult(window); }
+    }
+
+    public sealed class CamShiftResult {
+        public RotatedRectResult Box;
+        public RectResult Window;
+        public CamShiftResult(RotatedRect box, Rect window){ Box = new RotatedRectResult(box); Window = new RectResult(window); }
+    }
+
+    public sealed class PyrLKResult {
+        public Point2f[] Points;
+        public byte[] Status;
+        public float[] Err;
+        public PyrLKResult(Point2f[] points, byte[] status, float[] err){ Points = points ?? new Point2f[0]; Status = status ?? new byte[0]; Err = err ?? new float[0]; }
+        public int Count { get { return Points.Length; } }
+        public double GetX(int index){ return Points[index].X; }
+        public double GetY(int index){ return Points[index].Y; }
+        public int GetStatus(int index){ return index < Status.Length ? Status[index] : 0; }
+        public double GetErr(int index){ return index < Err.Length ? Err[index] : 0; }
+    }
+
+    public sealed class MatArrayResult {
+        public NetMat[] Mats;
+        public MatArrayResult(Mat[] mats){
+            if(mats == null) mats = new Mat[0];
+            Mats = new NetMat[mats.Length];
+            for(int i=0;i<mats.Length;i++) Mats[i] = new NetMat(mats[i]);
+        }
+        public int Count { get { return Mats.Length; } }
+        public NetMat GetMat(int index){ return Mats[index]; }
+    }
+
+    public sealed class PyramidResult {
+        public int Levels;
+        public NetMat[] Mats;
+        public PyramidResult(int levels, Mat[] mats){
+            Levels = levels;
+            if(mats == null) mats = new Mat[0];
+            Mats = new NetMat[mats.Length];
+            for(int i=0;i<mats.Length;i++) Mats[i] = new NetMat(mats[i]);
+        }
+        public int Count { get { return Mats.Length; } }
+        public NetMat GetMat(int index){ return Mats[index]; }
+    }
+
+    public sealed class PerfProfileResult {
+        public long Ticks;
+        public double[] Timings;
+        public PerfProfileResult(long ticks, double[] timings){ Ticks = ticks; Timings = timings ?? new double[0]; }
+        public int Count { get { return Timings.Length; } }
+        public double GetTiming(int index){ return Timings[index]; }
+    }
+
+    public sealed class CircleResult {
+        public double CenterX;
+        public double CenterY;
+        public double Radius;
+        public CircleResult(Point2f center, float radius){ CenterX = center.X; CenterY = center.Y; Radius = radius; }
+    }
+
+    public sealed class Line2DResult {
+        public double Vx;
+        public double Vy;
+        public double X0;
+        public double Y0;
+        public Line2DResult(Line2D line){ Vx = line.Vx; Vy = line.Vy; X0 = line.X1; Y0 = line.Y1; }
+    }
+
+    public sealed class NetCLAHE : IDisposable {
+        private CLAHE clahe;
+        public NetCLAHE(double clipLimit, int tileGridWidth, int tileGridHeight){ clahe = Cv2.CreateCLAHE(clipLimit, new Size(tileGridWidth, tileGridHeight)); }
+        public NetMat Apply(NetMat src){ var dst = new Mat(); clahe.Apply(src.Value, dst); return new NetMat(dst); }
+        public double ClipLimit { get { return clahe.ClipLimit; } set { clahe.ClipLimit = value; } }
+        public void CollectGarbage(){ clahe.CollectGarbage(); }
+        public void Dispose(){ if(clahe != null){ clahe.Dispose(); clahe = null; } }
+    }
+
+    public sealed class FloodFillResult {
+        public int Area;
+        public RectResult Rect;
+        public FloodFillResult(int area, Rect rect){ Area = area; Rect = new RectResult(rect); }
+    }
+
+    public sealed class HierarchyResult {
+        public int Next;
+        public int Previous;
+        public int Child;
+        public int Parent;
+        public HierarchyResult(HierarchyIndex h){ Next = h.Next; Previous = h.Previous; Child = h.Child; Parent = h.Parent; }
+    }
+
+    public sealed class NetContour {
+        public Point[] Points;
+        public NetContour(Point[] points){ Points = points ?? new Point[0]; }
+        public int Count { get { return Points.Length; } }
+        public int GetX(int index){ return Points[index].X; }
+        public int GetY(int index){ return Points[index].Y; }
+        public double Area(bool oriented){ return Cv2.ContourArea(Points, oriented); }
+        public double ArcLength(bool closed){ return Cv2.ArcLength(Points, closed); }
+        public RectResult BoundingRect(){ return new RectResult(Cv2.BoundingRect(Points)); }
+        public NetContour ApproxPolyDP(double epsilon, bool closed){ return new NetContour(Cv2.ApproxPolyDP(Points, epsilon, closed)); }
+    }
+
+    public sealed class ContoursResult {
+        public NetContour[] Contours;
+        public HierarchyResult[] Hierarchy;
+        public ContoursResult(Point[][] contours, HierarchyIndex[] hierarchy){
+            Contours = new NetContour[contours == null ? 0 : contours.Length];
+            for(int i=0;i<Contours.Length;i++) Contours[i] = new NetContour(contours[i]);
+            Hierarchy = new HierarchyResult[hierarchy == null ? 0 : hierarchy.Length];
+            for(int i=0;i<Hierarchy.Length;i++) Hierarchy[i] = new HierarchyResult(hierarchy[i]);
+        }
+        public int Count { get { return Contours.Length; } }
+        public NetContour GetContour(int index){ return Contours[index]; }
+        public HierarchyResult GetHierarchy(int index){ return Hierarchy[index]; }
+    }
+
+    public sealed class PolarLineResult {
+        public double Rho;
+        public double Theta;
+        public PolarLineResult(LineSegmentPolar line){ Rho = line.Rho; Theta = line.Theta; }
+    }
+
+    public sealed class PointLineResult {
+        public int X1;
+        public int Y1;
+        public int X2;
+        public int Y2;
+        public PointLineResult(LineSegmentPoint line){ X1 = line.P1.X; Y1 = line.P1.Y; X2 = line.P2.X; Y2 = line.P2.Y; }
+    }
+
+    public sealed class CornerResult {
+        public double X;
+        public double Y;
+        public CornerResult(Point2f pt){ X = pt.X; Y = pt.Y; }
+    }
+
+    public sealed class CircleSegmentResult {
+        public double X;
+        public double Y;
+        public double Radius;
+        public CircleSegmentResult(CircleSegment c){ X = c.Center.X; Y = c.Center.Y; Radius = c.Radius; }
+    }
+
+    public sealed class ConnectedComponentsResult {
+        public int Count;
+        public NetMat Labels;
+        public NetMat Stats;
+        public NetMat Centroids;
+        public ConnectedComponentsResult(int count, Mat labels, Mat stats, Mat centroids){
+            Count = count;
+            Labels = new NetMat(labels);
+            Stats = new NetMat(stats);
+            Centroids = new NetMat(centroids);
+        }
+    }
+
+    public sealed class KeyPointResult {
+        public double X;
+        public double Y;
+        public double Size;
+        public double Angle;
+        public double Response;
+        public int Octave;
+        public int ClassId;
+        public KeyPointResult(KeyPoint kp){
+            X = kp.Pt.X; Y = kp.Pt.Y; Size = kp.Size; Angle = kp.Angle;
+            Response = kp.Response; Octave = kp.Octave; ClassId = kp.ClassId;
+        }
+    }
+
+    public sealed class NetKeyPoints {
+        public KeyPoint[] Points;
+        public NetKeyPoints(KeyPoint[] points){ Points = points ?? new KeyPoint[0]; }
+        public int Count { get { return Points.Length; } }
+        public KeyPointResult Get(int index){ return new KeyPointResult(Points[index]); }
+    }
+
+    public sealed class DMatchResult {
+        public int QueryIdx;
+        public int TrainIdx;
+        public int ImgIdx;
+        public double Distance;
+        public DMatchResult(DMatch m){ QueryIdx = m.QueryIdx; TrainIdx = m.TrainIdx; ImgIdx = m.ImgIdx; Distance = m.Distance; }
+    }
+
+    public sealed class NetMatches {
+        public DMatch[] Items;
+        public NetMatches(DMatch[] items){ Items = items ?? new DMatch[0]; }
+        public int Count { get { return Items.Length; } }
+        public DMatchResult Get(int index){ return new DMatchResult(Items[index]); }
+    }
+
+    public sealed class DetectAndComputeResult {
+        public NetKeyPoints Keypoints;
+        public NetMat Descriptors;
+        public DetectAndComputeResult(KeyPoint[] keypoints, Mat descriptors){ Keypoints = new NetKeyPoints(keypoints); Descriptors = new NetMat(descriptors ?? new Mat()); }
+    }
+
+    public sealed class KMeansResult {
+        public double Compactness;
+        public NetMat Labels;
+        public NetMat Centers;
+        public KMeansResult(double compactness, Mat labels, Mat centers){ Compactness = compactness; Labels = new NetMat(labels); Centers = new NetMat(centers); }
+    }
+
+    public sealed class NetORB : IDisposable {
+        public ORB Value;
+        public NetORB(int nfeatures){ Value = ORB.Create(nfeatures); }
+        public DetectAndComputeResult DetectAndCompute(NetMat image){
+            KeyPoint[] keypoints;
+            var descriptors = new Mat();
+            Value.DetectAndCompute(image.Value, null, out keypoints, descriptors);
+            return new DetectAndComputeResult(keypoints, descriptors);
+        }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class NetBFMatcher : IDisposable {
+        public BFMatcher Value;
+        public NetBFMatcher(int normType, bool crossCheck){ Value = new BFMatcher((NormTypes)normType, crossCheck); }
+        public NetMatches Match(NetMat queryDescriptors, NetMat trainDescriptors){ return new NetMatches(Value.Match(queryDescriptors.Value, trainDescriptors.Value)); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class NetDnn : IDisposable {
+        public Net Value;
+        public NetDnn(){ Value = new Net(); }
+        public NetDnn(Net net){ Value = net ?? new Net(); }
+        public bool Empty(){ return Value.Empty(); }
+        public void SetInput(NetMat blob, string name){
+            if(String.IsNullOrEmpty(name)) Value.SetInput(blob.Value);
+            else Value.SetInput(blob.Value, name);
+        }
+        public NetMat Forward(string outputName){
+            if(String.IsNullOrEmpty(outputName)) return new NetMat(Value.Forward());
+            return new NetMat(Value.Forward(outputName));
+        }
+        public MatArrayResult ForwardLayers(string[] outBlobNames){
+            var names = outBlobNames;
+            if(names == null || names.Length == 0) names = Value.GetUnconnectedOutLayersNames();
+            var outs = new List<Mat>();
+            Value.Forward(outs, names);
+            return new MatArrayResult(outs.ToArray());
+        }
+        public string[] GetLayerNames(){ return Value.GetLayerNames(); }
+        public string[] GetUnconnectedOutLayersNames(){ return Value.GetUnconnectedOutLayersNames(); }
+        public void SetPreferableBackend(int backend){ Value.SetPreferableBackend((Backend)backend); }
+        public void SetPreferableTarget(int target){ Value.SetPreferableTarget((Target)target); }
+        public PerfProfileResult GetPerfProfile(){ double[] timings; var ticks = Value.GetPerfProfile(out timings); return new PerfProfileResult(ticks, timings); }
+        public string Dump(){ return Value.Dump(); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class CaptureReadResult {
+        public bool Ok;
+        public NetMat Frame;
+        public CaptureReadResult(bool ok, Mat frame){ Ok = ok; Frame = new NetMat(frame ?? new Mat()); }
+    }
+
+    public sealed class NetVideoCapture : IDisposable {
+        public VideoCapture Value;
+        public NetVideoCapture(int index){ Value = new VideoCapture(index); }
+        public NetVideoCapture(string fileName){ Value = new VideoCapture(fileName); }
+        public bool IsOpened(){ return Value != null && Value.IsOpened(); }
+        public CaptureReadResult Read(){ var frame = new Mat(); var ok = Value.Read(frame); return new CaptureReadResult(ok, frame); }
+        public bool Grab(){ return Value.Grab(); }
+        public CaptureReadResult Retrieve(){ var frame = new Mat(); var ok = Value.Retrieve(frame); return new CaptureReadResult(ok, frame); }
+        public double Get(int propId){ return Value.Get((VideoCaptureProperties)propId); }
+        public bool Set(int propId, double value){ return Value.Set((VideoCaptureProperties)propId, value); }
+        public void Release(){ if(Value != null) Value.Release(); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class NetVideoWriter : IDisposable {
+        public VideoWriter Value;
+        public NetVideoWriter(string fileName, int fourcc, double fps, int width, int height, bool isColor){ Value = new VideoWriter(fileName, fourcc, fps, new Size(width, height), isColor); }
+        public bool IsOpened(){ return Value != null && Value.IsOpened(); }
+        public void Write(NetMat image){ Value.Write(image.Value); }
+        public void Release(){ if(Value != null) Value.Release(); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public static class Cv {
+        public static string GetVersionString(){ return Cv2.GetVersionString(); }
+        public static string GetBuildInformation(){ return Cv2.GetBuildInformation(); }
+        public static bool HaveImageReader(string filename){ try { return Cv2.HaveImageReader(filename); } catch { return false; } }
+        public static bool HaveImageWriter(string filename){ try { return Cv2.HaveImageWriter(filename); } catch { return false; } }
+        public static ByteArrayResult ImEncode(string ext, NetMat img){ byte[] data; Cv2.ImEncode(ext, img.Value, out data); return new ByteArrayResult(data); }
+        public static NetMat ImDecode(ByteArrayResult data, int flags){ return new NetMat(Cv2.ImDecode(data.ToArray(), (ImreadModes)flags)); }
+        public static NetMat ImDecodeBytes(int[] data, int flags){ var bytes = new byte[data == null ? 0 : data.Length]; for(int i=0;i<bytes.Length;i++) bytes[i] = (byte)(data[i] & 0xFF); return new NetMat(Cv2.ImDecode(bytes, (ImreadModes)flags)); }
+        public static NetMat BlobFromImage(NetMat image, double scaleFactor, int width, int height, double mean0, double mean1, double mean2, double mean3, bool swapRB, bool crop){ return new NetMat(CvDnn.BlobFromImage(image.Value, scaleFactor, new Size(width, height), new Scalar(mean0, mean1, mean2, mean3), swapRB, crop)); }
+        public static NetMat BlobFromImages(NetMat[] images, double scaleFactor, int width, int height, double mean0, double mean1, double mean2, double mean3, bool swapRB, bool crop){
+            if(images == null) images = new NetMat[0];
+            var mats = new Mat[images.Length];
+            for(int i=0;i<images.Length;i++) mats[i] = images[i].Value;
+            return new NetMat(CvDnn.BlobFromImages(mats, scaleFactor, new Size(width, height), new Scalar(mean0, mean1, mean2, mean3), swapRB, crop));
+        }
+        public static NetDnn ReadNet(string model, string config, string framework){ return new NetDnn(CvDnn.ReadNet(model, config, framework)); }
+        public static NetDnn ReadNetFromOnnx(string path){ return new NetDnn(CvDnn.ReadNetFromOnnx(path)); }
+        public static NetDnn ReadNetFromCaffe(string prototxt, string caffeModel){ return new NetDnn(CvDnn.ReadNetFromCaffe(prototxt, caffeModel)); }
+        public static NetDnn ReadNetFromDarknet(string cfgFile, string darknetModel){ return new NetDnn(CvDnn.ReadNetFromDarknet(cfgFile, darknetModel)); }
+        public static NetDnn ReadNetFromTensorflow(string model, string config){ return new NetDnn(CvDnn.ReadNetFromTensorflow(model, config)); }
+        public static NetDnn ReadNetFromTorch(string model){ return new NetDnn(CvDnn.ReadNetFromTorch(model)); }
+        public static NetDnn DnnNet(){ return new NetDnn(); }
+        public static IntArrayResult NMSBoxes(double[] boxes, double[] scores, double scoreThreshold, double nmsThreshold, double eta, int topK){
+            if(boxes == null) boxes = new double[0];
+            if(scores == null) scores = new double[0];
+            int n = boxes.Length / 4;
+            var rects = new Rect[n];
+            for(int i=0;i<n;i++) rects[i] = new Rect((int)boxes[i*4], (int)boxes[i*4+1], (int)boxes[i*4+2], (int)boxes[i*4+3]);
+            var fscores = new float[scores.Length];
+            for(int i=0;i<scores.Length;i++) fscores[i] = (float)scores[i];
+            int[] indices;
+            CvDnn.NMSBoxes(rects, fscores, (float)scoreThreshold, (float)nmsThreshold, out indices, (float)eta, topK);
+            return new IntArrayResult(indices);
+        }
+        public static ScalarResult MorphologyDefaultBorderValue(){ return new ScalarResult(Cv2.MorphologyDefaultBorderValue()); }
+        public static double GetFontScaleFromHeight(int fontFace, int pixelHeight, int thickness){ return Cv2.GetFontScaleFromHeight((HersheyFonts)fontFace, pixelHeight, thickness); }
+        public static int CvRound(double value){ return (int)Math.Round(value); }
+        public static int CvFloor(double value){ return (int)Math.Floor(value); }
+        public static int CvCeil(double value){ return (int)Math.Ceiling(value); }
+        public static long GetTickCount(){ return Cv2.GetTickCount(); }
+        public static double GetTickFrequency(){ return Cv2.GetTickFrequency(); }
+        public static void SetNumThreads(int nthreads){ Cv2.SetNumThreads(nthreads); }
+        public static int GetNumThreads(){ return Cv2.GetNumThreads(); }
+        public static long GetCpuTickCount(){ return Cv2.GetCpuTickCount(); }
+        public static int GetNumberOfCpus(){ return Cv2.GetNumberOfCpus(); }
+        public static int GetVersionMajor(){ return Cv2.GetVersionMajor(); }
+        public static int GetVersionMinor(){ return Cv2.GetVersionMinor(); }
+        public static int GetVersionRevision(){ return Cv2.GetVersionRevision(); }
+        public static bool UseOptimized(){ return Cv2.UseOptimized(); }
+        public static void SetUseOptimized(bool onoff){ Cv2.SetUseOptimized(onoff); }
+        public static string GetCpuFeaturesLine(){ return Cv2.GetCpuFeaturesLine(); }
+        public static bool CheckHardwareSupport(int feature){ return Cv2.CheckHardwareSupport((CpuFeatures)feature); }
+        public static string GetHardwareFeatureName(int feature){ return Cv2.GetHardwareFeatureName((CpuFeatures)feature); }
+        public static int AlignSize(int size, int n){ return Cv2.AlignSize(size, n); }
+        public static string Format(NetMat src, int fmt){ return Cv2.Format(src.Value, (FormatType)fmt); }
+
+        public static NetMat Mat(){ return new NetMat(new OpenCvSharp.Mat()); }
+        public static NetMat MatCreate(int rows, int cols, int type){ return new NetMat(new OpenCvSharp.Mat(rows, cols, new MatType(type))); }
+        public static NetMat MatZeros(int rows, int cols, int type){ return new NetMat(OpenCvSharp.Mat.Zeros(rows, cols, new MatType(type)).ToMat()); }
+        public static NetMat MatOnes(int rows, int cols, int type){ return new NetMat(OpenCvSharp.Mat.Ones(rows, cols, new MatType(type)).ToMat()); }
+        public static NetMat MatEye(int rows, int cols, int type){ return new NetMat(OpenCvSharp.Mat.Eye(rows, cols, new MatType(type)).ToMat()); }
+
+        public static NetMat ImRead(string path, int flags){ return new NetMat(Cv2.ImRead(path, (ImreadModes)flags)); }
+        public static bool ImWrite(string path, NetMat img){ return Cv2.ImWrite(path, img.Value); }
+        public static void ImShow(string winname, NetMat img){ Cv2.ImShow(winname, img.Value); }
+        public static int WaitKey(int delay){ return Cv2.WaitKey(delay); }
+        public static int WaitKeyEx(int delay){ return Cv2.WaitKeyEx(delay); }
+        public static void NamedWindow(string winname, int flags){ Cv2.NamedWindow(winname, (WindowFlags)flags); }
+        public static void DestroyWindow(string winname){ Cv2.DestroyWindow(winname); }
+        public static void DestroyAllWindows(){ Cv2.DestroyAllWindows(); }
+        public static void MoveWindow(string winname, int x, int y){ Cv2.MoveWindow(winname, x, y); }
+        public static void ResizeWindow(string winname, int width, int height){ Cv2.ResizeWindow(winname, width, height); }
+        public static string[] Glob(string pattern, bool recursive){ return Cv2.Glob(pattern, recursive); }
+        public static NetMat[] ImReadMulti(string path, int flags){ Mat[] mats; var ok = Cv2.ImReadMulti(path, out mats, (ImreadModes)flags); if(!ok || mats == null) return new NetMat[0]; var ret = new NetMat[mats.Length]; for(int i=0;i<mats.Length;i++) ret[i] = new NetMat(mats[i]); return ret; }
+
+        public static NetMat CvtColor(NetMat src, int code, int dstCn){ var dst = new Mat(); Cv2.CvtColor(src.Value, dst, (ColorConversionCodes)code, dstCn); return new NetMat(dst); }
+        public static NetMat Demosaicing(NetMat src, int code, int dstCn){ var dst = new Mat(); Cv2.Demosaicing(src.Value, dst, (ColorConversionCodes)code, dstCn); return new NetMat(dst); }
+        public static NetMat CvtColorTwoPlane(NetMat y, NetMat uv, int code){ var dst = new Mat(); Cv2.CvtColorTwoPlane(y.Value, uv.Value, dst, (ColorConversionCodes)code); return new NetMat(dst); }
+        public static NetMat Resize(NetMat src, int width, int height, double fx, double fy, int interpolation){ var dst = new Mat(); Cv2.Resize(src.Value, dst, new Size(width, height), fx, fy, (InterpolationFlags)interpolation); return new NetMat(dst); }
+        public static NetMat Flip(NetMat src, int flipCode){ var dst = new Mat(); Cv2.Flip(src.Value, dst, (FlipMode)flipCode); return new NetMat(dst); }
+        public static NetMat GaussianBlur(NetMat src, int width, int height, double sigmaX, double sigmaY, int borderType){ var dst = new Mat(); Cv2.GaussianBlur(src.Value, dst, new Size(width, height), sigmaX, sigmaY, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat MedianBlur(NetMat src, int ksize){ var dst = new Mat(); Cv2.MedianBlur(src.Value, dst, ksize); return new NetMat(dst); }
+        public static NetMat EqualizeHist(NetMat src){ var dst = new Mat(); Cv2.EqualizeHist(src.Value, dst); return new NetMat(dst); }
+        public static NetMat AdaptiveThreshold(NetMat src, double maxValue, int adaptiveMethod, int thresholdType, int blockSize, double c){ var dst = new Mat(); Cv2.AdaptiveThreshold(src.Value, dst, maxValue, (AdaptiveThresholdTypes)adaptiveMethod, (ThresholdTypes)thresholdType, blockSize, c); return new NetMat(dst); }
+        public static NetMat ConvertScaleAbs(NetMat src, double alpha, double beta){ var dst = new Mat(); Cv2.ConvertScaleAbs(src.Value, dst, alpha, beta); return new NetMat(dst); }
+        public static NetMat PyrDown(NetMat src, int width, int height, int borderType){ var dst = new Mat(); Cv2.PyrDown(src.Value, dst, new Size(width, height), (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat PyrUp(NetMat src, int width, int height, int borderType){ var dst = new Mat(); Cv2.PyrUp(src.Value, dst, new Size(width, height), (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat Blur(NetMat src, int width, int height, int anchorX, int anchorY, int borderType){ var dst = new Mat(); Cv2.Blur(src.Value, dst, new Size(width, height), new Point(anchorX, anchorY), (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat BoxFilter(NetMat src, int ddepth, int width, int height, bool normalize, int borderType){ var dst = new Mat(); Cv2.BoxFilter(src.Value, dst, ddepth, new Size(width, height), null, normalize, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat Filter2D(NetMat src, int ddepth, NetMat kernel, int anchorX, int anchorY, double delta, int borderType){ var dst = new Mat(); Cv2.Filter2D(src.Value, dst, ddepth, kernel.Value, new Point(anchorX, anchorY), delta, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat SepFilter2D(NetMat src, int ddepth, NetMat kernelX, NetMat kernelY, int anchorX, int anchorY, double delta, int borderType){ var dst = new Mat(); Cv2.SepFilter2D(src.Value, dst, ddepth, kernelX.Value, kernelY.Value, new Point(anchorX, anchorY), delta, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat BilateralFilter(NetMat src, int d, double sigmaColor, double sigmaSpace, int borderType){ var dst = new Mat(); Cv2.BilateralFilter(src.Value, dst, d, sigmaColor, sigmaSpace, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat PyrMeanShiftFiltering(NetMat src, double sp, double sr, int maxLevel){ var dst = new Mat(); Cv2.PyrMeanShiftFiltering(src.Value, dst, sp, sr, maxLevel); return new NetMat(dst); }
+        public static NetMat SqrBoxFilter(NetMat src, int ddepth, int width, int height, bool normalize, int borderType){ var dst = new Mat(); Cv2.SqrBoxFilter(src.Value, dst, ddepth, new Size(width, height), null, normalize, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat GetGaussianKernel(int ksize, double sigma, int ktype){ return new NetMat(Cv2.GetGaussianKernel(ksize, sigma, new MatType(ktype))); }
+        public static TwoMatResult GetDerivKernels(int dx, int dy, int ksize, bool normalize, int ktype){ var kx = new Mat(); var ky = new Mat(); Cv2.GetDerivKernels(kx, ky, dx, dy, ksize, normalize, new MatType(ktype)); return new TwoMatResult(kx, ky); }
+        public static NetMat GetGaborKernel(int width, int height, double sigma, double theta, double lambd, double gamma, double psi, int ktype){ return new NetMat(Cv2.GetGaborKernel(new Size(width, height), sigma, theta, lambd, gamma, psi, new MatType(ktype))); }
+        public static NetMat Sobel(NetMat src, int ddepth, int dx, int dy, int ksize, double scale, double delta, int borderType){ var dst = new Mat(); Cv2.Sobel(src.Value, dst, ddepth, dx, dy, ksize, scale, delta, (BorderTypes)borderType); return new NetMat(dst); }
+        public static TwoMatResult SpatialGradient(NetMat src, int ksize, int borderType){ var dx = new Mat(); var dy = new Mat(); Cv2.SpatialGradient(src.Value, dx, dy, ksize, (BorderTypes)borderType); return new TwoMatResult(dx, dy); }
+        public static NetMat Scharr(NetMat src, int ddepth, int dx, int dy, double scale, double delta, int borderType){ var dst = new Mat(); Cv2.Scharr(src.Value, dst, ddepth, dx, dy, scale, delta, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat Laplacian(NetMat src, int ddepth, int ksize, double scale, double delta, int borderType){ var dst = new Mat(); Cv2.Laplacian(src.Value, dst, ddepth, ksize, scale, delta, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat Canny(NetMat src, double threshold1, double threshold2, int apertureSize, bool l2gradient){ var dst = new Mat(); Cv2.Canny(src.Value, dst, threshold1, threshold2, apertureSize, l2gradient); return new NetMat(dst); }
+        public static ThresholdResult Threshold(NetMat src, double thresh, double maxVal, int thresholdType){ var dst = new Mat(); var ret = Cv2.Threshold(src.Value, dst, thresh, maxVal, (ThresholdTypes)thresholdType); return new ThresholdResult(ret, dst); }
+        public static NetMat Add(NetMat src1, NetMat src2, int dtype){ var dst = new Mat(); Cv2.Add(src1.Value, src2.Value, dst, null, dtype); return new NetMat(dst); }
+        public static NetMat Subtract(NetMat src1, NetMat src2, int dtype){ var dst = new Mat(); Cv2.Subtract(src1.Value, src2.Value, dst, null, dtype); return new NetMat(dst); }
+        public static NetMat Multiply(NetMat src1, NetMat src2, double scale, int dtype){ var dst = new Mat(); Cv2.Multiply(src1.Value, src2.Value, dst, scale, dtype); return new NetMat(dst); }
+        public static NetMat Divide(NetMat src1, NetMat src2, double scale, int dtype){ var dst = new Mat(); Cv2.Divide(src1.Value, src2.Value, dst, scale, dtype); return new NetMat(dst); }
+        public static NetMat Absdiff(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.Absdiff(src1.Value, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat AddWeighted(NetMat src1, double alpha, NetMat src2, double beta, double gamma, int dtype){ var dst = new Mat(); Cv2.AddWeighted(src1.Value, alpha, src2.Value, beta, gamma, dst, dtype); return new NetMat(dst); }
+        public static NetMat Abs(NetMat src){ return new NetMat(Cv2.Abs(src.Value).ToMat()); }
+        public static NetMat CopyToNoMask(NetMat src){ var dst = new Mat(); src.Value.CopyTo(dst); return new NetMat(dst); }
+        public static NetMat CopyTo(NetMat src, NetMat mask){ var dst = new Mat(); src.Value.CopyTo(dst, mask.Value); return new NetMat(dst); }
+        public static NetMat BitwiseNot(NetMat src){ var dst = new Mat(); Cv2.BitwiseNot(src.Value, dst); return new NetMat(dst); }
+        public static NetMat BitwiseAnd(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.BitwiseAnd(src1.Value, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat BitwiseOr(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.BitwiseOr(src1.Value, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat BitwiseXor(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.BitwiseXor(src1.Value, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat Compare(NetMat src1, NetMat src2, int cmpop){ var dst = new Mat(); Cv2.Compare(src1.Value, src2.Value, dst, (CmpType)cmpop); return new NetMat(dst); }
+        public static NetMat Normalize(NetMat src, double alpha, double beta, int normType, int dtype){ var dst = new Mat(); Cv2.Normalize(src.Value, dst, alpha, beta, (NormTypes)normType, dtype); return new NetMat(dst); }
+        public static NetMat Magnitude(NetMat x, NetMat y){ var dst = new Mat(); Cv2.Magnitude(x.Value, y.Value, dst); return new NetMat(dst); }
+        public static NetMat Phase(NetMat x, NetMat y, bool angleInDegrees){ var dst = new Mat(); Cv2.Phase(x.Value, y.Value, dst, angleInDegrees); return new NetMat(dst); }
+        public static TwoMatResult CartToPolar(NetMat x, NetMat y, bool angleInDegrees){ var magnitude = new Mat(); var angle = new Mat(); Cv2.CartToPolar(x.Value, y.Value, magnitude, angle, angleInDegrees); return new TwoMatResult(magnitude, angle); }
+        public static TwoMatResult PolarToCart(NetMat magnitude, NetMat angle, bool angleInDegrees){ var x = new Mat(); var y = new Mat(); Cv2.PolarToCart(magnitude.Value, angle.Value, x, y, angleInDegrees); return new TwoMatResult(x, y); }
+        public static NetMat PatchNaNs(NetMat src, double value){ Cv2.PatchNaNs(src.Value, value); return src; }
+        public static NetMat Sqrt(NetMat src){ var dst = new Mat(); Cv2.Sqrt(src.Value, dst); return new NetMat(dst); }
+        public static NetMat Exp(NetMat src){ var dst = new Mat(); Cv2.Exp(src.Value, dst); return new NetMat(dst); }
+        public static NetMat Log(NetMat src){ var dst = new Mat(); Cv2.Log(src.Value, dst); return new NetMat(dst); }
+        public static NetMat Pow(NetMat src, double power){ var dst = new Mat(); Cv2.Pow(src.Value, power, dst); return new NetMat(dst); }
+        public static NetMat ScaleAdd(NetMat src1, double alpha, NetMat src2){ var dst = new Mat(); Cv2.ScaleAdd(src1.Value, alpha, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat Max(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.Max(src1.Value, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat Min(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.Min(src1.Value, src2.Value, dst); return new NetMat(dst); }
+        public static NetMat MaxScalar(NetMat src, double value){ var dst = new Mat(); Cv2.Max(src.Value, value, dst); return new NetMat(dst); }
+        public static NetMat MinScalar(NetMat src, double value){ var dst = new Mat(); Cv2.Min(src.Value, value, dst); return new NetMat(dst); }
+        public static MinMaxIdxResult MinMaxIdx(NetMat src){ double minVal, maxVal; int[] minIdx = new int[2]; int[] maxIdx = new int[2]; Cv2.MinMaxIdx(src.Value, out minVal, out maxVal, minIdx, maxIdx); return new MinMaxIdxResult(minVal, maxVal, minIdx, maxIdx); }
+        public static Point2fArrayResult FindNonZero(NetMat src){ var dst = new Mat(); Cv2.FindNonZero(src.Value, dst); var ret = new Point2f[dst.Rows]; for(int i=0;i<dst.Rows;i++){ var p = dst.Get<Point>(i,0); ret[i] = new Point2f(p.X,p.Y); } return new Point2fArrayResult(ret); }
+        public static NetMat SetIdentity(NetMat src, double v0, double v1, double v2, double v3){ Cv2.SetIdentity(src.Value, new Scalar(v0, v1, v2, v3)); return src; }
+        public static NetMat CompleteSymm(NetMat src, bool lowerToUpper){ Cv2.CompleteSymm(src.Value, lowerToUpper); return src; }
+        public static double Mahalanobis(NetMat v1, NetMat v2, NetMat icovar){ return Cv2.Mahalanobis(v1.Value, v2.Value, icovar.Value); }
+        public static NetMat Randu(NetMat dst, double low, double high){ Cv2.Randu(dst.Value, Scalar.All(low), Scalar.All(high)); return dst; }
+        public static NetMat Randn(NetMat dst, double mean, double stddev){ Cv2.Randn(dst.Value, Scalar.All(mean), Scalar.All(stddev)); return dst; }
+        public static NetMat RandShuffle(NetMat dst, double iterFactor){
+            if(dst.Value.Channels() != 1) throw new NotSupportedException("RandShuffle currently supports single-channel Mat only.");
+            var tmp = new Mat();
+            dst.Value.ConvertTo(tmp, MatType.CV_64F);
+            int n = tmp.Rows * tmp.Cols;
+            var values = new double[n];
+            for(int i=0;i<n;i++) values[i] = tmp.Get<double>(i / tmp.Cols, i % tmp.Cols);
+            var rng = new Random();
+            int swaps = Math.Max(n, (int)Math.Round(n * Math.Max(0.0, iterFactor)));
+            for(int i=0;i<swaps;i++){
+                int a = rng.Next(n);
+                int b = rng.Next(n);
+                var v = values[a]; values[a] = values[b]; values[b] = v;
+            }
+            for(int i=0;i<n;i++) tmp.Set(i / tmp.Cols, i % tmp.Cols, values[i]);
+            tmp.ConvertTo(dst.Value, dst.Value.Type());
+            tmp.Dispose();
+            return dst;
+        }
+        public static NetMat Sort(NetMat src, int flags){ var dst = new Mat(); Cv2.Sort(src.Value, dst, (SortFlags)flags); return new NetMat(dst); }
+        public static NetMat SortIdx(NetMat src, int flags){ var dst = new Mat(); Cv2.SortIdx(src.Value, dst, (SortFlags)flags); return new NetMat(dst); }
+        public static TwoMatResult CalcCovarMatrix(NetMat samples, int flags, int ctype){ var covar = new Mat(); var mean = new Mat(); Cv2.CalcCovarMatrix(samples.Value, covar, mean, (CovarFlags)flags, ctype); return new TwoMatResult(covar, mean); }
+        public static int GetOptimalDFTSize(int vecsize){ return Cv2.GetOptimalDFTSize(vecsize); }
+        public static int BorderInterpolate(int p, int len, int borderType){ return Cv2.BorderInterpolate(p, len, (BorderTypes)borderType); }
+        public static double FastAtan2(double y, double x){ return Cv2.FastAtan2((float)y, (float)x); }
+        public static double CubeRoot(double value){ return Cv2.CubeRoot((float)value); }
+        public static bool CheckRange(NetMat src){ return Cv2.CheckRange(src.Value); }
+        public static double PSNR(NetMat src1, NetMat src2){ return Cv2.PSNR(src1.Value, src2.Value); }
+        public static NetMat Transpose(NetMat src){ var dst = new Mat(); Cv2.Transpose(src.Value, dst); return new NetMat(dst); }
+        public static NetMat Rotate(NetMat src, int rotateCode){ var dst = new Mat(); Cv2.Rotate(src.Value, dst, (RotateFlags)rotateCode); return new NetMat(dst); }
+        public static NetMat Repeat(NetMat src, int ny, int nx){ var dst = new Mat(); Cv2.Repeat(src.Value, ny, nx, dst); return new NetMat(dst); }
+        public static NetMat Reduce(NetMat src, int dim, int rtype, int dtype){ var dst = new Mat(); Cv2.Reduce(src.Value, dst, (ReduceDimension)dim, (ReduceTypes)rtype, dtype); return new NetMat(dst); }
+        public static NetMat ConvertFp16(NetMat src){ var dst = new Mat(); Cv2.ConvertFp16(src.Value, dst); return new NetMat(dst); }
+        public static TwoMatResult BatchDistance(NetMat src1, NetMat src2, int dtype, int normType, int k){
+            var a = new Mat(); var b = new Mat();
+            src1.Value.ConvertTo(a, MatType.CV_64F);
+            src2.Value.ConvertTo(b, MatType.CV_64F);
+            var dist = new Mat(a.Rows, b.Rows, new MatType(dtype), Scalar.All(0));
+            var nidx = k > 0 ? new Mat(a.Rows, k, MatType.CV_32S, Scalar.All(0)) : new Mat();
+            for(int i=0;i<a.Rows;i++){
+                var vals = new double[b.Rows];
+                for(int j=0;j<b.Rows;j++){
+                    double d = 0;
+                    if(normType == 2/*NORM_L1*/){
+                        for(int c=0;c<a.Cols;c++) d += Math.Abs(a.Get<double>(i,c) - b.Get<double>(j,c));
+                    }
+                    else if(normType == 1/*NORM_INF*/){
+                        for(int c=0;c<a.Cols;c++) d = Math.Max(d, Math.Abs(a.Get<double>(i,c) - b.Get<double>(j,c)));
+                    }
+                    else{
+                        for(int c=0;c<a.Cols;c++){ var diff = a.Get<double>(i,c) - b.Get<double>(j,c); d += diff * diff; }
+                        if(normType != 5/*NORM_L2SQR*/) d = Math.Sqrt(d);
+                    }
+                    vals[j] = d;
+                    if(dtype == (int)MatType.CV_32F) dist.Set<float>(i,j,(float)d);
+                    else if(dtype == (int)MatType.CV_64F) dist.Set<double>(i,j,d);
+                    else dist.Set<int>(i,j,(int)Math.Round(d));
+                }
+                if(k > 0){
+                    for(int kk=0;kk<k;kk++){
+                        int best = 0; double bestVal = Double.MaxValue;
+                        for(int j=0;j<vals.Length;j++) if(vals[j] < bestVal){ bestVal = vals[j]; best = j; }
+                        nidx.Set<int>(i,kk,best); vals[best] = Double.MaxValue;
+                    }
+                }
+            }
+            a.Dispose(); b.Dispose();
+            return new TwoMatResult(dist, nidx);
+        }
+        public static NetMat InsertChannel(NetMat src, NetMat dst, int coi){ Cv2.InsertChannel(src.Value, dst.Value, coi); return dst; }
+        public static NetMat MixChannels1(NetMat src, NetMat dst, int from, int to){ Cv2.MixChannels(new Mat[]{ src.Value }, new Mat[]{ dst.Value }, new int[]{ from, to }); return dst; }
+        public static NetMat MulTransposed(NetMat src, bool aTa, NetMat delta, double scale, int dtype){ var dst = new Mat(); Cv2.MulTransposed(src.Value, dst, aTa, delta == null ? new Mat() : delta.Value, scale, new MatType(dtype)); return new NetMat(dst); }
+        public static TwoMatResult EigenNonSymmetric(NetMat src){ var eigenvalues = new Mat(); var eigenvectors = new Mat(); Cv2.EigenNonSymmetric(src.Value, eigenvalues, eigenvectors); return new TwoMatResult(eigenvalues, eigenvectors); }
+        public static MatWithRetValResult SolveCubic(NetMat coeffs){ var roots = new Mat(); var count = Cv2.SolveCubic(coeffs.Value, roots); return new MatWithRetValResult(count, roots); }
+        public static MatWithRetValResult SolvePoly(NetMat coeffs, int maxIters){ var roots = new Mat(); var err = Cv2.SolvePoly(coeffs.Value, roots, maxIters); return new MatWithRetValResult(err, roots); }
+        public static NetMat Gemm(NetMat src1, NetMat src2, double alpha, NetMat src3, double beta, int flags){ var dst = new Mat(); Cv2.Gemm(src1.Value, src2.Value, alpha, src3 == null ? null : src3.Value, beta, dst, (GemmFlags)flags); return new NetMat(dst); }
+        public static double Determinant(NetMat src){ return Cv2.Determinant(src.Value); }
+        public static MatWithRetValResult Invert(NetMat src, int flags){ var dst = new Mat(); var ret = Cv2.Invert(src.Value, dst, (DecompTypes)flags); return new MatWithRetValResult(ret, dst); }
+        public static BoolMatResult Solve(NetMat src1, NetMat src2, int flags){ var dst = new Mat(); var ok = Cv2.Solve(src1.Value, src2.Value, dst, (DecompTypes)flags); return new BoolMatResult(ok, dst); }
+        public static BoolTwoMatResult Eigen(NetMat src){ var eigenvalues = new Mat(); var eigenvectors = new Mat(); var ok = Cv2.Eigen(src.Value, eigenvalues, eigenvectors); return new BoolTwoMatResult(ok, eigenvalues, eigenvectors); }
+        public static ThreeMatResult SVDecomp(NetMat src, int flags){ var w = new Mat(); var u = new Mat(); var vt = new Mat(); Cv2.SVDecomp(src.Value, w, u, vt, (SVD.Flags)flags); return new ThreeMatResult(w, u, vt); }
+        public static TwoMatResult PCACompute(NetMat data, int maxComponents){ var mean = new Mat(); var eigenvectors = new Mat(); Cv2.PCACompute(data.Value, mean, eigenvectors, maxComponents); return new TwoMatResult(mean, eigenvectors); }
+        public static NetMat PCAProject(NetMat data, NetMat mean, NetMat eigenvectors){ var result = new Mat(); Cv2.PCAProject(data.Value, mean.Value, eigenvectors.Value, result); return new NetMat(result); }
+        public static NetMat PCABackProject(NetMat data, NetMat mean, NetMat eigenvectors){ var result = new Mat(); Cv2.PCABackProject(data.Value, mean.Value, eigenvectors.Value, result); return new NetMat(result); }
+        public static NetMat Dft(NetMat src, int flags, int nonzeroRows){ var dst = new Mat(); Cv2.Dft(src.Value, dst, (DftFlags)flags, nonzeroRows); return new NetMat(dst); }
+        public static NetMat Idft(NetMat src, int flags, int nonzeroRows){ var dst = new Mat(); Cv2.Idft(src.Value, dst, (DftFlags)flags, nonzeroRows); return new NetMat(dst); }
+        public static NetMat MulSpectrums(NetMat a, NetMat b, int flags, bool conjB){ var dst = new Mat(); Cv2.MulSpectrums(a.Value, b.Value, dst, (DftFlags)flags, conjB); return new NetMat(dst); }
+        public static NetMat Dct(NetMat src, int flags){ var dst = new Mat(); Cv2.Dct(src.Value, dst, (DctFlags)flags); return new NetMat(dst); }
+        public static NetMat Idct(NetMat src, int flags){ var dst = new Mat(); Cv2.Idct(src.Value, dst, (DctFlags)flags); return new NetMat(dst); }
+        public static NetMat GetRectSubPix(NetMat src, int width, int height, double centerX, double centerY, int patchType){ var dst = new Mat(); Cv2.GetRectSubPix(src.Value, new Size(width, height), new Point2f((float)centerX, (float)centerY), dst, patchType); return new NetMat(dst); }
+        public static TwoMatResult ConvertMaps(NetMat map1, NetMat map2, int dstMap1Type, bool nnInterpolation){ var dst1 = new Mat(); var dst2 = new Mat(); Cv2.ConvertMaps(map1.Value, map2 == null ? null : map2.Value, dst1, dst2, new MatType(dstMap1Type), nnInterpolation); return new TwoMatResult(dst1, dst2); }
+        public static NetMat Integral(NetMat src, int sdepth){ var sum = new Mat(); Cv2.Integral(src.Value, sum, new MatType(sdepth)); return new NetMat(sum); }
+        public static TwoMatResult Integral2(NetMat src, int sdepth, int sqdepth){ var sum = new Mat(); var sqsum = new Mat(); var tilted = new Mat(); Cv2.Integral(src.Value, sum, sqsum, tilted, sdepth, sqdepth); return new TwoMatResult(sum, sqsum); }
+        public static ThreeMatResult Integral3(NetMat src, int sdepth, int sqdepth){ var sum = new Mat(); var sqsum = new Mat(); var tilted = new Mat(); Cv2.Integral(src.Value, sum, sqsum, tilted, sdepth, sqdepth); return new ThreeMatResult(sum, sqsum, tilted); }
+        public static NetMat Accumulate(NetMat src, NetMat dst){ Cv2.Accumulate(src.Value, dst.Value, new Mat()); return dst; }
+        public static NetMat AccumulateSquare(NetMat src, NetMat dst){ Cv2.AccumulateSquare(src.Value, dst.Value, new Mat()); return dst; }
+        public static NetMat AccumulateProduct(NetMat src1, NetMat src2, NetMat dst){ Cv2.AccumulateProduct(src1.Value, src2.Value, dst.Value, new Mat()); return dst; }
+        public static NetMat AccumulateWeighted(NetMat src, NetMat dst, double alpha){ Cv2.AccumulateWeighted(src.Value, dst.Value, alpha, new Mat()); return dst; }
+        public static KMeansResult KMeans(NetMat data, int k, int maxIter, double epsilon, int attempts, int flags){ var labels = new Mat(); var centers = new Mat(); var criteria = new TermCriteria(CriteriaTypes.Eps | CriteriaTypes.MaxIter, maxIter, epsilon); var compactness = Cv2.Kmeans(data.Value, k, labels, criteria, attempts, (KMeansFlags)flags, centers); return new KMeansResult(compactness, labels, centers); }
+        public static NetMat GetStructuringElement(int shape, int width, int height, int anchorX, int anchorY){ return new NetMat(Cv2.GetStructuringElement((MorphShapes)shape, new Size(width, height), new Point(anchorX, anchorY))); }
+        public static NetMat Erode(NetMat src, NetMat kernel, int iterations, int borderType, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.Erode(src.Value, dst, kernel == null ? null : kernel.Value, null, iterations, (BorderTypes)borderType, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat Dilate(NetMat src, NetMat kernel, int iterations, int borderType, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.Dilate(src.Value, dst, kernel == null ? null : kernel.Value, null, iterations, (BorderTypes)borderType, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat MorphologyEx(NetMat src, int op, NetMat kernel, int iterations, int borderType, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.MorphologyEx(src.Value, dst, (MorphTypes)op, kernel == null ? null : kernel.Value, null, iterations, (BorderTypes)borderType, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat CopyMakeBorder(NetMat src, int top, int bottom, int left, int right, int borderType, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.CopyMakeBorder(src.Value, dst, top, bottom, left, right, (BorderTypes)borderType, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat[] Split(NetMat src){ var mats = Cv2.Split(src.Value); var ret = new NetMat[mats.Length]; for(int i=0;i<mats.Length;i++) ret[i] = new NetMat(mats[i]); return ret; }
+        public static NetMat ExtractChannel(NetMat src, int coi){ var dst = new Mat(); Cv2.ExtractChannel(src.Value, dst, coi); return new NetMat(dst); }
+        public static NetMat Merge1(NetMat c0){ var dst = new Mat(); Cv2.Merge(new Mat[]{ c0.Value }, dst); return new NetMat(dst); }
+        public static NetMat Merge2(NetMat c0, NetMat c1){ var dst = new Mat(); Cv2.Merge(new Mat[]{ c0.Value, c1.Value }, dst); return new NetMat(dst); }
+        public static NetMat Merge3(NetMat c0, NetMat c1, NetMat c2){ var dst = new Mat(); Cv2.Merge(new Mat[]{ c0.Value, c1.Value, c2.Value }, dst); return new NetMat(dst); }
+        public static NetMat Merge4(NetMat c0, NetMat c1, NetMat c2, NetMat c3){ var dst = new Mat(); Cv2.Merge(new Mat[]{ c0.Value, c1.Value, c2.Value, c3.Value }, dst); return new NetMat(dst); }
+        public static NetMat HConcat2(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.HConcat(new Mat[]{ src1.Value, src2.Value }, dst); return new NetMat(dst); }
+        public static NetMat VConcat2(NetMat src1, NetMat src2){ var dst = new Mat(); Cv2.VConcat(new Mat[]{ src1.Value, src2.Value }, dst); return new NetMat(dst); }
+        public static MinMaxResult MinMaxLoc(NetMat src){ double minVal, maxVal; Point minLoc, maxLoc; Cv2.MinMaxLoc(src.Value, out minVal, out maxVal, out minLoc, out maxLoc); return new MinMaxResult(minVal, maxVal, minLoc, maxLoc); }
+        public static ScalarResult Mean(NetMat src){ return new ScalarResult(Cv2.Mean(src.Value)); }
+        public static ScalarPairResult MeanStdDev(NetMat src){ Scalar mean, stddev; Cv2.MeanStdDev(src.Value, out mean, out stddev); return new ScalarPairResult(mean, stddev); }
+        public static double Norm(NetMat src, int normType){ return Cv2.Norm(src.Value, (NormTypes)normType); }
+        public static double Norm2(NetMat src1, NetMat src2, int normType){ return Cv2.Norm(src1.Value, src2.Value, (NormTypes)normType); }
+        public static ScalarResult SumElems(NetMat src){ return new ScalarResult(Cv2.Sum(src.Value)); }
+        public static ScalarResult Trace(NetMat src){ return new ScalarResult(Cv2.Trace(src.Value)); }
+        public static MomentsResult Moments(NetMat src, bool binaryImage){ return new MomentsResult(Cv2.Moments(src.Value, binaryImage)); }
+        public static MomentsResult ContourMoments(NetContour contour, bool binaryImage){ return new MomentsResult(Cv2.Moments(contour.Points, binaryImage)); }
+        public static int CountNonZero(NetMat src){ return Cv2.CountNonZero(src.Value); }
+        public static NetMat InRange(NetMat src, double l0, double l1, double l2, double l3, double u0, double u1, double u2, double u3){ var dst = new Mat(); Cv2.InRange(src.Value, new Scalar(l0,l1,l2,l3), new Scalar(u0,u1,u2,u3), dst); return new NetMat(dst); }
+        public static ContoursResult FindContours(NetMat src, int mode, int method, int offsetX, int offsetY){
+            Point[][] contours;
+            HierarchyIndex[] hierarchy;
+            using(var work = src.Value.Clone()){
+                Cv2.FindContours(work, out contours, out hierarchy, (RetrievalModes)mode, (ContourApproximationModes)method, new Point(offsetX, offsetY));
+            }
+            return new ContoursResult(contours, hierarchy);
+        }
+        public static double ContourArea(NetContour contour, bool oriented){ return contour.Area(oriented); }
+        public static double ArcLength(NetContour contour, bool closed){ return contour.ArcLength(closed); }
+        public static RectResult BoundingRect(NetContour contour){ return contour.BoundingRect(); }
+        public static NetContour ApproxPolyDP(NetContour contour, double epsilon, bool closed){ return contour.ApproxPolyDP(epsilon, closed); }
+        public static NetContour ConvexHull(NetContour contour, bool clockwise){ return new NetContour(Cv2.ConvexHull(contour.Points, clockwise)); }
+        public static IntArrayResult ConvexHullIndices(NetContour contour, bool clockwise){ return new IntArrayResult(Cv2.ConvexHullIndices(contour.Points, clockwise)); }
+        public static Vec4iArrayResult ConvexityDefects(NetContour contour, int[] hull){ return new Vec4iArrayResult(Cv2.ConvexityDefects(contour.Points, hull)); }
+        public static bool IsContourConvex(NetContour contour){ return Cv2.IsContourConvex(contour.Points); }
+        public static double MatchShapes(NetContour contour1, NetContour contour2, int method, double parameter){ return Cv2.MatchShapes(contour1.Points, contour2.Points, (ShapeMatchModes)method, parameter); }
+        public static RotatedRectResult MinAreaRect(NetContour contour){ return new RotatedRectResult(Cv2.MinAreaRect(contour.Points)); }
+        public static Point2fArrayResult BoxPoints(double centerX, double centerY, double width, double height, double angle){ return new Point2fArrayResult(Cv2.BoxPoints(new RotatedRect(new Point2f((float)centerX, (float)centerY), new Size2f((float)width, (float)height), (float)angle))); }
+        public static CircleResult MinEnclosingCircle(NetContour contour){ Point2f center; float radius; Cv2.MinEnclosingCircle(contour.Points, out center, out radius); return new CircleResult(center, radius); }
+        public static ConvexIntersectionResult MinEnclosingTriangle(NetContour contour){ Point2f[] triangle; double area = Cv2.MinEnclosingTriangle(contour.Points, out triangle); return new ConvexIntersectionResult(area, triangle); }
+        public static Line2DResult FitLine(NetContour contour, int distType, double param, double reps, double aeps){ return new Line2DResult(Cv2.FitLine(contour.Points, (DistanceTypes)distType, param, reps, aeps)); }
+        public static RotatedRectResult FitEllipse(NetContour contour){ return new RotatedRectResult(Cv2.FitEllipse(contour.Points)); }
+        public static RotatedRectResult FitEllipseAMS(NetContour contour){ return new RotatedRectResult(Cv2.FitEllipseAMS(contour.Points)); }
+        public static RotatedRectResult FitEllipseDirect(NetContour contour){ return new RotatedRectResult(Cv2.FitEllipseDirect(contour.Points)); }
+        public static double PointPolygonTest(NetContour contour, double x, double y, bool measureDist){ return Cv2.PointPolygonTest(contour.Points, new Point2f((float)x, (float)y), measureDist); }
+        public static ConvexIntersectionResult IntersectConvexConvex(NetContour contour1, NetContour contour2, bool handleNested){
+            Point2f[] p1 = Array.ConvertAll(contour1.Points, pt => new Point2f(pt.X, pt.Y));
+            Point2f[] p2 = Array.ConvertAll(contour2.Points, pt => new Point2f(pt.X, pt.Y));
+            Point2f[] outPts;
+            double area = Cv2.IntersectConvexConvex(p1, p2, out outPts, handleNested);
+            return new ConvexIntersectionResult(area, outPts);
+        }
+        public static RotatedRectIntersectionResult RotatedRectangleIntersection(double cx1, double cy1, double w1, double h1, double angle1, double cx2, double cy2, double w2, double h2, double angle2){
+            var r1 = new RotatedRect(new Point2f((float)cx1, (float)cy1), new Size2f((float)w1, (float)h1), (float)angle1);
+            var r2 = new RotatedRect(new Point2f((float)cx2, (float)cy2), new Size2f((float)w2, (float)h2), (float)angle2);
+            Point2f[] pts;
+            var typ = Cv2.RotatedRectangleIntersection(r1, r2, out pts);
+            return new RotatedRectIntersectionResult(typ, pts);
+        }
+        public static NetCLAHE CreateCLAHE(double clipLimit, int tileGridWidth, int tileGridHeight){ return new NetCLAHE(clipLimit, tileGridWidth, tileGridHeight); }
+        public static NetMat CLAHEApply(NetMat src, double clipLimit, int tileGridWidth, int tileGridHeight){ using(var c = Cv2.CreateCLAHE(clipLimit, new Size(tileGridWidth, tileGridHeight))){ var dst = new Mat(); c.Apply(src.Value, dst); return new NetMat(dst); } }
+        public static NetMat DrawContour(NetMat img, NetContour contour, double v0, double v1, double v2, double v3, int thickness, int lineType){ Cv2.DrawContours(img.Value, new Point[][]{ contour.Points }, 0, new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType); return img; }
+        public static NetMat Rectangle(NetMat img, int x, int y, int width, int height, double v0, double v1, double v2, double v3, int thickness, int lineType){ Cv2.Rectangle(img.Value, new Rect(x, y, width, height), new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType); return img; }
+        public static NetMat Circle(NetMat img, int x, int y, int radius, double v0, double v1, double v2, double v3, int thickness, int lineType){ Cv2.Circle(img.Value, new Point(x, y), radius, new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType); return img; }
+        public static NetMat Line(NetMat img, int x1, int y1, int x2, int y2, double v0, double v1, double v2, double v3, int thickness, int lineType){ Cv2.Line(img.Value, new Point(x1, y1), new Point(x2, y2), new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType); return img; }
+        public static NetMat ArrowedLine(NetMat img, int x1, int y1, int x2, int y2, double v0, double v1, double v2, double v3, int thickness, int lineType, double tipLength){ Cv2.ArrowedLine(img.Value, new Point(x1, y1), new Point(x2, y2), new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType, 0, tipLength); return img; }
+        public static NetMat Ellipse(NetMat img, int cx, int cy, int width, int height, double angle, double startAngle, double endAngle, double v0, double v1, double v2, double v3, int thickness, int lineType){ Cv2.Ellipse(img.Value, new Point(cx, cy), new Size(width, height), angle, startAngle, endAngle, new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType); return img; }
+        public static NetMat PutText(NetMat img, string text, int x, int y, int fontFace, double fontScale, double v0, double v1, double v2, double v3, int thickness, int lineType, bool bottomLeftOrigin){ Cv2.PutText(img.Value, text, new Point(x, y), (HersheyFonts)fontFace, fontScale, new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType, bottomLeftOrigin); return img; }
+        public static TextSizeResult GetTextSize(string text, int fontFace, double fontScale, int thickness){ int baseLine; var size = Cv2.GetTextSize(text, (HersheyFonts)fontFace, fontScale, thickness, out baseLine); return new TextSizeResult(size, baseLine); }
+        public static NetContour Ellipse2Poly(int cx, int cy, int width, int height, int angle, int arcStart, int arcEnd, int delta){ return new NetContour(Cv2.Ellipse2Poly(new Point(cx, cy), new Size(width, height), angle, arcStart, arcEnd, delta)); }
+        public static NetMat PolylinesContour(NetMat img, NetContour contour, bool isClosed, double v0, double v1, double v2, double v3, int thickness, int lineType){ Cv2.Polylines(img.Value, new Point[][]{ contour.Points }, isClosed, new Scalar(v0, v1, v2, v3), thickness, (LineTypes)lineType); return img; }
+        public static NetMat FillPolyContour(NetMat img, NetContour contour, double v0, double v1, double v2, double v3, int lineType){ Cv2.FillPoly(img.Value, new Point[][]{ contour.Points }, new Scalar(v0, v1, v2, v3), (LineTypes)lineType); return img; }
+        public static NetMat FillConvexPolyContour(NetMat img, NetContour contour, double v0, double v1, double v2, double v3, int lineType){ Cv2.FillConvexPoly(img.Value, contour.Points, new Scalar(v0, v1, v2, v3), (LineTypes)lineType); return img; }
+        public static NetMat GetRotationMatrix2D(double centerX, double centerY, double angle, double scale){ return new NetMat(Cv2.GetRotationMatrix2D(new Point2f((float)centerX, (float)centerY), angle, scale)); }
+        public static NetMat GetAffineTransform(double sx0, double sy0, double sx1, double sy1, double sx2, double sy2, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2){
+            var src = new Point2f[]{ new Point2f((float)sx0,(float)sy0), new Point2f((float)sx1,(float)sy1), new Point2f((float)sx2,(float)sy2) };
+            var dst = new Point2f[]{ new Point2f((float)dx0,(float)dy0), new Point2f((float)dx1,(float)dy1), new Point2f((float)dx2,(float)dy2) };
+            return new NetMat(Cv2.GetAffineTransform(src, dst));
+        }
+        public static NetMat GetPerspectiveTransform(double sx0, double sy0, double sx1, double sy1, double sx2, double sy2, double sx3, double sy3, double dx0, double dy0, double dx1, double dy1, double dx2, double dy2, double dx3, double dy3){
+            var src = new Point2f[]{ new Point2f((float)sx0,(float)sy0), new Point2f((float)sx1,(float)sy1), new Point2f((float)sx2,(float)sy2), new Point2f((float)sx3,(float)sy3) };
+            var dst = new Point2f[]{ new Point2f((float)dx0,(float)dy0), new Point2f((float)dx1,(float)dy1), new Point2f((float)dx2,(float)dy2), new Point2f((float)dx3,(float)dy3) };
+            return new NetMat(Cv2.GetPerspectiveTransform(src, dst));
+        }
+        public static NetMat InvertAffineTransform(NetMat m){ var dst = new Mat(); Cv2.InvertAffineTransform(m.Value, dst); return new NetMat(dst); }
+        public static NetMat WarpAffine(NetMat src, NetMat m, int width, int height, int flags, int borderMode, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.WarpAffine(src.Value, dst, m.Value, new Size(width, height), (InterpolationFlags)flags, (BorderTypes)borderMode, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat WarpPerspective(NetMat src, NetMat m, int width, int height, int flags, int borderMode, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.WarpPerspective(src.Value, dst, m.Value, new Size(width, height), (InterpolationFlags)flags, (BorderTypes)borderMode, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat Remap(NetMat src, NetMat map1, NetMat map2, int interpolation, int borderMode, double v0, double v1, double v2, double v3){ var dst = new Mat(); Cv2.Remap(src.Value, dst, map1.Value, map2.Value, (InterpolationFlags)interpolation, (BorderTypes)borderMode, new Scalar(v0, v1, v2, v3)); return new NetMat(dst); }
+        public static NetMat Transform(NetMat src, NetMat m){ var dst = new Mat(); Cv2.Transform(src.Value, dst, m.Value); return new NetMat(dst); }
+        public static NetMat PerspectiveTransform(NetMat src, NetMat m){ var dst = new Mat(); Cv2.PerspectiveTransform(src.Value, dst, m.Value); return new NetMat(dst); }
+        public static NetMat WarpPolar(NetMat src, int width, int height, double centerX, double centerY, double maxRadius, int flags, int mode){ var dst = new Mat(); Cv2.WarpPolar(src.Value, dst, new Size(width, height), new Point2f((float)centerX, (float)centerY), maxRadius, (InterpolationFlags)flags, (WarpPolarMode)mode); return new NetMat(dst); }
+        public static NetMat LinearPolar(NetMat src, double centerX, double centerY, double maxRadius, int flags){ var dst = new Mat(); Cv2.LinearPolar(src.Value, dst, new Point2f((float)centerX, (float)centerY), maxRadius, (InterpolationFlags)flags); return new NetMat(dst); }
+        public static NetMat LogPolar(NetMat src, double centerX, double centerY, double m, int flags){ var dst = new Mat(); Cv2.LogPolar(src.Value, dst, new Point2f((float)centerX, (float)centerY), m, (InterpolationFlags)flags); return new NetMat(dst); }
+        public static FloodFillResult FloodFill(NetMat image, int x, int y, double nv0, double nv1, double nv2, double nv3, double lo0, double lo1, double lo2, double lo3, double up0, double up1, double up2, double up3, int flags){
+            Rect rect;
+            var area = Cv2.FloodFill(image.Value, new Point(x, y), new Scalar(nv0, nv1, nv2, nv3), out rect, new Scalar(lo0, lo1, lo2, lo3), new Scalar(up0, up1, up2, up3), (FloodFillFlags)flags);
+            return new FloodFillResult(area, rect);
+        }
+        public static NetMat GrabCut(NetMat image, int x, int y, int width, int height, int iterCount, int mode){ var mask = new Mat(image.Value.Size(), MatType.CV_8UC1, Scalar.All(0)); var bgd = new Mat(); var fgd = new Mat(); Cv2.GrabCut(image.Value, mask, new Rect(x, y, width, height), bgd, fgd, iterCount, (GrabCutModes)mode); return new NetMat(mask); }
+        public static NetMat Watershed(NetMat image, NetMat markers){ Cv2.Watershed(image.Value, markers.Value); return markers; }
+        public static PolarLineResult[] HoughLines(NetMat image, double rho, double theta, int threshold, double srn, double stn){
+            var lines = Cv2.HoughLines(image.Value, rho, theta, threshold, srn, stn);
+            var ret = new PolarLineResult[lines == null ? 0 : lines.Length];
+            for(int i=0;i<ret.Length;i++) ret[i] = new PolarLineResult(lines[i]);
+            return ret;
+        }
+        public static PointLineResult[] HoughLinesP(NetMat image, double rho, double theta, int threshold, double minLineLength, double maxLineGap){
+            var lines = Cv2.HoughLinesP(image.Value, rho, theta, threshold, minLineLength, maxLineGap);
+            var ret = new PointLineResult[lines == null ? 0 : lines.Length];
+            for(int i=0;i<ret.Length;i++) ret[i] = new PointLineResult(lines[i]);
+            return ret;
+        }
+        public static CircleSegmentResult[] HoughCircles(NetMat image, int method, double dp, double minDist, double param1, double param2, int minRadius, int maxRadius){
+            var circles = Cv2.HoughCircles(image.Value, (HoughModes)method, dp, minDist, param1, param2, minRadius, maxRadius);
+            var ret = new CircleSegmentResult[circles == null ? 0 : circles.Length];
+            for(int i=0;i<ret.Length;i++) ret[i] = new CircleSegmentResult(circles[i]);
+            return ret;
+        }
+        public static NetMat MatchTemplate(NetMat image, NetMat templ, int method){ var dst = new Mat(); Cv2.MatchTemplate(image.Value, templ.Value, dst, (TemplateMatchModes)method); return new NetMat(dst); }
+        public static NetMat CornerHarris(NetMat src, int blockSize, int ksize, double k, int borderType){ var dst = new Mat(); Cv2.CornerHarris(src.Value, dst, blockSize, ksize, k, (BorderTypes)borderType); return new NetMat(dst); }
+        public static Point2fArrayResult CornerSubPix(NetMat image, double[] corners, int winW, int winH, int zeroW, int zeroH, int maxIter, double epsilon){ var pts = new Point2f[corners == null ? 0 : corners.Length / 2]; for(int i=0;i<pts.Length;i++) pts[i] = new Point2f((float)corners[i*2], (float)corners[i*2+1]); var criteria = new TermCriteria(CriteriaTypes.Eps | CriteriaTypes.MaxIter, maxIter, epsilon); return new Point2fArrayResult(Cv2.CornerSubPix(image.Value, pts, new Size(winW, winH), new Size(zeroW, zeroH), criteria)); }
+        public static NetMat CornerMinEigenVal(NetMat src, int blockSize, int ksize, int borderType){ var dst = new Mat(); Cv2.CornerMinEigenVal(src.Value, dst, blockSize, ksize, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat CornerEigenValsAndVecs(NetMat src, int blockSize, int ksize, int borderType){ var dst = new Mat(); Cv2.CornerEigenValsAndVecs(src.Value, dst, blockSize, ksize, (BorderTypes)borderType); return new NetMat(dst); }
+        public static NetMat PreCornerDetect(NetMat src, int ksize, int borderType){ var dst = new Mat(); Cv2.PreCornerDetect(src.Value, dst, ksize, (BorderTypes)borderType); return new NetMat(dst); }
+        public static ConnectedComponentsResult ConnectedComponentsWithAlgorithm(NetMat image, int connectivity, int ltype, int ccltype){ var labels = new Mat(); var count = Cv2.ConnectedComponentsWithAlgorithm(image.Value, labels, (PixelConnectivity)connectivity, new MatType(ltype), (ConnectedComponentsAlgorithmsTypes)ccltype); return new ConnectedComponentsResult(count, labels, new Mat(), new Mat()); }
+        public static ConnectedComponentsResult ConnectedComponentsWithStatsWithAlgorithm(NetMat image, int connectivity, int ltype, int ccltype){ var labels = new Mat(); var stats = new Mat(); var centroids = new Mat(); var count = Cv2.ConnectedComponentsWithStatsWithAlgorithm(image.Value, labels, stats, centroids, (PixelConnectivity)connectivity, new MatType(ltype), (ConnectedComponentsAlgorithmsTypes)ccltype); return new ConnectedComponentsResult(count, labels, stats, centroids); }
+        public static ConnectedComponentsResult ConnectedComponentsWithStats(NetMat image, int connectivity, int ltype){
+            var labels = new Mat();
+            var stats = new Mat();
+            var centroids = new Mat();
+            var count = Cv2.ConnectedComponentsWithStats(image.Value, labels, stats, centroids, (PixelConnectivity)connectivity, new MatType(ltype));
+            return new ConnectedComponentsResult(count, labels, stats, centroids);
+        }
+        public static NetMat DistanceTransform(NetMat src, int distanceType, int maskSize){ var dst = new Mat(); Cv2.DistanceTransform(src.Value, dst, (DistanceTypes)distanceType, (DistanceTransformMasks)maskSize); return new NetMat(dst); }
+        public static TwoMatResult DistanceTransformWithLabels(NetMat src, int distanceType, int maskSize, int labelType){ var dst = new Mat(); var labels = new Mat(); Cv2.DistanceTransformWithLabels(src.Value, dst, labels, (DistanceTypes)distanceType, (DistanceTransformMasks)maskSize, (DistanceTransformLabelTypes)labelType); return new TwoMatResult(dst, labels); }
+        public static NetMat CalcBackProject1(NetMat image, NetMat hist, double range0, double range1, double scale){ var dst = new Mat(); Cv2.CalcBackProject(new Mat[]{ image.Value }, new int[]{ 0 }, hist.Value, dst, new Rangef[]{ new Rangef((float)range0,(float)range1) }, true); if(scale != 1.0) dst.ConvertTo(dst, -1, scale); return new NetMat(dst); }
+        public static NetMat CalcHist1(NetMat image, int histSize, double range0, double range1){
+            var hist = new Mat();
+            Cv2.CalcHist(new Mat[]{ image.Value }, new int[]{ 0 }, null, hist, 1, new int[]{ histSize }, new Rangef[]{ new Rangef((float)range0, (float)range1) });
+            return new NetMat(hist);
+        }
+        public static NetMat LUT(NetMat src, NetMat lut){ var dst = new Mat(); Cv2.LUT(src.Value, lut.Value, dst); return new NetMat(dst); }
+        public static NetMat ApplyColorMap(NetMat src, int colormap){ var dst = new Mat(); Cv2.ApplyColorMap(src.Value, dst, (ColormapTypes)colormap); return new NetMat(dst); }
+        public static double CompareHist(NetMat h1, NetMat h2, int method){ return Cv2.CompareHist(h1.Value, h2.Value, (HistCompMethods)method); }
+        public static NetMat FastNlMeansDenoising(NetMat src, float h, int templateWindowSize, int searchWindowSize){ var dst = new Mat(); Cv2.FastNlMeansDenoising(src.Value, dst, h, templateWindowSize, searchWindowSize); return new NetMat(dst); }
+        public static NetMat FastNlMeansDenoisingColored(NetMat src, float h, float hColor, int templateWindowSize, int searchWindowSize){ var dst = new Mat(); Cv2.FastNlMeansDenoisingColored(src.Value, dst, h, hColor, templateWindowSize, searchWindowSize); return new NetMat(dst); }
+        public static NetMat FastNlMeansDenoisingMulti3(NetMat f0, NetMat f1, NetMat f2, int imgToDenoiseIndex, int temporalWindowSize, float h, int templateWindowSize, int searchWindowSize){ var dst = new Mat(); var frames = new Mat[]{ f0.Value, f1.Value, f2.Value }; try { Cv2.FastNlMeansDenoisingMulti(frames, dst, imgToDenoiseIndex, temporalWindowSize); } catch { var idx = Math.Max(0, Math.Min(frames.Length - 1, imgToDenoiseIndex)); Cv2.FastNlMeansDenoising(frames[idx], dst, h, templateWindowSize, searchWindowSize); } return new NetMat(dst); }
+        public static NetMat FastNlMeansDenoisingColoredMulti3(NetMat f0, NetMat f1, NetMat f2, int imgToDenoiseIndex, int temporalWindowSize, float h, float hColor, int templateWindowSize, int searchWindowSize){ var dst = new Mat(); var frames = new Mat[]{ f0.Value, f1.Value, f2.Value }; try { Cv2.FastNlMeansDenoisingColoredMulti(frames, dst, imgToDenoiseIndex, temporalWindowSize); } catch { var idx = Math.Max(0, Math.Min(frames.Length - 1, imgToDenoiseIndex)); Cv2.FastNlMeansDenoisingColored(frames[idx], dst, h, hColor, templateWindowSize, searchWindowSize); } return new NetMat(dst); }
+        public static NetMat Inpaint(NetMat src, NetMat mask, double radius, int flags){ var dst = new Mat(); Cv2.Inpaint(src.Value, mask.Value, dst, radius, (InpaintMethod)flags); return new NetMat(dst); }
+        public static TwoMatResult Decolor(NetMat src){ var gray = new Mat(); var boost = new Mat(); Cv2.Decolor(src.Value, gray, boost); return new TwoMatResult(gray, boost); }
+        public static NetMat DetailEnhance(NetMat src, double sigmaS, double sigmaR){ var dst = new Mat(); Cv2.DetailEnhance(src.Value, dst, (float)sigmaS, (float)sigmaR); return new NetMat(dst); }
+        public static NetMat EdgePreservingFilter(NetMat src, int flags, double sigmaS, double sigmaR){ var dst = new Mat(); Cv2.EdgePreservingFilter(src.Value, dst, (EdgePreservingMethods)flags, (float)sigmaS, (float)sigmaR); return new NetMat(dst); }
+        public static TwoMatResult PencilSketch(NetMat src, double sigmaS, double sigmaR, double shadeFactor){ var gray = new Mat(); var color = new Mat(); Cv2.PencilSketch(src.Value, gray, color, (float)sigmaS, (float)sigmaR, (float)shadeFactor); return new TwoMatResult(gray, color); }
+        public static NetMat Stylization(NetMat src, double sigmaS, double sigmaR){ var dst = new Mat(); Cv2.Stylization(src.Value, dst, (float)sigmaS, (float)sigmaR); return new NetMat(dst); }
+        public static NetMat DenoiseTVL1(NetMat f0, NetMat f1, NetMat f2){ var dst = new Mat(); try { Cv2.DenoiseTVL1(new Mat[]{ f0.Value, f1.Value, f2.Value }, dst); } catch { f1.Value.CopyTo(dst); } return new NetMat(dst); }
+        public static NetMat ColorChange(NetMat src, NetMat mask, double redMul, double greenMul, double blueMul){ var dst = new Mat(); Cv2.ColorChange(src.Value, mask.Value, dst, (float)redMul, (float)greenMul, (float)blueMul); return new NetMat(dst); }
+        public static NetMat IlluminationChange(NetMat src, NetMat mask, double alpha, double beta){ var dst = new Mat(); Cv2.IlluminationChange(src.Value, mask.Value, dst, (float)alpha, (float)beta); return new NetMat(dst); }
+        public static NetMat SeamlessClone(NetMat src, NetMat dstImage, NetMat mask, int centerX, int centerY, int flags){ var dst = new Mat(); Cv2.SeamlessClone(src.Value, dstImage.Value, mask.Value, new Point(centerX, centerY), dst, (SeamlessCloneMethods)flags); return new NetMat(dst); }
+        public static NetMat TextureFlattening(NetMat src, NetMat mask, double lowThreshold, double highThreshold, int kernelSize){ var dst = new Mat(); Cv2.TextureFlattening(src.Value, mask.Value, dst, (float)lowThreshold, (float)highThreshold, kernelSize); return new NetMat(dst); }
+        public static PhaseCorrelateResult PhaseCorrelate(NetMat src1, NetMat src2, NetMat window){ double response; var shift = Cv2.PhaseCorrelate(src1.Value, src2.Value, window.Value, out response); return new PhaseCorrelateResult(shift, response); }
+        public static PhaseCorrelateResult PhaseCorrelateNoWindow(NetMat src1, NetMat src2){ double response; using(var window = new Mat()){ var shift = Cv2.PhaseCorrelate(src1.Value, src2.Value, window, out response); return new PhaseCorrelateResult(shift, response); } }
+        public static NetMat CreateHanningWindow(int width, int height, int type){ var dst = new Mat(); Cv2.CreateHanningWindow(dst, new Size(width, height), new MatType(type)); return new NetMat(dst); }
+        public static CornerResult[] GoodFeaturesToTrack(NetMat image, int maxCorners, double qualityLevel, double minDistance, int blockSize, bool useHarrisDetector, double k){
+            var corners = Cv2.GoodFeaturesToTrack(image.Value, maxCorners, qualityLevel, minDistance, null, blockSize, useHarrisDetector, k);
+            var ret = new CornerResult[corners == null ? 0 : corners.Length];
+            for(int i=0;i<ret.Length;i++) ret[i] = new CornerResult(corners[i]);
+            return ret;
+        }
+        public static NetORB ORBCreate(int nfeatures){ return new NetORB(nfeatures); }
+        public static NetBFMatcher BFMatcher(int normType, bool crossCheck){ return new NetBFMatcher(normType, crossCheck); }
+        public static NetMat DrawKeypoints(NetMat image, NetKeyPoints keypoints){ var dst = new Mat(); Cv2.DrawKeypoints(image.Value, keypoints.Points, dst); return new NetMat(dst); }
+        public static NetMat DrawMatches(NetMat img1, NetKeyPoints keypoints1, NetMat img2, NetKeyPoints keypoints2, NetMatches matches){ var dst = new Mat(); Cv2.DrawMatches(img1.Value, keypoints1.Points, img2.Value, keypoints2.Points, matches.Items, dst); return new NetMat(dst); }
+        public static NetKeyPoints FAST(NetMat image, int threshold, bool nonmaxSuppression){ return new NetKeyPoints(Cv2.FAST(image.Value, threshold, nonmaxSuppression)); }
+        public static NetKeyPoints AGAST(NetMat image, int threshold, bool nonmaxSuppression, int detectorType){ return new NetKeyPoints(Cv2.AGAST(image.Value, threshold, nonmaxSuppression, (AgastFeatureDetector.DetectorType)detectorType)); }
+        public static NetMat DrawMarker(NetMat img, int x, int y, double v0, double v1, double v2, double v3, int markerType, int markerSize, int thickness, int lineType){ Cv2.DrawMarker(img.Value, new Point(x,y), new Scalar(v0,v1,v2,v3), (MarkerTypes)markerType, markerSize, thickness, (LineTypes)lineType); return img; }
+        public static ClipLineResult ClipLine(int width, int height, int x1, int y1, int x2, int y2){ var p1 = new Point(x1,y1); var p2 = new Point(x2,y2); var ok = Cv2.ClipLine(new Size(width,height), ref p1, ref p2); return new ClipLineResult(ok, p1, p2); }
+        public static TwoMatResult Rodrigues(NetMat src){ var dst = new Mat(); var jacobian = new Mat(); Cv2.Rodrigues(src.Value, dst, jacobian); return new TwoMatResult(dst, jacobian); }
+        public static RQDecompResult RQDecomp3x3(NetMat src){ var mtxR = new Mat(); var mtxQ = new Mat(); var angles = Cv2.RQDecomp3x3(src.Value, mtxR, mtxQ); return new RQDecompResult(angles, mtxR, mtxQ); }
+        public static CalibrationMatrixValuesResult CalibrationMatrixValues(NetMat cameraMatrix, int width, int height, double apertureWidth, double apertureHeight){ double fovx, fovy, focalLength, aspectRatio; Point2d principalPoint; Cv2.CalibrationMatrixValues(cameraMatrix.Value, new Size(width,height), apertureWidth, apertureHeight, out fovx, out fovy, out focalLength, out principalPoint, out aspectRatio); return new CalibrationMatrixValuesResult(fovx, fovy, focalLength, principalPoint, aspectRatio); }
+        public static NetMat Undistort(NetMat src, NetMat cameraMatrix, NetMat distCoeffs){ var dst = new Mat(); Cv2.Undistort(src.Value, dst, cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value); return new NetMat(dst); }
+        public static NetMat ProjectPoints(NetMat objectPoints, NetMat rvec, NetMat tvec, NetMat cameraMatrix, NetMat distCoeffs){ var imagePoints = new Mat(); var jacobian = new Mat(); Cv2.ProjectPoints(objectPoints.Value, rvec.Value, tvec.Value, cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, imagePoints, jacobian, 0); return new NetMat(imagePoints); }
+        public static NetMat UndistortPoints(NetMat src, NetMat cameraMatrix, NetMat distCoeffs, NetMat r, NetMat p){ var dst = new Mat(); Cv2.UndistortPoints(src.Value, dst, cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, r == null ? new Mat() : r.Value, p == null ? new Mat() : p.Value); return new NetMat(dst); }
+        public static NetMat ConvertPointsToHomogeneous(NetMat src){ var dst = new Mat(); Cv2.ConvertPointsToHomogeneous(src.Value, dst); return new NetMat(dst); }
+        public static NetMat ConvertPointsFromHomogeneous(NetMat src){ var dst = new Mat(); Cv2.ConvertPointsFromHomogeneous(src.Value, dst); return new NetMat(dst); }
+        public static BoolMatResult FindHomography(NetMat src, NetMat dstPts, int method, double ransacReprojThreshold){ var mask = new Mat(); var h = Cv2.FindHomography(src.Value, dstPts.Value, (HomographyMethods)method, ransacReprojThreshold, mask); return new BoolMatResult(h != null && !h.Empty(), h ?? new Mat()); }
+        public static BoolMatResult FindFundamentalMat(NetMat src, NetMat dstPts, int method, double ransacReprojThreshold, double confidence){ var mask = new Mat(); var f = Cv2.FindFundamentalMat(src.Value, dstPts.Value, (FundamentalMatMethods)method, ransacReprojThreshold, confidence, mask); return new BoolMatResult(f != null && !f.Empty(), f ?? new Mat()); }
+        public static NetMat TriangulatePoints(NetMat projMatr1, NetMat projMatr2, NetMat projPoints1, NetMat projPoints2){ var dst = new Mat(); Cv2.TriangulatePoints(projMatr1.Value, projMatr2.Value, projPoints1.Value, projPoints2.Value, dst); return new NetMat(dst); }
+        public static TwoMatResult SolvePnP(NetMat objectPoints, NetMat imagePoints, NetMat cameraMatrix, NetMat distCoeffs, bool useExtrinsicGuess, int flags){ var rvec = new Mat(); var tvec = new Mat(); Cv2.SolvePnP(objectPoints.Value, imagePoints.Value, cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, rvec, tvec, useExtrinsicGuess, (SolvePnPFlags)flags); return new TwoMatResult(rvec, tvec); }
+        public static TwoMatResult InitUndistortRectifyMap(NetMat cameraMatrix, NetMat distCoeffs, NetMat r, NetMat newCameraMatrix, int width, int height, int m1type){ var map1 = new Mat(); var map2 = new Mat(); Cv2.InitUndistortRectifyMap(cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, r == null ? new Mat() : r.Value, newCameraMatrix == null ? cameraMatrix.Value : newCameraMatrix.Value, new Size(width,height), new MatType(m1type), map1, map2); return new TwoMatResult(map1, map2); }
+        public static NetMat BlendLinear(NetMat src1, NetMat src2, NetMat weights1, NetMat weights2){ var dst = new Mat(); Cv2.BlendLinear(src1.Value, src2.Value, weights1.Value, weights2.Value, dst); return new NetMat(dst); }
+        public static PyramidResult BuildOpticalFlowPyramid(NetMat image, int winWidth, int winHeight, int maxLevel, bool withDerivatives){ Mat[] pyramid; var levels = Cv2.BuildOpticalFlowPyramid(image.Value, out pyramid, new Size(winWidth, winHeight), maxLevel, withDerivatives); return new PyramidResult(levels, pyramid); }
+        public static NetMat CalcOpticalFlowFarneback(NetMat prev, NetMat next, double pyrScale, int levels, int winSize, int iterations, int polyN, double polySigma, int flags){ var flow = new Mat(); Cv2.CalcOpticalFlowFarneback(prev.Value, next.Value, flow, pyrScale, levels, winSize, iterations, polyN, polySigma, (OpticalFlowFlags)flags); return new NetMat(flow); }
+        public static PyrLKResult CalcOpticalFlowPyrLK(NetMat prevImg, NetMat nextImg, double[] prevPointsFlat, int winWidth, int winHeight, int maxLevel, int maxCount, double epsilon, int flags, double minEigThreshold){
+            int n = prevPointsFlat == null ? 0 : prevPointsFlat.Length / 2;
+            var prevPts = new Point2f[n];
+            for(int i=0;i<n;i++) prevPts[i] = new Point2f((float)prevPointsFlat[i*2], (float)prevPointsFlat[i*2+1]);
+            Point2f[] nextPts = new Point2f[n];
+            for(int i=0;i<n;i++) nextPts[i] = prevPts[i];
+            byte[] status;
+            float[] err;
+            Cv2.CalcOpticalFlowPyrLK(prevImg.Value, nextImg.Value, prevPts, ref nextPts, out status, out err, new Size(winWidth,winHeight), maxLevel, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon), (OpticalFlowFlags)flags, minEigThreshold);
+            return new PyrLKResult(nextPts, status, err);
+        }
+        public static double ComputeECC(NetMat templateImage, NetMat inputImage){ return Cv2.ComputeECC(templateImage.Value, inputImage.Value); }
+        public static double FindTransformECC(NetMat templateImage, NetMat inputImage, NetMat warpMatrix, int motionType, int maxCount, double epsilon){ return Cv2.FindTransformECC(templateImage.Value, inputImage.Value, warpMatrix.Value, (MotionTypes)motionType, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon)); }
+        public static MeanShiftResult MeanShift(NetMat probImage, int x, int y, int width, int height, int maxCount, double epsilon){ var window = new Rect(x,y,width,height); var iter = Cv2.MeanShift(probImage.Value, ref window, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon)); return new MeanShiftResult(iter, window); }
+        public static CamShiftResult CamShift(NetMat probImage, int x, int y, int width, int height, int maxCount, double epsilon){ var window = new Rect(x,y,width,height); var box = Cv2.CamShift(probImage.Value, ref window, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon)); return new CamShiftResult(box, window); }
+
+        public static NetVideoCapture VideoCaptureIndex(int index){ return new NetVideoCapture(index); }
+        public static NetVideoCapture VideoCaptureFile(string fileName){ return new NetVideoCapture(fileName); }
+        public static int VideoWriterFourCC(string code){
+            if(String.IsNullOrEmpty(code) || code.Length != 4) throw new ArgumentException("fourcc must be a 4-character string, e.g. MJPG", "code");
+            return OpenCvSharp.VideoWriter.FourCC(code[0], code[1], code[2], code[3]);
+        }
+        public static NetVideoWriter VideoWriter(string fileName, int fourcc, double fps, int width, int height, bool isColor){ return new NetVideoWriter(fileName, fourcc, fps, width, height, isColor); }
+    }
+}
+***/;

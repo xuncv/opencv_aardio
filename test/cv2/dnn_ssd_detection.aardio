@@ -1,0 +1,36 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 dnn SSD/Faster-RCNN detection decoder");
+
+var labels = ["background","cat","dog"];
+
+var rows = [
+    [0,2,0.90,0.10,0.20,0.50,0.70],
+    [0,2,0.80,0.12,0.22,0.52,0.72],
+    [0,1,0.70,0.60,0.10,0.90,0.40],
+    [0,1,0.30,0.00,0.00,0.20,0.20]
+];
+
+var dets = cv2.dnnDecodeDetections(rows,[200,100],0.5,labels,true,0.0,true);
+$.expect(#dets,3,"SSD decoder filters score threshold");
+$.expect(dets[1].classId,2,"SSD decoder keeps highest score first");
+$.expect(dets[1].label,"dog","SSD decoder maps label");
+$.expect([dets[1].x,dets[1].y,dets[1].width,dets[1].height],[20,20,80,50],"SSD decoder normalized box");
+$.expect(dets[3].classId,1,"SSD decoder keeps second class");
+
+var nms = cv2.dnnDecodeSSD(rows,[200,100],0.5,labels,true,0.4,true);
+$.expect(#nms,2,"SSD decoder applies class-aware NMS");
+$.expect(nms[1].label,"dog","SSD NMS keeps dog best box");
+$.expect(nms[2].label,"cat","SSD NMS keeps cat box");
+
+var pixelRows = [
+    [0,2,0.95,10,20,50,80],
+    [0,1,0.60,-10,-5,30,25]
+];
+var pixel = cv2.dnnDecodeFasterRCNN(pixelRows,[100,100],0.5,labels,false,0.0,true);
+$.expect(#pixel,2,"FasterRCNN alias decodes pixel boxes");
+$.expect([pixel[1].x,pixel[1].y,pixel[1].width,pixel[1].height],[10,20,40,60],"SSD decoder pixel box");
+$.expect([pixel[2].x,pixel[2].y,pixel[2].width,pixel[2].height],[0,0,30,25],"SSD decoder clips pixel box");
+
+return $.report();

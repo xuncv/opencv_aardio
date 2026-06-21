@@ -1,0 +1,29 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 dnn basic");
+
+var img = cv2.zeros(10,20,cv2.CV_8UC3);
+var blob = cv2.blobFromImage(img,1.0,[32,32],[1,2,3],true,false);
+$.expect(blob.dims,4,"blobFromImage creates 4D blob");
+$.expect([blob.sizeAt(0),blob.sizeAt(1),blob.sizeAt(2),blob.sizeAt(3)],[1,3,32,32],"blobFromImage NCHW shape");
+$.expect(blob.typeName,"CV_32FC1","blobFromImage output type");
+
+var blob2 = cv2.blobFromImages([img,img],1.0,[16,16],[0,0,0],false,false);
+$.expect(blob2.dims,4,"blobFromImages creates 4D blob");
+$.expect([blob2.sizeAt(0),blob2.sizeAt(1),blob2.sizeAt(2),blob2.sizeAt(3)],[2,3,16,16],"blobFromImages NCHW shape");
+
+var idx = cv2.NMSBoxes(
+    [[0,0,10,10],[1,1,10,10],[50,50,10,10]],
+    [0.9,0.8,0.7],
+    0.5,
+    0.4
+);
+$.expect(idx,[0,2],"NMSBoxes suppresses overlapped lower-score box");
+
+var net = cv2.Net();
+$.test(net.empty(),"empty DNN Net");
+net.setPreferableBackend(cv2.DNN_BACKEND_OPENCV).setPreferableTarget(cv2.DNN_TARGET_CPU);
+$.test(net.empty(),"backend/target can be set on empty DNN Net");
+
+return $.report();

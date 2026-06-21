@@ -1,0 +1,15 @@
+namespace cv2.core_utils{}
+namespace cv2;
+
+// Core utility wrappers
+// Split from cv2/_.aardio. Public API remains under namespace cv2.
+
+blendLinear = function(src1,src2,weights1,weights2){
+    init();
+    return Mat(..Aardio.OpenCvSharpBridge.Cv.BlendLinear(_asNetMat(src1),_asNetMat(src2),_asNetMat(weights1),_asNetMat(weights2)));
+}
+
+getFontScaleFromHeight = function(fontFace=0,pixelHeight=12,thickness=1){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetFontScaleFromHeight(fontFace,pixelHeight,thickness); }
+cvRound = function(value){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CvRound(value); }
+cvFloor = function(value){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CvFloor(value); }
+cvCeil = function(value){ init(); return ..Aardio.OpenCvSharpBridge.Cv.CvCeil(value); }

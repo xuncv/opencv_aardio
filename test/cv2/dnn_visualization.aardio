@@ -1,0 +1,29 @@
+import cv2;
+import util.testRunner;
+
+var $ = util.testRunner("cv2 dnn visualization helpers");
+
+var palette = cv2.dnnColorPalette(12);
+$.expect(#palette,12,"palette count");
+$.expect(palette[1],[0,255,0],"palette first color BGR");
+$.expect(palette[10],[0,255,0],"palette wraps colors");
+
+var img = cv2.zeros(30,40,cv2.CV_8UC3);
+var detections = [{
+    classId = 1;
+    label = "obj";
+    score = 0.9;
+    box = [5,5,20,10];
+}];
+
+var ret = cv2.dnnDrawDetections(img,detections,,[[0,255,0]],1,false);
+$.test(ret === img,"dnnDrawDetections draws in-place and returns image");
+$.expect(img.get(5,5,1),255,"dnnDrawDetections draws rectangle green channel");
+$.expect(img.get(5,5,0),0,"dnnDrawDetections rectangle blue channel");
+$.expect(img.get(5,5,2),0,"dnnDrawDetections rectangle red channel");
+
+var img2 = cv2.zeros(40,80,cv2.CV_8UC3);
+cv2.dnnDrawDetections(img2,[{classId=2;score=0.75;x=10;y=15;width=20;height=10}], ["cat","dog"], [[255,0,0],[0,0,255]],1,true);
+$.expect(img2.get(15,10,2),255,"dnnDrawDetections uses class color");
+
+return $.report();

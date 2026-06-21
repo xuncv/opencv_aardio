@@ -1,0 +1,79 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 imgproc segmentation / fitting extra");
+var near = function(a,b,eps=1e-5){ return math.abs(a-b) <= eps; }
+
+var src8 = cv2.zeros(5,5,cv2.CV_8UC1);
+src8.set(2,2,10);
+var sum,sqsum,tilted = cv2.integral3(src8);
+$.expect(sum.shape,[6,6,1],"integral3 sum shape");
+$.expect(sqsum.shape,[6,6,1],"integral3 sqsum shape");
+$.expect(tilted.shape,[6,6,1],"integral3 tilted shape");
+$.expect(sum.get(5,5),10,"integral3 sum value");
+$.expect(sqsum.get(5,5),100,"integral3 sqsum value");
+
+var src = cv2.Mat(2,2,cv2.CV_32FC1);
+src.set(0,0,1).set(0,1,2).set(1,0,3).set(1,1,4);
+var dst = cv2.zeros(2,2,cv2.CV_32FC1);
+cv2.accumulate(src,dst);
+$.expect(dst.get(1,1),4,"accumulate adds source");
+
+var sq = cv2.zeros(2,2,cv2.CV_32FC1);
+cv2.accumulateSquare(src,sq);
+$.expect(sq.get(1,1),16,"accumulateSquare squares source");
+
+var prod = cv2.zeros(2,2,cv2.CV_32FC1);
+cv2.accumulateProduct(src,src,prod);
+$.expect(prod.get(0,1),4,"accumulateProduct multiplies sources");
+
+var weighted = cv2.zeros(2,2,cv2.CV_32FC1);
+cv2.accumulateWeighted(src,weighted,0.5);
+$.test(near(weighted.get(1,1),2),"accumulateWeighted blends source");
+
+var color = cv2.zeros(30,30,cv2.CV_8UC3);
+var meanShift = cv2.pyrMeanShiftFiltering(color,5,10);
+$.expect(meanShift.shape,[30,30,3],"pyrMeanShiftFiltering shape");
+
+var circleEdges = cv2.zeros(30,30,cv2.CV_8UC1);
+cv2.circle(circleEdges,[15,15],8,255,1);
+var circles = cv2.HoughCircles(circleEdges,cv2.HOUGH_GRADIENT,1,10,100,4,5,12);
+$.test(#circles >= 1,"HoughCircles detects drawn circle",circles);
+
+var corners = cv2.goodFeaturesToTrack(circleEdges,4,0.01,1);
+$.test(#corners >= 1,"goodFeaturesToTrack still works after bridge changes");
+
+var eig = cv2.cornerMinEigenVal(circleEdges);
+var ev = cv2.cornerEigenValsAndVecs(circleEdges);
+var pre = cv2.preCornerDetect(circleEdges);
+$.expect(eig.shape,[30,30,1],"cornerMinEigenVal shape");
+$.expect(ev.shape,[30,30,6],"cornerEigenValsAndVecs shape");
+$.expect(pre.shape,[30,30,1],"preCornerDetect shape");
+
+var ellipseContour = cv2.ellipse2Poly([20,20],[8,5],0,0,360,15);
+$.test(ellipseContour.count >= 5,"ellipse2Poly contour has enough points for fitEllipse");
+var fit1 = cv2.fitEllipse(ellipseContour);
+var fit2 = cv2.fitEllipseAMS(ellipseContour);
+var fit3 = cv2.fitEllipseDirect(ellipseContour);
+$.test(near(fit1.center[1],20,1) && near(fit1.center[2],20,1),"fitEllipse center");
+$.test(near(fit2.center[1],20,1) && near(fit2.center[2],20,1),"fitEllipseAMS center");
+$.test(near(fit3.center[1],20,1) && near(fit3.center[2],20,1),"fitEllipseDirect center");
+$.test(fit1.size[1] > 5 && fit1.size[2] > 5,"fitEllipse size positive");
+
+var gcImg = cv2.zeros(20,20,cv2.CV_8UC3);
+cv2.rectangle(gcImg,[5,5],[15,15],[255,255,255],cv2.FILLED);
+var gcMask = cv2.grabCut(gcImg,[2,2,16,16],1,cv2.GC_INIT_WITH_RECT);
+$.expect(gcMask.shape,[20,20,1],"grabCut mask shape");
+$.test(cv2.countNonZero(gcMask) > 0,"grabCut labels non-zero");
+
+var markers = cv2.zeros(30,30,cv2.CV_32SC1);
+markers.set(1,1,1).set(28,28,2);
+var ws = cv2.watershed(color,markers);
+$.expect(ws.shape,[30,30,1],"watershed markers shape");
+$.test(ws.get(1,1) !== 0,"watershed keeps marker label");
+
+$.expect(cv2.HOUGH_GRADIENT,3,"HOUGH_GRADIENT constant");
+$.expect(cv2.GC_INIT_WITH_RECT,0,"GC_INIT_WITH_RECT constant");
+$.expect(cv2.CV_32SC1,cv2.CV_MAKETYPE(cv2.CV_32S,1),"CV_32SC1 constant");
+
+return $.report();

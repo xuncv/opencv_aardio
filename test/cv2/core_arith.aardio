@@ -1,0 +1,55 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 core arithmetic / bitwise operations");
+
+var a = cv2.zeros(2,2,cv2.CV_8UC1).setTo(10);
+var b = cv2.zeros(2,2,cv2.CV_8UC1).setTo(3);
+
+var added = cv2.add(a,b);
+$.expect(added.get(0,0),13,"add value");
+
+var sub = cv2.subtract(a,b);
+$.expect(sub.get(0,0),7,"subtract value");
+
+var mul = cv2.multiply(a,b);
+$.expect(mul.get(0,0),30,"multiply value");
+
+var div = cv2.divide(a,b,1.0,cv2.CV_32FC1);
+$.test(div.get(0,0) > 3.33 && div.get(0,0) < 3.34,"divide value as CV_32FC1",div.get(0,0));
+$.expect(div.typeValue,cv2.CV_32FC1,"divide dtype");
+
+var diff = cv2.absdiff(a,b);
+$.expect(diff.get(0,0),7,"absdiff value");
+
+var weighted = cv2.addWeighted(a,0.5,b,0.5,1.0);
+$.expect(weighted.get(0,0),8,"addWeighted value");
+
+var notA = cv2.bitwise_not(a);
+$.expect(notA.get(0,0),245,"bitwise_not value");
+
+var band = cv2.bitwise_and(a,b);
+$.expect(band.get(0,0),2,"bitwise_and value");
+
+var bor = cv2.bitwise_or(a,b);
+$.expect(bor.get(0,0),11,"bitwise_or value");
+
+var bxor = cv2.bitwise_xor(a,b);
+$.expect(bxor.get(0,0),9,"bitwise_xor value");
+
+var cmpGt = cv2.compare(a,b,cv2.CMP_GT);
+$.expect(cmpGt.shape,a.shape,"compare mask shape");
+$.expect(cmpGt.get(0,0),255,"compare CMP_GT value");
+
+var cmpEq = cv2.compare(a,b,cv2.CMP_EQ);
+$.expect(cmpEq.get(0,0),0,"compare CMP_EQ value");
+
+var ramp = cv2.zeros(1,3,cv2.CV_8UC1);
+ramp.set(0,0,10);
+ramp.set(0,1,20);
+ramp.set(0,2,30);
+var norm = cv2.normalize(ramp,0,255,cv2.NORM_MINMAX,cv2.CV_8UC1);
+$.expect(norm.get(0,0),0,"normalize min value");
+$.expect(norm.get(0,2),255,"normalize max value");
+
+return $.report();

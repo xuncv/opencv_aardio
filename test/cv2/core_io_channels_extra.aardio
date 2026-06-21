@@ -1,0 +1,51 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 io/channel extra APIs");
+
+var near = function(a,b,eps=1e-6){ return ..math.abs(a-b) <= eps; }
+
+var img = cv2.zeros(5,5,cv2.CV_8UC1);
+img.set(2,2,255);
+var bytes = cv2.imencode('.png',img);
+$.test(#bytes > 16,"imencode returns non-empty byte array");
+var decoded = cv2.imdecode(bytes,cv2.IMREAD_GRAYSCALE);
+$.expect(decoded.shape,[5,5,1],"imdecode preserves grayscale shape");
+$.expect(decoded.get(2,2),255,"imdecode restores pixel value");
+$.test(cv2.haveImageWriter('.png') === true,"haveImageWriter png");
+$.test(cv2.haveImageReader('/definitely/not/exist.png') === false,"haveImageReader missing file is safe false");
+
+var f = cv2.ones(2,2,cv2.CV_32FC1);
+var h = cv2.convertFp16(f);
+$.expect(h.shape,[2,2,1],"convertFp16 shape");
+$.test(h.typeValue != f.typeValue,"convertFp16 changes storage type");
+
+var samples1 = cv2.Mat(2,1,cv2.CV_32FC1);
+samples1.set(0,0,0).set(1,0,2);
+var samples2 = cv2.Mat(2,1,cv2.CV_32FC1);
+samples2.set(0,0,1).set(1,0,3);
+var dist,nidx = cv2.batchDistance(samples1,samples2,cv2.CV_32F,cv2.NORM_L2,1);
+$.expect(dist.shape,[2,2,1],"batchDistance distance matrix shape");
+$.test(near(dist.get(0,0),1) && near(dist.get(0,1),3),"batchDistance L2 values");
+$.expect(nidx.shape,[2,1,1],"batchDistance nearest index shape");
+$.expect(nidx.get(0,0),0,"batchDistance nearest index row 0");
+
+var ch0 = cv2.zeros(2,2,cv2.CV_8UC1);
+ch0.set(0,0,10).set(1,1,20);
+var two = cv2.merge([cv2.zeros(2,2,cv2.CV_8UC1),cv2.zeros(2,2,cv2.CV_8UC1)]);
+var inserted = cv2.insertChannel(ch0,two,1);
+$.expect(inserted.shape,[2,2,2],"insertChannel keeps destination shape");
+var extracted = cv2.extractChannel(inserted,1);
+$.expect(extracted.get(0,0),10,"insertChannel channel value 1");
+$.expect(extracted.get(1,1),20,"insertChannel channel value 2");
+
+var mixed = cv2.zeros(2,2,cv2.CV_8UC1);
+cv2.mixChannels(inserted,mixed,1,0);
+$.expect(mixed.get(0,0),10,"mixChannels copied channel value 1");
+$.expect(mixed.get(1,1),20,"mixChannels copied channel value 2");
+
+var border = cv2.morphologyDefaultBorderValue();
+$.expect(#border,4,"morphologyDefaultBorderValue returns scalar4");
+$.test(border[1] > 1e100,"morphologyDefaultBorderValue magic high value");
+
+return $.report();

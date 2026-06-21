@@ -1,0 +1,43 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 perspective transform and Hough lines");
+
+var img = cv2.zeros(60,60,cv2.CV_8UC1);
+cv2.rectangle(img,[10,10],[30,30],255,cv2.FILLED);
+
+var identity = cv2.getPerspectiveTransform(
+    [[0,0],[60,0],[60,60],[0,60]],
+    [[0,0],[60,0],[60,60],[0,60]]
+);
+$.expect(identity.shape,[3,3,1],"getPerspectiveTransform shape");
+$.test(identity.get(0,0) > 0.999 && identity.get(0,0) < 1.001,"perspective identity m00",identity.get(0,0));
+$.test(identity.get(1,1) > 0.999 && identity.get(1,1) < 1.001,"perspective identity m11",identity.get(1,1));
+$.test(identity.get(2,2) > 0.999 && identity.get(2,2) < 1.001,"perspective identity m22",identity.get(2,2));
+
+var warped = cv2.warpPerspective(img,identity,[60,60]);
+$.expect(warped.shape,img.shape,"warpPerspective identity shape");
+$.expect(cv2.countNonZero(cv2.absdiff(img,warped)),0,"warpPerspective identity keeps pixels");
+
+var shift = cv2.getPerspectiveTransform(
+    [[0,0],[60,0],[60,60],[0,60]],
+    [[5,7],[65,7],[65,67],[5,67]]
+);
+var shifted = cv2.warpPerspective(img,shift,[70,75],cv2.INTER_NEAREST);
+$.expect(shifted.shape,[75,70,1],"warpPerspective shifted output size");
+$.expect(shifted.get(17,15),255,"warpPerspective shifted sample pixel");
+
+var linesImg = cv2.zeros(80,80,cv2.CV_8UC1);
+cv2.line(linesImg,[5,40],[75,40],255,1);
+var linesP = cv2.HoughLinesP(linesImg,1,math.pi/180,20,20,5);
+$.test(#linesP >= 1,"HoughLinesP detects at least one line",linesP);
+$.expect(#linesP[1],4,"HoughLinesP line format [x1,y1,x2,y2]");
+$.test(linesP[1][2] == 40 && linesP[1][4] == 40,"HoughLinesP detects horizontal line",linesP[1]);
+
+var lines = cv2.HoughLines(linesImg,1,math.pi/180,20);
+$.test(#lines >= 1,"HoughLines detects at least one line",lines);
+$.expect(#lines[1],2,"HoughLines line format [rho,theta]");
+$.test(lines[1][1] > 35 && lines[1][1] < 45,"HoughLines rho close to 40",lines[1]);
+$.test(lines[1][2] > 1.5 && lines[1][2] < 1.65,"HoughLines theta close to pi/2",lines[1]);
+
+return $.report();

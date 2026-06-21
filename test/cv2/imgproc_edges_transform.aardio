@@ -1,0 +1,43 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 imgproc edges and transforms");
+
+var img = cv2.zeros(20,20,cv2.CV_8UC1);
+cv2.rectangle(img,[5,5],[15,15],255,cv2.FILLED);
+$.expect(cv2.countNonZero(img),100,"filled rectangle source count");
+
+var blurred = cv2.blur(img,[3,3]);
+$.expect(blurred.shape,img.shape,"blur shape");
+$.test(blurred.get(5,5) > 0 && blurred.get(5,5) < 255,"blur softens boundary",blurred.get(5,5));
+
+var boxed = cv2.boxFilter(img,-1,[3,3]);
+$.expect(boxed.shape,img.shape,"boxFilter shape");
+$.expect(boxed.get(5,5),blurred.get(5,5),"boxFilter normalized equals blur at boundary");
+
+var edges = cv2.Canny(img,50,150);
+$.expect(edges.shape,img.shape,"Canny shape");
+$.expect(cv2.countNonZero(edges),36,"Canny rectangle edge count");
+
+var sobel = cv2.Sobel(img,cv2.CV_32FC1,1,0);
+$.expect(sobel.shape,img.shape,"Sobel shape");
+$.expect(sobel.typeValue,cv2.CV_32FC1,"Sobel output type");
+$.test(cv2.countNonZero(sobel) > 0,"Sobel detects vertical edges");
+
+var lap = cv2.Laplacian(img,cv2.CV_32FC1);
+$.expect(lap.shape,img.shape,"Laplacian shape");
+$.expect(lap.typeValue,cv2.CV_32FC1,"Laplacian output type");
+$.test(cv2.countNonZero(lap) > 0,"Laplacian detects edges");
+
+var M0 = cv2.getRotationMatrix2D([10,10],0,1);
+$.expect(M0.shape,[2,3,1],"getRotationMatrix2D shape");
+var same = cv2.warpAffine(img,M0,[20,20]);
+$.expect(same.shape,img.shape,"warpAffine identity shape");
+$.expect(cv2.countNonZero(same),cv2.countNonZero(img),"warpAffine identity count");
+
+var M45 = cv2.getRotationMatrix2D([10,10],45,1);
+var rotated = cv2.warpAffine(img,M45,[20,20],cv2.INTER_NEAREST,cv2.BORDER_CONSTANT,0);
+$.expect(rotated.shape,img.shape,"warpAffine rotated shape");
+$.test(cv2.countNonZero(rotated) > 0,"warpAffine rotated has pixels");
+
+return $.report();
