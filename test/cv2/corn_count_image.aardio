@@ -1,0 +1,81 @@
+import util.testRunner;
+import cv2;
+
+var $ = util.testRunner("cv2 corn count image");
+
+var countCorn = function(imgPath,outPath){
+    var src = cv2.imread(imgPath,cv2.IMREAD_COLOR);
+    if(!src || src.empty()){
+        return { count = 0; err = "读取图片失败: " + imgPath; };
+    }
+
+    /*
+    计数思路：
+    1. 灰度 + 中值滤波，用 HoughCircles 找出近似圆/椭圆颗粒中心。
+    2. HSV 黄色掩膜过滤，排除非玉米区域的圆。
+    3. 输出带编号的检测图，方便人工复核。
+
+    注意：当前 cv2._constants 尚未声明 COLOR_BGR2HSV，OpenCV 该常量值为 40。
+    */
+    var gray = cv2.cvtColor(src,cv2.COLOR_BGR2GRAY);
+    var blur = cv2.medianBlur(gray,5);
+
+    var hsv = cv2.cvtColor(src,40/*COLOR_BGR2HSV*/);
+    var mask = cv2.inRange(hsv,[10,40,45],[45,255,255]);
+    var kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,[3,3]);
+    mask = cv2.morphologyEx(mask,cv2.MORPH_OPEN,kernel,1);
+    mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel,1);
+
+    // 参数针对 assets/images/c.png 调优：肉眼约 49 个，Hough + 黄色掩膜检测为 49 个。
+    var circles = cv2.HoughCircles(
+        blur,
+        cv2.HOUGH_GRADIENT,
+        1,      // dp
+        25,     // minDist：相邻玉米粒中心最小距离
+        100,    // param1：Canny 高阈值
+        17,     // param2：圆心累加阈值，越小越容易多检
+        10,     // minRadius
+        35      // maxRadius
+    );
+
+    var kept = [];
+    for(i,c in circles){
+        var x = math.round(c[1]);
+        var y = math.round(c[2]);
+        var r = math.round(c[3]);
+
+        if(x >= 0 && x < src.cols && y >= 0 && y < src.rows && mask.get(y,x) > 0){
+            table.push(kept,[x,y,r]);
+        }
+    }
+
+    var view = src.clone();
+    for(i,c in kept){
+        cv2.circle(view,[c[1],c[2]],c[3],[0,255,0],2);
+        cv2.putText(view,tostring(i),[c[1]-10,c[2]+5],cv2.FONT_HERSHEY_SIMPLEX,0.45,[0,0,255],1);
+    }
+    cv2.putText(view,"corn count: " + #kept,[20,35],cv2.FONT_HERSHEY_SIMPLEX,1,[0,0,255],2);
+
+    if(outPath){
+        cv2.imwrite(outPath,view);
+    }
+
+    return {
+        count = #kept;
+        rawCount = #circles;
+        output = outPath;
+        circles = kept;
+    };
+}
+
+var imgPath = "\assets\images\c.png";
+var outPath = io.fullpath("/result_corn_count.jpg");
+
+var result = countCorn(imgPath,outPath);
+
+$.test(!result.err,"图片读取成功",result.err);
+$.expect(result.count,49,"玉米计数结果");
+$.test(io.exist(outPath),"输出标注图已生成",outPath);
+$.log(result,"计数详情");
+
+return $.report();
