@@ -49,3 +49,56 @@ resizeWindow = function(winname,width,height){
     ..Aardio.OpenCvSharpBridge.Cv.ResizeWindow(winname,width,height);
     return true;
 }
+
+createTrackbar = function(trackbarName,windowName,value=0,count=100,onChange){
+    init();
+    // OpenCvSharp 当前桥接层不反调 aardio 回调；onChange 仅为兼容 Python 参数位置。
+    return ..Aardio.OpenCvSharpBridge.Cv.CreateTrackbar(trackbarName,windowName,value,count);
+}
+
+getTrackbarPos = function(trackbarName,windowName){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.GetTrackbarPos(trackbarName,windowName);
+}
+
+setTrackbarPos = function(trackbarName,windowName,pos){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.SetTrackbarPos(trackbarName,windowName,pos);
+    return true;
+}
+
+getWindowProperty = function(winname,propId){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.GetWindowProperty(winname,propId);
+}
+
+setWindowProperty = function(winname,propId,propValue){
+    init();
+    ..Aardio.OpenCvSharpBridge.Cv.SetWindowProperty(winname,propId,propValue);
+    return true;
+}
+
+pollKey = function(){
+    init();
+    return ..Aardio.OpenCvSharpBridge.Cv.PollKey();
+}
+
+selectROI = function(windowName,img,showCrosshair=true,fromCenter=false){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SelectROI(windowName,_asNetMat(img),showCrosshair,fromCenter);
+    return _rectTable(r);
+}
+
+selectROIs = function(windowName,img,showCrosshair=true,fromCenter=false){
+    init();
+    var rects = ..Aardio.OpenCvSharpBridge.Cv.SelectROIs(windowName,_asNetMat(img),showCrosshair,fromCenter);
+    var ret = [];
+    for i,r in rects{
+        ..table.push(ret,_rectTable(r));
+    }
+    return ret;
+}
+
+setMouseCallback = function(winname,onMouse,param){
+    return null,"当前 OpenCvSharp 桥接层暂不支持将 aardio 函数安全转换为 HighGUI 鼠标回调";
+}

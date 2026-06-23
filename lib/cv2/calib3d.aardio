@@ -91,6 +91,63 @@ solvePnP = function(objectPoints,imagePoints,cameraMatrix,distCoeffs,useExtrinsi
     return Mat(r.Mat1), Mat(r.Mat2);
 }
 
+_calibPointMats = function(pointViews,dims){
+    var ret = [];
+    for i,points in pointViews{
+        if(type.rget(points)=="cv2.Mat") ..table.push(ret,points.net);
+        else ..table.push(ret,_asNetMat(_pointsToMat(points,dims,5/*CV_32F*/)));
+    }
+    return ret;
+}
+
+calibrateCamera = function(objectPoints,imagePoints,imageSize,cameraMatrix,distCoeffs,flags=0,criteria){
+    init();
+    var width,height = _size2wh(imageSize);
+    if(!cameraMatrix) cameraMatrix = Mat();
+    if(!distCoeffs) distCoeffs = Mat();
+    var maxCount,epsilon = 30,0.001;
+    if(criteria){
+        maxCount = criteria.maxCount : criteria[2] : maxCount;
+        epsilon = criteria.epsilon : criteria[3] : epsilon;
+    }
+    var r = ..Aardio.OpenCvSharpBridge.Cv.CalibrateCamera(_calibPointMats(objectPoints,3),_calibPointMats(imagePoints,2),width,height,_asNetMat(cameraMatrix),_asNetMat(distCoeffs),flags,maxCount,epsilon);
+    return r.RetVal, Mat(r.CameraMatrix), Mat(r.DistCoeffs), _matArray(r.Rvecs), _matArray(r.Tvecs);
+}
+
+solvePnPRansac = function(objectPoints,imagePoints,cameraMatrix,distCoeffs,useExtrinsicGuess=false,iterationsCount=100,reprojectionError=8.0,confidence=0.99,flags=0/*SOLVEPNP_ITERATIVE*/){
+    init();
+    if(!distCoeffs) distCoeffs = Mat();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.SolvePnPRansac(_asNetMat(_projectPointInput(objectPoints,3)),_asNetMat(_projectPointInput(imagePoints,2)),_asNetMat(cameraMatrix),_asNetMat(distCoeffs),useExtrinsicGuess,iterationsCount,reprojectionError,confidence,flags);
+    return r.Ok, Mat(r.Rvec), Mat(r.Tvec), Mat(r.Inliers);
+}
+
+findEssentialMat = function(points1,points2,cameraMatrix,method=8/*RANSAC*/,prob=0.999,threshold=1.0){
+    init();
+    if(!cameraMatrix) cameraMatrix = eye(3,3,CV_64FC1);
+    var r = ..Aardio.OpenCvSharpBridge.Cv.FindEssentialMat(_asNetMat(_projectPointInput(points1,2)),_asNetMat(_projectPointInput(points2,2)),_asNetMat(cameraMatrix),method,prob,threshold);
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+recoverPose = function(E,points1,points2,cameraMatrix,mask){
+    init();
+    if(!cameraMatrix) cameraMatrix = eye(3,3,CV_64FC1);
+    if(!mask) mask = Mat();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.RecoverPose(_asNetMat(E),_asNetMat(_projectPointInput(points1,2)),_asNetMat(_projectPointInput(points2,2)),_asNetMat(cameraMatrix),_asNetMat(mask));
+    return r.RetVal, Mat(r.R), Mat(r.T), Mat(r.Mask);
+}
+
+estimateAffine2D = function(from,to,method=8/*RANSAC*/,ransacReprojThreshold=3.0,maxIters=2000,confidence=0.99,refineIters=10){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.EstimateAffine2D(_asNetMat(_projectPointInput(from,2)),_asNetMat(_projectPointInput(to,2)),method,ransacReprojThreshold,maxIters,confidence,refineIters);
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
+estimateAffinePartial2D = function(from,to,method=8/*RANSAC*/,ransacReprojThreshold=3.0,maxIters=2000,confidence=0.99,refineIters=10){
+    init();
+    var r = ..Aardio.OpenCvSharpBridge.Cv.EstimateAffinePartial2D(_asNetMat(_projectPointInput(from,2)),_asNetMat(_projectPointInput(to,2)),method,ransacReprojThreshold,maxIters,confidence,refineIters);
+    return Mat(r.Mat1), Mat(r.Mat2);
+}
+
 initUndistortRectifyMap = function(cameraMatrix,distCoeffs,r,newCameraMatrix,size,m1type=5){
     init();
     if(!distCoeffs) distCoeffs = Mat();

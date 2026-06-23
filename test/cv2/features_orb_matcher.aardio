@@ -52,6 +52,22 @@ $.test(kazeKeypoints.count >= 0,"KAZE_create detector is callable");
 $.test(kazeDescriptors !== null,"KAZE_create returns descriptor Mat");
 kaze.release();
 
+for i,maker in [cv2.FastFeatureDetector_create,cv2.AgastFeatureDetector_create,cv2.GFTTDetector_create,cv2.MSER_create,cv2.SimpleBlobDetector_create]{
+    var detector = maker();
+    var detectorKeypoints = detector.detect(img);
+    $.test(type.rget(detectorKeypoints)=="cv2.KeyPoints","feature detector factory returns KeyPoints #" + i);
+    detector.release();
+}
+
+var convertedPts = cv2.KeyPoint_convert(keypoints);
+$.expect(#convertedPts,keypoints.count,"KeyPoint_convert KeyPoints count");
+$.test(type(convertedPts[1])=="table" && #convertedPts[1] == 2,"KeyPoint_convert point shape");
+$.test(cv2.KeyPoint_overlap({pt=[0,0];size=10},{pt=[0,0];size=10}) > 0.99,"KeyPoint_overlap identical circles");
+
+var descriptorMatcher = cv2.DescriptorMatcher_create("BruteForce-Hamming");
+$.test(type.rget(descriptorMatcher)=="cv2.BFMatcher","DescriptorMatcher_create BruteForce-Hamming");
+descriptorMatcher.release();
+
 orb.release();
 matcher.release();
 

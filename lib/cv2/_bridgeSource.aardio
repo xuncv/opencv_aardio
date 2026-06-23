@@ -180,6 +180,34 @@ namespace Aardio.OpenCvSharpBridge {
         public BoolTwoMatResult(bool ok, Mat mat1, Mat mat2){ Ok = ok; Mat1 = new NetMat(mat1); Mat2 = new NetMat(mat2); }
     }
 
+    public sealed class CalibrationResult {
+        public double RetVal;
+        public NetMat CameraMatrix;
+        public NetMat DistCoeffs;
+        public MatArrayResult Rvecs;
+        public MatArrayResult Tvecs;
+        public CalibrationResult(double retVal, Mat cameraMatrix, Mat distCoeffs, Mat[] rvecs, Mat[] tvecs){
+            RetVal = retVal; CameraMatrix = new NetMat(cameraMatrix); DistCoeffs = new NetMat(distCoeffs);
+            Rvecs = new MatArrayResult(rvecs); Tvecs = new MatArrayResult(tvecs);
+        }
+    }
+
+    public sealed class SolvePnPRansacResult {
+        public bool Ok;
+        public NetMat Rvec;
+        public NetMat Tvec;
+        public NetMat Inliers;
+        public SolvePnPRansacResult(bool ok, Mat rvec, Mat tvec, Mat inliers){ Ok = ok; Rvec = new NetMat(rvec); Tvec = new NetMat(tvec); Inliers = new NetMat(inliers); }
+    }
+
+    public sealed class RecoverPoseResult {
+        public int RetVal;
+        public NetMat R;
+        public NetMat T;
+        public NetMat Mask;
+        public RecoverPoseResult(int retVal, Mat r, Mat t, Mat mask){ RetVal = retVal; R = new NetMat(r); T = new NetMat(t); Mask = new NetMat(mask); }
+    }
+
     public sealed class MinMaxResult {
         public double MinVal;
         public double MaxVal;
@@ -566,6 +594,7 @@ namespace Aardio.OpenCvSharpBridge {
     public sealed class NetFeature2D : IDisposable {
         public Feature2D Value;
         public NetFeature2D(Feature2D value){ Value = value; }
+        public NetKeyPoints Detect(NetMat image){ return new NetKeyPoints(Value.Detect(image.Value)); }
         public DetectAndComputeResult DetectAndCompute(NetMat image){
             KeyPoint[] keypoints;
             var descriptors = new Mat();
@@ -733,6 +762,14 @@ namespace Aardio.OpenCvSharpBridge {
         public static void DestroyAllWindows(){ Cv2.DestroyAllWindows(); }
         public static void MoveWindow(string winname, int x, int y){ Cv2.MoveWindow(winname, x, y); }
         public static void ResizeWindow(string winname, int width, int height){ Cv2.ResizeWindow(winname, width, height); }
+        public static int CreateTrackbar(string trackbarName, string windowName, int value, int count){ var v = value; return Cv2.CreateTrackbar(trackbarName, windowName, ref v, count, null, IntPtr.Zero); }
+        public static int GetTrackbarPos(string trackbarName, string windowName){ return Cv2.GetTrackbarPos(trackbarName, windowName); }
+        public static void SetTrackbarPos(string trackbarName, string windowName, int pos){ Cv2.SetTrackbarPos(trackbarName, windowName, pos); }
+        public static double GetWindowProperty(string winname, int propId){ return Cv2.GetWindowProperty(winname, (WindowPropertyFlags)propId); }
+        public static void SetWindowProperty(string winname, int propId, double propValue){ Cv2.SetWindowProperty(winname, (WindowPropertyFlags)propId, propValue); }
+        public static RectResult SelectROI(string windowName, NetMat img, bool showCrosshair, bool fromCenter){ return new RectResult(Cv2.SelectROI(windowName, img.Value, showCrosshair, fromCenter)); }
+        public static RectResult[] SelectROIs(string windowName, NetMat img, bool showCrosshair, bool fromCenter){ var rects = Cv2.SelectROIs(windowName, img.Value, showCrosshair, fromCenter); var ret = new RectResult[rects == null ? 0 : rects.Length]; for(int i=0;i<ret.Length;i++) ret[i] = new RectResult(rects[i]); return ret; }
+        public static int PollKey(){ return Cv2.WaitKey(1); }
         public static string[] Glob(string pattern, bool recursive){ return Cv2.Glob(pattern, recursive); }
         public static NetMat[] ImReadMulti(string path, int flags){ Mat[] mats; var ok = Cv2.ImReadMulti(path, out mats, (ImreadModes)flags); if(!ok || mats == null) return new NetMat[0]; var ret = new NetMat[mats.Length]; for(int i=0;i<mats.Length;i++) ret[i] = new NetMat(mats[i]); return ret; }
 
@@ -1076,6 +1113,11 @@ namespace Aardio.OpenCvSharpBridge {
         public static NetFeature2D AKAZECreate(int descriptorType, int descriptorSize, int descriptorChannels, double threshold, int nOctaves, int nOctaveLayers, int diffusivity){ return new NetFeature2D(AKAZE.Create((AKAZEDescriptorType)descriptorType, descriptorSize, descriptorChannels, (float)threshold, nOctaves, nOctaveLayers, (KAZEDiffusivityType)diffusivity)); }
         public static NetFeature2D BRISKCreate(int thresh, int octaves, double patternScale){ return new NetFeature2D(BRISK.Create(thresh, octaves, (float)patternScale)); }
         public static NetFeature2D KAZECreate(bool extended, bool upright, double threshold, int nOctaves, int nOctaveLayers, int diffusivity){ return new NetFeature2D(KAZE.Create(extended, upright, (float)threshold, nOctaves, nOctaveLayers, (KAZEDiffusivityType)diffusivity)); }
+        public static NetFeature2D FastFeatureDetectorCreate(int threshold, bool nonmaxSuppression){ return new NetFeature2D(FastFeatureDetector.Create(threshold, nonmaxSuppression)); }
+        public static NetFeature2D AgastFeatureDetectorCreate(int threshold, bool nonmaxSuppression, int detectorType){ return new NetFeature2D(AgastFeatureDetector.Create(threshold, nonmaxSuppression, (AgastFeatureDetector.DetectorType)detectorType)); }
+        public static NetFeature2D GFTTDetectorCreate(int maxCorners, double qualityLevel, double minDistance, int blockSize, bool useHarrisDetector, double k){ return new NetFeature2D(GFTTDetector.Create(maxCorners, qualityLevel, minDistance, blockSize, useHarrisDetector, k)); }
+        public static NetFeature2D MSERCreate(int delta, int minArea, int maxArea, double maxVariation, double minDiversity, int maxEvolution, double areaThreshold, double minMargin, int edgeBlurSize){ return new NetFeature2D(MSER.Create(delta, minArea, maxArea, maxVariation, minDiversity, maxEvolution, areaThreshold, minMargin, edgeBlurSize)); }
+        public static NetFeature2D SimpleBlobDetectorCreate(){ return new NetFeature2D(SimpleBlobDetector.Create(new SimpleBlobDetector.Params())); }
         public static NetBFMatcher BFMatcher(int normType, bool crossCheck){ return new NetBFMatcher(normType, crossCheck); }
         public static NetFlannBasedMatcher FlannBasedMatcher(){ return new NetFlannBasedMatcher(); }
         public static NetMat DrawKeypoints(NetMat image, NetKeyPoints keypoints){ var dst = new Mat(); Cv2.DrawKeypoints(image.Value, keypoints.Points, dst); return new NetMat(dst); }
@@ -1096,6 +1138,19 @@ namespace Aardio.OpenCvSharpBridge {
         public static TwoMatResult FindFundamentalMat(NetMat src, NetMat dstPts, int method, double ransacReprojThreshold, double confidence){ var mask = new Mat(); var f = Cv2.FindFundamentalMat(src.Value, dstPts.Value, (FundamentalMatMethods)method, ransacReprojThreshold, confidence, mask); return new TwoMatResult(f ?? new Mat(), mask); }
         public static NetMat TriangulatePoints(NetMat projMatr1, NetMat projMatr2, NetMat projPoints1, NetMat projPoints2){ var dst = new Mat(); Cv2.TriangulatePoints(projMatr1.Value, projMatr2.Value, projPoints1.Value, projPoints2.Value, dst); return new NetMat(dst); }
         public static TwoMatResult SolvePnP(NetMat objectPoints, NetMat imagePoints, NetMat cameraMatrix, NetMat distCoeffs, bool useExtrinsicGuess, int flags){ var rvec = new Mat(); var tvec = new Mat(); Cv2.SolvePnP(objectPoints.Value, imagePoints.Value, cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, rvec, tvec, useExtrinsicGuess, (SolvePnPFlags)flags); return new TwoMatResult(rvec, tvec); }
+        private static Mat[] ToMatArray(NetMat[] mats){ if(mats == null) return new Mat[0]; var ret = new Mat[mats.Length]; for(int i=0;i<mats.Length;i++) ret[i] = mats[i] == null ? new Mat() : mats[i].Value; return ret; }
+        public static CalibrationResult CalibrateCamera(NetMat[] objectPoints, NetMat[] imagePoints, int width, int height, NetMat cameraMatrix, NetMat distCoeffs, int flags, int maxCount, double epsilon){
+            var cm = cameraMatrix == null || cameraMatrix.Value.Empty() ? OpenCvSharp.Mat.Eye(3,3,MatType.CV_64F).ToMat() : cameraMatrix.Value.Clone();
+            var dc = distCoeffs == null || distCoeffs.Value.Empty() ? new OpenCvSharp.Mat(5,1,MatType.CV_64F, Scalar.All(0)) : distCoeffs.Value.Clone();
+            Mat[] rvecs; Mat[] tvecs;
+            var ret = Cv2.CalibrateCamera(ToMatArray(objectPoints), ToMatArray(imagePoints), new Size(width,height), cm, dc, out rvecs, out tvecs, (CalibrationFlags)flags, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon));
+            return new CalibrationResult(ret, cm, dc, rvecs, tvecs);
+        }
+        public static SolvePnPRansacResult SolvePnPRansac(NetMat objectPoints, NetMat imagePoints, NetMat cameraMatrix, NetMat distCoeffs, bool useExtrinsicGuess, int iterationsCount, double reprojectionError, double confidence, int flags){ var rvec = new Mat(); var tvec = new Mat(); var inliers = new Mat(); Cv2.SolvePnPRansac(objectPoints.Value, imagePoints.Value, cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, rvec, tvec, useExtrinsicGuess, iterationsCount, (float)reprojectionError, confidence, inliers, (SolvePnPFlags)flags); return new SolvePnPRansacResult(true, rvec, tvec, inliers); }
+        public static TwoMatResult FindEssentialMat(NetMat points1, NetMat points2, NetMat cameraMatrix, int method, double prob, double threshold){ var mask = new Mat(); var e = Cv2.FindEssentialMat(points1.Value, points2.Value, cameraMatrix.Value, (EssentialMatMethod)method, prob, threshold, mask); return new TwoMatResult(e ?? new Mat(), mask); }
+        public static RecoverPoseResult RecoverPose(NetMat E, NetMat points1, NetMat points2, NetMat cameraMatrix, NetMat maskIn){ var r = new Mat(); var t = new Mat(); var mask = maskIn == null ? new Mat() : maskIn.Value.Clone(); var ret = Cv2.RecoverPose(E.Value, points1.Value, points2.Value, cameraMatrix.Value, r, t, mask); return new RecoverPoseResult(ret, r, t, mask); }
+        public static TwoMatResult EstimateAffine2D(NetMat from, NetMat to, int method, double ransacReprojThreshold, ulong maxIters, double confidence, ulong refineIters){ var inliers = new Mat(); var m = Cv2.EstimateAffine2D(from.Value, to.Value, inliers, (RobustEstimationAlgorithms)method, ransacReprojThreshold, maxIters, confidence, refineIters); return new TwoMatResult(m ?? new Mat(), inliers); }
+        public static TwoMatResult EstimateAffinePartial2D(NetMat from, NetMat to, int method, double ransacReprojThreshold, ulong maxIters, double confidence, ulong refineIters){ var inliers = new Mat(); var m = Cv2.EstimateAffinePartial2D(from.Value, to.Value, inliers, (RobustEstimationAlgorithms)method, ransacReprojThreshold, maxIters, confidence, refineIters); return new TwoMatResult(m ?? new Mat(), inliers); }
         public static TwoMatResult InitUndistortRectifyMap(NetMat cameraMatrix, NetMat distCoeffs, NetMat r, NetMat newCameraMatrix, int width, int height, int m1type){ var map1 = new Mat(); var map2 = new Mat(); Cv2.InitUndistortRectifyMap(cameraMatrix.Value, distCoeffs == null ? new Mat() : distCoeffs.Value, r == null ? new Mat() : r.Value, newCameraMatrix == null ? cameraMatrix.Value : newCameraMatrix.Value, new Size(width,height), new MatType(m1type), map1, map2); return new TwoMatResult(map1, map2); }
         public static NetMat BlendLinear(NetMat src1, NetMat src2, NetMat weights1, NetMat weights2){ var dst = new Mat(); Cv2.BlendLinear(src1.Value, src2.Value, weights1.Value, weights2.Value, dst); return new NetMat(dst); }
         public static PyramidResult BuildOpticalFlowPyramid(NetMat image, int winWidth, int winHeight, int maxLevel, bool withDerivatives){ Mat[] pyramid; var levels = Cv2.BuildOpticalFlowPyramid(image.Value, out pyramid, new Size(winWidth, winHeight), maxLevel, withDerivatives); return new PyramidResult(levels, pyramid); }

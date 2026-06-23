@@ -225,6 +225,9 @@ class Feature2D{
         this.$typeName = typ;
         ..table.gc(this,"release");
     };
+    detect = function(image,mask){
+        return ..cv2.KeyPoints(this.net.Detect(..cv2._asNetMat(image)));
+    }
     detectAndCompute = function(image,mask){
         var r = this.net.DetectAndCompute(..cv2._asNetMat(image));
         return ..cv2.KeyPoints(r.Keypoints), ..cv2.Mat(r.Descriptors);
@@ -311,6 +314,49 @@ KAZE_create = function(extended=false, upright=false, threshold=0.001, nOctaves=
     return Feature2D(..Aardio.OpenCvSharpBridge.Cv.KAZECreate(extended,upright,threshold,nOctaves,nOctaveLayers,diffusivity),"cv2.KAZE");
 }
 
+FastFeatureDetector_create = function(threshold=10,nonmaxSuppression=true){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.FastFeatureDetectorCreate(threshold,nonmaxSuppression),"cv2.FastFeatureDetector");
+}
+
+AgastFeatureDetector_create = function(threshold=10,nonmaxSuppression=true,detectorType=3/*AGAST_OAST_9_16*/){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.AgastFeatureDetectorCreate(threshold,nonmaxSuppression,detectorType),"cv2.AgastFeatureDetector");
+}
+
+GFTTDetector_create = function(maxCorners=1000,qualityLevel=0.01,minDistance=1.0,blockSize=3,useHarrisDetector=false,k=0.04){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.GFTTDetectorCreate(maxCorners,qualityLevel,minDistance,blockSize,useHarrisDetector,k),"cv2.GFTTDetector");
+}
+
+MSER_create = function(delta=5,min_area=60,max_area=14400,max_variation=0.25,min_diversity=0.2,max_evolution=200,area_threshold=1.01,min_margin=0.003,edge_blur_size=5){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.MSERCreate(delta,min_area,max_area,max_variation,min_diversity,max_evolution,area_threshold,min_margin,edge_blur_size),"cv2.MSER");
+}
+
+SimpleBlobDetector_create = function(){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.SimpleBlobDetectorCreate(),"cv2.SimpleBlobDetector");
+}
+
+DescriptorMatcher_create = function(descriptorMatcherType="BruteForce"){
+    select(tostring(descriptorMatcherType)){
+        case "BruteForce", "BFMatcher", "BruteForce-L1", "BruteForce-Hamming", "BruteForce-Hamming(2)"{
+            var normType = NORM_L2;
+            if(descriptorMatcherType == "BruteForce-L1") normType = NORM_L1;
+            elseif(descriptorMatcherType == "BruteForce-Hamming") normType = NORM_HAMMING;
+            elseif(descriptorMatcherType == "BruteForce-Hamming(2)") normType = NORM_HAMMING2;
+            return BFMatcher_create(normType,false);
+        }
+        case "FlannBased", "FlannBasedMatcher"{
+            return FlannBasedMatcher_create();
+        }
+        else{
+            return null,"不支持的 descriptorMatcherType: " + tostring(descriptorMatcherType);
+        }
+    }
+}
+
 BFMatcher_create = function(normType=6/*NORM_HAMMING*/,crossCheck=false){
     return BFMatcher(normType,crossCheck);
 }
@@ -327,6 +373,41 @@ drawKeypoints = function(image,keypoints){
 drawMatches = function(img1,keypoints1,img2,keypoints2,matches){
     init();
     return Mat(..Aardio.OpenCvSharpBridge.Cv.DrawMatches(_asNetMat(img1),keypoints1.net,_asNetMat(img2),keypoints2.net,matches.net));
+}
+
+KeyPoint_convert = function(keypoints){
+    var arr;
+    if(type.rget(keypoints)=="cv2.KeyPoints") arr = keypoints.toArray();
+    else arr = keypoints;
+    var ret = [];
+    for i,kp in arr{
+        ..table.push(ret,kp.pt);
+    }
+    return ret;
+}
+
+KeyPoint_overlap = function(kp1,kp2){
+    var x1,y1 = kp1.pt[1],kp1.pt[2];
+    var x2,y2 = kp2.pt[1],kp2.pt[2];
+    var r1 = (kp1.size : 0) / 2;
+    var r2 = (kp2.size : 0) / 2;
+    if(r1 <= 0 || r2 <= 0) return 0;
+    var dx = x1 - x2;
+    var dy = y1 - y2;
+    var d = ..math.sqrt(dx * dx + dy * dy);
+    var area1 = ..math.pi * r1 * r1;
+    var area2 = ..math.pi * r2 * r2;
+    var inter = 0;
+    if(d >= r1 + r2) inter = 0;
+    elseif(d <= ..math.abs(r1 - r2)) inter = ..math.min(area1,area2);
+    else {
+        var a1 = r1 * r1 * ..math.acos((d * d + r1 * r1 - r2 * r2) / (2 * d * r1));
+        var a2 = r2 * r2 * ..math.acos((d * d + r2 * r2 - r1 * r1) / (2 * d * r2));
+        var a3 = 0.5 * ..math.sqrt((-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2));
+        inter = a1 + a2 - a3;
+    }
+    var uni = area1 + area2 - inter;
+    return uni > 0 ? inter / uni : 0;
 }
 
 class Mat{

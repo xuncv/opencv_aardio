@@ -10,6 +10,15 @@ $.test(type(cv2.imshow) == "function","imshow exported");
 $.test(type(cv2.waitKey) == "function","waitKey exported");
 $.test(type(cv2.namedWindow) == "function","namedWindow exported");
 $.test(type(cv2.destroyAllWindows) == "function","destroyAllWindows exported");
+$.test(type(cv2.createTrackbar) == "function","createTrackbar exported");
+$.test(type(cv2.getTrackbarPos) == "function","getTrackbarPos exported");
+$.test(type(cv2.setTrackbarPos) == "function","setTrackbarPos exported");
+$.test(type(cv2.setMouseCallback) == "function","setMouseCallback exported");
+$.test(type(cv2.selectROI) == "function","selectROI exported");
+$.test(type(cv2.selectROIs) == "function","selectROIs exported");
+$.test(type(cv2.getWindowProperty) == "function","getWindowProperty exported");
+$.test(type(cv2.setWindowProperty) == "function","setWindowProperty exported");
+$.test(type(cv2.pollKey) == "function","pollKey exported");
 $.test(cv2.WINDOW_AUTOSIZE == 1,"WINDOW_AUTOSIZE constant");
 $.test(cv2.WINDOW_NORMAL == 0,"WINDOW_NORMAL constant");
 
@@ -17,6 +26,10 @@ $.test(cv2.WINDOW_NORMAL == 0,"WINDOW_NORMAL constant");
 // waitKey(1) is non-blocking and validates HighGUI binding availability.
 var key = cv2.waitKey(1);
 $.test(type(key) == "number","waitKey(1) returns numeric key code");
+var poll = cv2.pollKey();
+$.test(type(poll) == "number","pollKey returns numeric key code");
+var okMouse,mouseErr = cv2.setMouseCallback("__missing_window__",function(){});
+$.test(okMouse === null && #mouseErr > 0,"setMouseCallback reports unsupported callback bridge");
 $.test(cv2.destroyAllWindows(),"destroyAllWindows safe call");
 
 return $.report();

@@ -63,6 +63,8 @@ cv2.denoise_TVL1([img1,img2,img3])
 
 注意：`imencode` 的第二返回值在 aardio 中是字节数组，便于直接传给 `cv2.imdecode`。
 
+`imread` 保留 aardio 常见的 `null, err` 错误信息返回风格：文件不存在时第一个返回值为 `null`，第二返回值为错误说明。Python OpenCV 通常只返回 `None`。迁移 Python 示例时只判断第一个返回值是否为 `null` 即可。
+
 ## 4. Mat 与 numpy 差异
 
 Python OpenCV 通常以 `numpy.ndarray` 表示图像和矩阵；aardio 使用 `cv2.Mat` 包装 OpenCvSharp `Mat`。
@@ -78,8 +80,18 @@ Python OpenCV 通常以 `numpy.ndarray` 表示图像和矩阵；aardio 使用 `c
 | `img[y:y+h, x:x+w]` | `img.roi(x,y,w,h)` |
 | `img.astype(...)` | `img.convertTo(type)` |
 
-`Mat.toBytes`、`toFloatArray`、`toDoubleArray` 是 aardio 便利方法，不是 Python `cv2.Mat` API。
+`Mat.toBytes`、`toFloatArray`、`toDoubleArray` 是 aardio 便利方法，不是 Python `cv2.Mat` API。`Mat.clone`、`row`、`col`、`roi` 则更接近 C++ / OpenCvSharp 的 `Mat` 方法，Python 示例中的 numpy 切片通常应迁移为 `roi` 或 `rowRange` / `colRange`。
 
-## 5. 内部 helper
+## 5. 已知 HOLD 项
+
+以下能力已在 Todo 中标记为 `HOLD`，不是未登记的遗漏：
+
+- contrib / 扩展模块：`aruco`、`barcode`、`cuda`、`ml`、`fisheye` 等依赖 opencv-contrib 或额外后端。
+- `SIFT_create`：当前 OpenCvSharp 4.5.3 构建未暴露 `OpenCvSharp.SIFT` 类型。
+- `drawMatchesKnn`：当前 wrapper 尚未提供 KNN match 嵌套结果对象。
+- HighGUI 鼠标回调：`setMouseCallback` 已导出占位函数并返回明确错误；安全地把 aardio 函数反调为 HighGUI 原生回调需要单独设计桥接层。
+- video/tracking 对象工厂、HDR/tonemap 对象 API、calib3d 的 extended/RO/stereo 系列：底层部分支持但对象生命周期、复杂输出数组或测试样例较多，当前先暂缓。
+
+## 6. 内部 helper
 
 当前运行时仍可能看到 `_size2wh`、`_scalar4`、`_asNetMat` 等下划线前缀 helper。这些是内部实现细节，不属于 Python OpenCV 对齐 API，文档和示例不应主推这些名称。

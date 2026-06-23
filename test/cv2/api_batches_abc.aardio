@@ -110,5 +110,32 @@ var imagePoints = [[10,10],[110,10],[110,110],[10,110],[51.6667,51.6667],[146.36
 var pr,pt = cv2.solvePnP(objectPoints,imagePoints,cam,null,false,cv2.SOLVEPNP_EPNP);
 $.expect(pr.shape,[3,1,1],"solvePnP rvec");
 $.expect(pt.shape,[3,1,1],"solvePnP tvec");
+var pnpOk,rvecR,tvecR,inliersR = cv2.solvePnPRansac(objectPoints,imagePoints,cam,null,false,100,8.0,0.99,cv2.SOLVEPNP_EPNP);
+$.test(pnpOk === true,"solvePnPRansac returns ok");
+$.expect(rvecR.shape,[3,1,1],"solvePnPRansac rvec");
+$.expect(tvecR.shape,[3,1,1],"solvePnPRansac tvec");
+var affine,affineMask = cv2.estimateAffine2D([[0,0],[1,0],[0,1],[1,1]],[[1,2],[3,2],[1,4],[3,4]]);
+$.expect(affine.shape,[2,3,1],"estimateAffine2D shape");
+$.expect(affineMask.shape,[4,1,1],"estimateAffine2D inliers shape");
+var affinePartial,affinePartialMask = cv2.estimateAffinePartial2D([[0,0],[1,0],[0,1],[1,1]],[[1,2],[3,2],[1,4],[3,4]]);
+$.expect(affinePartial.shape,[2,3,1],"estimateAffinePartial2D shape");
+var essential,essentialMask = cv2.findEssentialMat([[120,120],[200,120],[280,120],[120,200],[200,200],[280,200],[120,280],[200,280],[280,280]],[[122,121],[203,119],[282,122],[121,202],[202,201],[281,203],[123,279],[201,282],[283,281]],cam);
+$.expect(essential.shape,[3,3,1],"findEssentialMat shape");
+$.expect(essentialMask.shape,[9,1,1],"findEssentialMat mask shape");
+var poseCount,poseR,poseT,poseMask = cv2.recoverPose(essential,[[120,120],[200,120],[280,120],[120,200],[200,200],[280,200],[120,280],[200,280],[280,280]],[[122,121],[203,119],[282,122],[121,202],[202,201],[281,203],[123,279],[201,282],[283,281]],cam,essentialMask);
+$.test(type(poseCount)=="number","recoverPose count");
+$.expect(poseR.shape,[3,3,1],"recoverPose R shape");
+$.expect(poseT.shape,[3,1,1],"recoverPose t shape");
+var objGrid = []; var imgGrid = [];
+for(y=0;5;1){
+    for(x=0;6;1){
+        table.push(objGrid,[x,y,0]);
+        table.push(imgGrid,[100 + x*30,80 + y*30]);
+    }
+}
+var rms,cameraMatrix,distCoeffs,rvecs,tvecs = cv2.calibrateCamera([objGrid],[imgGrid],[640,480]);
+$.test(type(rms)=="number","calibrateCamera rms number");
+$.expect(cameraMatrix.shape,[3,3,1],"calibrateCamera cameraMatrix");
+$.test(#rvecs == 1 && #tvecs == 1,"calibrateCamera rvec/tvec arrays");
 
 return $.report();
