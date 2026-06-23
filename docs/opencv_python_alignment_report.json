@@ -1,0 +1,1447 @@
+{
+  "python_cv2_version": "4.12.0",
+  "aardio_public_count": 343,
+  "aardio_classes": {
+    "DnnNet": [
+      "dump",
+      "empty",
+      "forward",
+      "forwardLayers",
+      "getLayerNames",
+      "getPerfProfile",
+      "getUnconnectedOutLayersNames",
+      "release",
+      "setInput",
+      "setPreferableBackend",
+      "setPreferableTarget"
+    ]
+  },
+  "aardio_modules": {
+    "calib3d": false,
+    "core": false,
+    "core_extra": false,
+    "core_utils": false,
+    "dnn": true,
+    "draw": false,
+    "features2d": false,
+    "highgui": false,
+    "imgproc": false,
+    "imgproc_basic": false,
+    "io": false,
+    "photo": false,
+    "utils": true,
+    "video": false
+  },
+  "root_extra_count": 83,
+  "root_extra": [
+    "AGAST",
+    "FAST",
+    "NMSBoxes",
+    "Net",
+    "_checkFile",
+    "_dnnArray",
+    "_dnnClassOf",
+    "_dnnColorOf",
+    "_dnnPath",
+    "_dnnRectObject",
+    "_dnnRowsFromMat",
+    "_dnnScoreOf",
+    "_dnnSigmoidValue",
+    "_pointsTo2xNMat",
+    "_projectPointInput",
+    "abs",
+    "agast",
+    "alignSize",
+    "applyCLAHE",
+    "bestClass",
+    "bestScore",
+    "bitwiseAnd",
+    "bitwiseNot",
+    "bitwiseOr",
+    "bitwiseXor",
+    "blobFromImage",
+    "blobFromImages",
+    "box",
+    "camShift",
+    "classId",
+    "classScore",
+    "confidence",
+    "contourMoments",
+    "convexHullIndices",
+    "cvCeil",
+    "cvFloor",
+    "cvRound",
+    "denoiseTVL1",
+    "dnnArgMax",
+    "dnnBoxXYWHToRect",
+    "dnnClipBox",
+    "dnnColorPalette",
+    "dnnDecodeBinaryMask",
+    "dnnDecodeClassification",
+    "dnnDecodeDetections",
+    "dnnDecodeFasterRCNN",
+    "dnnDecodeMask",
+    "dnnDecodeSSD",
+    "dnnDecodeSegmentation",
+    "dnnDecodeYOLO",
+    "dnnDecodeYolo",
+    "dnnDrawDetections",
+    "dnnNMSDetections",
+    "dnnSigmoid",
+    "dnnSoftmax",
+    "dnnTopK",
+    "eye",
+    "format",
+    "getCpuFeaturesLine",
+    "getCpuTickCount",
+    "getNumberOfCpus",
+    "glob",
+    "imageId",
+    "imreadMulti",
+    "inPaint",
+    "init",
+    "maxIndex",
+    "minMaxIdx",
+    "morphologyDefaultBorderValue",
+    "nmsBoxes",
+    "objectness",
+    "ones",
+    "readNet",
+    "readNetFromCaffe",
+    "readNetFromDarknet",
+    "readNetFromONNX",
+    "readNetFromOnnx",
+    "readNetFromTensorflow",
+    "readNetFromTorch",
+    "score",
+    "sum",
+    "values",
+    "zeros"
+  ],
+  "root_extra_in_python_submodule": {
+    "NMSBoxes": [
+      "dnn"
+    ],
+    "Net": [
+      "dnn"
+    ],
+    "blobFromImage": [
+      "dnn"
+    ],
+    "blobFromImages": [
+      "dnn"
+    ],
+    "readNet": [
+      "dnn"
+    ],
+    "readNetFromCaffe": [
+      "dnn"
+    ],
+    "readNetFromDarknet": [
+      "dnn"
+    ],
+    "readNetFromONNX": [
+      "dnn"
+    ],
+    "readNetFromTensorflow": [
+      "dnn"
+    ],
+    "readNetFromTorch": [
+      "dnn"
+    ],
+    "sum": [
+      "gapi"
+    ]
+  },
+  "missing_function_like_sample_count": 253,
+  "missing_function_like_sample": [
+    "AKAZE_create",
+    "BFMatcher",
+    "BRISK_create",
+    "addText",
+    "approxPolyN",
+    "aruco_ArucoDetector",
+    "aruco_Board",
+    "aruco_CharucoBoard",
+    "aruco_CharucoDetector",
+    "aruco_CharucoParameters",
+    "aruco_DetectorParameters",
+    "aruco_Dictionary",
+    "aruco_GridBoard",
+    "aruco_RefineParameters",
+    "barcode_BarcodeDetector",
+    "bootstrap",
+    "broadcast",
+    "calibrateCamera",
+    "calibrateCameraExtended",
+    "calibrateCameraRO",
+    "calibrateCameraROExtended",
+    "calibrateHandEye",
+    "calibrateRobotWorldHandEye",
+    "checkChessboard",
+    "composeRT",
+    "computeCorrespondEpilines",
+    "correctMatches",
+    "createAlignMTB",
+    "createBackgroundSubtractorKNN",
+    "createBackgroundSubtractorMOG2",
+    "createButton",
+    "createCLAHE",
+    "createCalibrateDebevec",
+    "createCalibrateRobertson",
+    "createGeneralizedHoughBallard",
+    "createGeneralizedHoughGuil",
+    "createLineSegmentDetector",
+    "createMergeDebevec",
+    "createMergeMertens",
+    "createMergeRobertson",
+    "createTonemap",
+    "createTonemapDrago",
+    "createTonemapMantiuk",
+    "createTonemapReinhard",
+    "createTrackbar",
+    "cuda_BufferPool",
+    "cuda_DeviceInfo",
+    "cuda_Event",
+    "cuda_GpuData",
+    "cuda_GpuMat",
+    "cuda_GpuMatND",
+    "cuda_GpuMat_Allocator",
+    "cuda_HostMem",
+    "cuda_Stream",
+    "cuda_TargetArchs",
+    "currentUIFramework",
+    "decomposeEssentialMat",
+    "decomposeHomographyMat",
+    "decomposeProjectionMatrix",
+    "denoise_TVL1",
+    "detail_AffineBasedEstimator",
+    "detail_AffineBestOf2NearestMatcher",
+    "detail_BestOf2NearestMatcher",
+    "detail_BestOf2NearestRangeMatcher",
+    "detail_Blender",
+    "detail_BlocksChannelsCompensator",
+    "detail_BlocksCompensator",
+    "detail_BlocksGainCompensator",
+    "detail_BundleAdjusterAffine",
+    "detail_BundleAdjusterAffinePartial",
+    "detail_BundleAdjusterBase",
+    "detail_BundleAdjusterRay",
+    "detail_BundleAdjusterReproj",
+    "detail_CameraParams",
+    "detail_ChannelsCompensator",
+    "detail_DpSeamFinder",
+    "detail_Estimator",
+    "detail_ExposureCompensator",
+    "detail_FeatherBlender",
+    "detail_FeaturesMatcher",
+    "detail_GainCompensator",
+    "detail_GraphCutSeamFinder",
+    "detail_HomographyBasedEstimator",
+    "detail_ImageFeatures",
+    "detail_MatchesInfo",
+    "detail_MultiBandBlender",
+    "detail_NoBundleAdjuster",
+    "detail_NoExposureCompensator",
+    "detail_NoSeamFinder",
+    "detail_PairwiseSeamFinder",
+    "detail_ProjectorBase",
+    "detail_SeamFinder",
+    "detail_SphericalProjector",
+    "detail_Timelapser",
+    "detail_TimelapserCrop",
+    "detail_VoronoiSeamFinder",
+    "displayOverlay",
+    "displayStatusBar",
+    "divSpectrums",
+    "dnn_ClassificationModel",
+    "dnn_DetectionModel",
+    "dnn_DictValue",
+    "dnn_Image2BlobParams",
+    "dnn_KeypointsModel",
+    "dnn_Layer",
+    "dnn_Model",
+    "dnn_Net",
+    "dnn_SegmentationModel",
+    "dnn_TextDetectionModel",
+    "dnn_TextDetectionModel_DB",
+    "dnn_TextDetectionModel_EAST",
+    "dnn_TextRecognitionModel",
+    "dnn_registerLayer",
+    "dnn_unregisterLayer",
+    "drawChessboardCorners",
+    "drawFrameAxes",
+    "drawKeypoints",
+    "drawMatches",
+    "drawMatchesKnn",
+    "empty_array_desc",
+    "empty_gopaque_desc",
+    "empty_scalar_desc",
+    "error",
+    "estimateAffine2D",
+    "estimateAffine3D",
+    "estimateAffinePartial2D",
+    "estimateChessboardSharpness",
+    "estimateTranslation3D",
+    "filterHomographyDecompByVisibleRefpoints",
+    "filterSpeckles",
+    "find4QuadCornerSubpix",
+    "findChessboardCorners",
+    "findChessboardCornersSB",
+    "findChessboardCornersSBWithMeta",
+    "findCirclesGrid",
+    "findContoursLinkRuns",
+    "findEssentialMat",
+    "flann_Index",
+    "flipND",
+    "gapi_GNetPackage",
+    "gapi_GNetParam",
+    "gapi_ie_PyParams",
+    "gapi_onnx_PyParams",
+    "gapi_onnx_ep_CUDA",
+    "gapi_onnx_ep_CoreML",
+    "gapi_onnx_ep_DirectML",
+    "gapi_onnx_ep_OpenVINO",
+    "gapi_onnx_ep_TensorRT",
+    "gapi_ot_ObjectTrackerParams",
+    "gapi_ov_PyParams",
+    "gapi_streaming_queue_capacity",
+    "gapi_wip_GOutputs",
+    "gapi_wip_IStreamSource",
+    "gapi_wip_draw_Circle",
+    "gapi_wip_draw_Image",
+    "gapi_wip_draw_Line",
+    "gapi_wip_draw_Mosaic",
+    "gapi_wip_draw_Poly",
+    "gapi_wip_draw_Rect",
+    "gapi_wip_draw_Text",
+    "gapi_wip_gst_GStreamerPipeline",
+    "getCPUFeaturesLine",
+    "getCPUTickCount",
+    "getClosestEllipsePoints",
+    "getDefaultAlgorithmHint",
+    "getDefaultNewCameraMatrix",
+    "getLogLevel",
+    "getNumberOfCPUs",
+    "getOptimalNewCameraMatrix",
+    "getThreadNum",
+    "getTrackbarPos",
+    "getValidDisparityROI",
+    "getWindowImageRect",
+    "getWindowProperty",
+    "gin",
+    "goodFeaturesToTrackWithQuality",
+    "groupRectangles",
+    "hasNonZero",
+    "haveOpenVX",
+    "imcount",
+    "imdecodeWithMetadata",
+    "imdecodeanimation",
+    "imdecodemulti",
+    "imencodeWithMetadata",
+    "imencodeanimation",
+    "imencodemulti",
+    "imreadWithMetadata",
+    "imreadanimation",
+    "imwriteWithMetadata",
+    "imwriteanimation",
+    "imwritemulti",
+    "initCameraMatrix2D",
+    "initInverseRectificationMap",
+    "matMulDeriv",
+    "ml_ANN_MLP",
+    "ml_Boost",
+    "ml_DTrees",
+    "ml_EM",
+    "ml_KNearest",
+    "ml_LogisticRegression",
+    "ml_NormalBayesClassifier",
+    "ml_ParamGrid",
+    "ml_RTrees",
+    "ml_SVM",
+    "ml_SVMSGD",
+    "ml_StatModel",
+    "ml_TrainData",
+    "ocl_Device",
+    "ocl_OpenCLExecutionContext",
+    "pollKey",
+    "readOpticalFlow",
+    "recoverPose",
+    "rectangleIntersectionArea",
+    "rectify3Collinear",
+    "redirectError",
+    "reduceArgMax",
+    "reduceArgMin",
+    "reprojectImageTo3D",
+    "sampsonDistance",
+    "segmentation_IntelligentScissorsMB",
+    "selectROI",
+    "selectROIs",
+    "setLogLevel",
+    "setMouseCallback",
+    "setRNGSeed",
+    "setTrackbarMax",
+    "setTrackbarMin",
+    "setTrackbarPos",
+    "setUseOpenVX",
+    "setWindowProperty",
+    "setWindowTitle",
+    "solveLP",
+    "solveP3P",
+    "solvePnPGeneric",
+    "solvePnPRansac",
+    "solvePnPRefineLM",
+    "solvePnPRefineVVS",
+    "stackBlur",
+    "startWindowThread",
+    "stereoCalibrate",
+    "stereoCalibrateExtended",
+    "stereoRectify",
+    "stereoRectifyUncalibrated",
+    "thresholdWithMask",
+    "transposeND",
+    "undistortImagePoints",
+    "undistortPointsIter",
+    "useOpenVX",
+    "utils_ClassWithKeywordProperties",
+    "utils_nested_ExportClassName",
+    "utils_nested_ExportClassName_Params",
+    "validateDisparity",
+    "writeOpticalFlow"
+  ],
+  "public": {
+    "AGAST": [
+      "features2d.aardio"
+    ],
+    "Canny": [
+      "imgproc_basic.aardio"
+    ],
+    "FAST": [
+      "features2d.aardio"
+    ],
+    "GaussianBlur": [
+      "imgproc_basic.aardio"
+    ],
+    "HoughCircles": [
+      "imgproc.aardio"
+    ],
+    "HoughLines": [
+      "imgproc.aardio"
+    ],
+    "HoughLinesP": [
+      "imgproc.aardio"
+    ],
+    "HuMoments": [
+      "imgproc.aardio"
+    ],
+    "LUT": [
+      "imgproc.aardio"
+    ],
+    "Laplacian": [
+      "imgproc_basic.aardio"
+    ],
+    "Mahalanobis": [
+      "core.aardio"
+    ],
+    "NMSBoxes": [
+      "dnn.aardio"
+    ],
+    "Net": [
+      "dnn.aardio"
+    ],
+    "PCABackProject": [
+      "core.aardio"
+    ],
+    "PCACompute": [
+      "core.aardio"
+    ],
+    "PCAProject": [
+      "core.aardio"
+    ],
+    "PSNR": [
+      "core.aardio"
+    ],
+    "RQDecomp3x3": [
+      "calib3d.aardio"
+    ],
+    "Rodrigues": [
+      "calib3d.aardio"
+    ],
+    "SVDecomp": [
+      "core.aardio"
+    ],
+    "Scharr": [
+      "imgproc_basic.aardio"
+    ],
+    "Sobel": [
+      "imgproc_basic.aardio"
+    ],
+    "_checkFile": [
+      "_.aardio"
+    ],
+    "_dnnArray": [
+      "dnn.aardio"
+    ],
+    "_dnnClassOf": [
+      "dnn.aardio"
+    ],
+    "_dnnColorOf": [
+      "dnn.aardio"
+    ],
+    "_dnnPath": [
+      "dnn.aardio"
+    ],
+    "_dnnRectObject": [
+      "dnn.aardio"
+    ],
+    "_dnnRowsFromMat": [
+      "dnn.aardio"
+    ],
+    "_dnnScoreOf": [
+      "dnn.aardio"
+    ],
+    "_dnnSigmoidValue": [
+      "dnn.aardio"
+    ],
+    "_pointsTo2xNMat": [
+      "calib3d.aardio"
+    ],
+    "_projectPointInput": [
+      "calib3d.aardio"
+    ],
+    "abs": [
+      "core.aardio"
+    ],
+    "absdiff": [
+      "core.aardio"
+    ],
+    "accumulate": [
+      "core.aardio"
+    ],
+    "accumulateProduct": [
+      "core.aardio"
+    ],
+    "accumulateSquare": [
+      "core.aardio"
+    ],
+    "accumulateWeighted": [
+      "core.aardio"
+    ],
+    "adaptiveThreshold": [
+      "imgproc_basic.aardio"
+    ],
+    "add": [
+      "core.aardio"
+    ],
+    "addWeighted": [
+      "core.aardio"
+    ],
+    "agast": [
+      "features2d.aardio(alias)"
+    ],
+    "alignSize": [
+      "core.aardio"
+    ],
+    "applyCLAHE": [
+      "imgproc.aardio"
+    ],
+    "applyColorMap": [
+      "imgproc.aardio"
+    ],
+    "approxPolyDP": [
+      "imgproc.aardio"
+    ],
+    "arcLength": [
+      "imgproc.aardio"
+    ],
+    "arrowedLine": [
+      "imgproc.aardio"
+    ],
+    "batchDistance": [
+      "core.aardio"
+    ],
+    "bestClass": [
+      "dnn.aardio(alias)"
+    ],
+    "bestScore": [
+      "dnn.aardio(alias)"
+    ],
+    "bilateralFilter": [
+      "imgproc_basic.aardio"
+    ],
+    "bitwiseAnd": [
+      "core.aardio(alias)"
+    ],
+    "bitwiseNot": [
+      "core.aardio(alias)"
+    ],
+    "bitwiseOr": [
+      "core.aardio(alias)"
+    ],
+    "bitwiseXor": [
+      "core.aardio(alias)"
+    ],
+    "bitwise_and": [
+      "core.aardio"
+    ],
+    "bitwise_not": [
+      "core.aardio"
+    ],
+    "bitwise_or": [
+      "core.aardio"
+    ],
+    "bitwise_xor": [
+      "core.aardio"
+    ],
+    "blendLinear": [
+      "core_utils.aardio"
+    ],
+    "blobFromImage": [
+      "dnn.aardio"
+    ],
+    "blobFromImages": [
+      "dnn.aardio"
+    ],
+    "blur": [
+      "imgproc_basic.aardio"
+    ],
+    "borderInterpolate": [
+      "core.aardio"
+    ],
+    "boundingRect": [
+      "imgproc.aardio"
+    ],
+    "box": [
+      "dnn.aardio(alias)",
+      "dnn.aardio(alias)"
+    ],
+    "boxFilter": [
+      "imgproc_basic.aardio"
+    ],
+    "boxPoints": [
+      "imgproc.aardio"
+    ],
+    "buildOpticalFlowPyramid": [
+      "video.aardio"
+    ],
+    "calcBackProject": [
+      "imgproc.aardio"
+    ],
+    "calcCovarMatrix": [
+      "core.aardio"
+    ],
+    "calcHist": [
+      "imgproc.aardio"
+    ],
+    "calcOpticalFlowFarneback": [
+      "video.aardio"
+    ],
+    "calcOpticalFlowPyrLK": [
+      "video.aardio"
+    ],
+    "calibrationMatrixValues": [
+      "calib3d.aardio"
+    ],
+    "camShift": [
+      "video.aardio"
+    ],
+    "cartToPolar": [
+      "core.aardio"
+    ],
+    "checkHardwareSupport": [
+      "core.aardio"
+    ],
+    "checkRange": [
+      "core.aardio"
+    ],
+    "circle": [
+      "imgproc.aardio"
+    ],
+    "classId": [
+      "dnn.aardio(alias)",
+      "dnn.aardio(alias)"
+    ],
+    "classScore": [
+      "dnn.aardio(alias)"
+    ],
+    "clipLine": [
+      "draw.aardio"
+    ],
+    "colorChange": [
+      "photo.aardio"
+    ],
+    "compare": [
+      "core.aardio"
+    ],
+    "compareHist": [
+      "imgproc.aardio"
+    ],
+    "completeSymm": [
+      "core.aardio"
+    ],
+    "computeECC": [
+      "video.aardio"
+    ],
+    "confidence": [
+      "dnn.aardio(alias)",
+      "dnn.aardio(alias)"
+    ],
+    "connectedComponents": [
+      "imgproc.aardio"
+    ],
+    "connectedComponentsWithAlgorithm": [
+      "imgproc.aardio"
+    ],
+    "connectedComponentsWithStats": [
+      "imgproc.aardio"
+    ],
+    "connectedComponentsWithStatsWithAlgorithm": [
+      "imgproc.aardio"
+    ],
+    "contourArea": [
+      "imgproc.aardio"
+    ],
+    "contourMoments": [
+      "imgproc.aardio"
+    ],
+    "convertFp16": [
+      "core.aardio"
+    ],
+    "convertMaps": [
+      "core.aardio"
+    ],
+    "convertPointsFromHomogeneous": [
+      "calib3d.aardio"
+    ],
+    "convertPointsToHomogeneous": [
+      "calib3d.aardio"
+    ],
+    "convertScaleAbs": [
+      "imgproc_basic.aardio"
+    ],
+    "convexHull": [
+      "imgproc.aardio"
+    ],
+    "convexHullIndices": [
+      "imgproc.aardio"
+    ],
+    "convexityDefects": [
+      "imgproc.aardio"
+    ],
+    "copyMakeBorder": [
+      "imgproc.aardio"
+    ],
+    "copyTo": [
+      "core.aardio"
+    ],
+    "cornerEigenValsAndVecs": [
+      "imgproc.aardio"
+    ],
+    "cornerHarris": [
+      "imgproc.aardio"
+    ],
+    "cornerMinEigenVal": [
+      "imgproc.aardio"
+    ],
+    "cornerSubPix": [
+      "imgproc.aardio"
+    ],
+    "countNonZero": [
+      "imgproc.aardio"
+    ],
+    "createHanningWindow": [
+      "imgproc.aardio"
+    ],
+    "cubeRoot": [
+      "core.aardio"
+    ],
+    "cvCeil": [
+      "core_utils.aardio"
+    ],
+    "cvFloor": [
+      "core_utils.aardio"
+    ],
+    "cvRound": [
+      "core_utils.aardio"
+    ],
+    "cvtColor": [
+      "imgproc_basic.aardio"
+    ],
+    "cvtColorTwoPlane": [
+      "imgproc_basic.aardio"
+    ],
+    "dct": [
+      "core.aardio"
+    ],
+    "decolor": [
+      "photo.aardio"
+    ],
+    "demosaicing": [
+      "imgproc_basic.aardio"
+    ],
+    "denoiseTVL1": [
+      "photo.aardio"
+    ],
+    "destroyAllWindows": [
+      "highgui.aardio"
+    ],
+    "destroyWindow": [
+      "highgui.aardio"
+    ],
+    "detailEnhance": [
+      "photo.aardio"
+    ],
+    "determinant": [
+      "core.aardio"
+    ],
+    "dft": [
+      "core.aardio"
+    ],
+    "dilate": [
+      "imgproc.aardio"
+    ],
+    "distanceTransform": [
+      "imgproc.aardio"
+    ],
+    "distanceTransformWithLabels": [
+      "imgproc.aardio"
+    ],
+    "divide": [
+      "core.aardio"
+    ],
+    "dnnArgMax": [
+      "dnn.aardio"
+    ],
+    "dnnBoxXYWHToRect": [
+      "dnn.aardio"
+    ],
+    "dnnClipBox": [
+      "dnn.aardio"
+    ],
+    "dnnColorPalette": [
+      "dnn.aardio"
+    ],
+    "dnnDecodeBinaryMask": [
+      "dnn.aardio"
+    ],
+    "dnnDecodeClassification": [
+      "dnn.aardio"
+    ],
+    "dnnDecodeDetections": [
+      "dnn.aardio"
+    ],
+    "dnnDecodeFasterRCNN": [
+      "dnn.aardio(alias)"
+    ],
+    "dnnDecodeMask": [
+      "dnn.aardio(alias)"
+    ],
+    "dnnDecodeSSD": [
+      "dnn.aardio(alias)"
+    ],
+    "dnnDecodeSegmentation": [
+      "dnn.aardio"
+    ],
+    "dnnDecodeYOLO": [
+      "dnn.aardio(alias)"
+    ],
+    "dnnDecodeYolo": [
+      "dnn.aardio"
+    ],
+    "dnnDrawDetections": [
+      "dnn.aardio"
+    ],
+    "dnnNMSDetections": [
+      "dnn.aardio"
+    ],
+    "dnnSigmoid": [
+      "dnn.aardio"
+    ],
+    "dnnSoftmax": [
+      "dnn.aardio"
+    ],
+    "dnnTopK": [
+      "dnn.aardio"
+    ],
+    "drawContours": [
+      "imgproc.aardio"
+    ],
+    "drawMarker": [
+      "draw.aardio"
+    ],
+    "edgePreservingFilter": [
+      "photo.aardio"
+    ],
+    "eigen": [
+      "core.aardio"
+    ],
+    "eigenNonSymmetric": [
+      "core_extra.aardio"
+    ],
+    "ellipse": [
+      "imgproc.aardio"
+    ],
+    "ellipse2Poly": [
+      "imgproc.aardio"
+    ],
+    "equalizeHist": [
+      "imgproc_basic.aardio"
+    ],
+    "erode": [
+      "imgproc.aardio"
+    ],
+    "exp": [
+      "core.aardio"
+    ],
+    "extractChannel": [
+      "imgproc.aardio"
+    ],
+    "eye": [
+      "_.aardio"
+    ],
+    "fastAtan2": [
+      "core.aardio"
+    ],
+    "fastNlMeansDenoising": [
+      "photo.aardio"
+    ],
+    "fastNlMeansDenoisingColored": [
+      "photo.aardio"
+    ],
+    "fastNlMeansDenoisingColoredMulti": [
+      "photo.aardio"
+    ],
+    "fastNlMeansDenoisingMulti": [
+      "photo.aardio"
+    ],
+    "fillConvexPoly": [
+      "imgproc.aardio"
+    ],
+    "fillPoly": [
+      "imgproc.aardio"
+    ],
+    "filter2D": [
+      "imgproc_basic.aardio"
+    ],
+    "findContours": [
+      "imgproc.aardio"
+    ],
+    "findFundamentalMat": [
+      "calib3d.aardio"
+    ],
+    "findHomography": [
+      "calib3d.aardio"
+    ],
+    "findNonZero": [
+      "core.aardio"
+    ],
+    "findTransformECC": [
+      "video.aardio"
+    ],
+    "fitEllipse": [
+      "imgproc.aardio"
+    ],
+    "fitEllipseAMS": [
+      "imgproc.aardio"
+    ],
+    "fitEllipseDirect": [
+      "imgproc.aardio"
+    ],
+    "fitLine": [
+      "imgproc.aardio"
+    ],
+    "flip": [
+      "imgproc_basic.aardio"
+    ],
+    "floodFill": [
+      "imgproc.aardio"
+    ],
+    "format": [
+      "core.aardio"
+    ],
+    "gemm": [
+      "core.aardio"
+    ],
+    "getAffineTransform": [
+      "imgproc.aardio"
+    ],
+    "getBuildInformation": [
+      "utils.aardio"
+    ],
+    "getCpuFeaturesLine": [
+      "core.aardio"
+    ],
+    "getCpuTickCount": [
+      "core.aardio"
+    ],
+    "getDerivKernels": [
+      "imgproc_basic.aardio"
+    ],
+    "getFontScaleFromHeight": [
+      "core_utils.aardio"
+    ],
+    "getGaborKernel": [
+      "imgproc_basic.aardio"
+    ],
+    "getGaussianKernel": [
+      "imgproc_basic.aardio"
+    ],
+    "getHardwareFeatureName": [
+      "core.aardio"
+    ],
+    "getNumThreads": [
+      "utils.aardio"
+    ],
+    "getNumberOfCpus": [
+      "core.aardio"
+    ],
+    "getOptimalDFTSize": [
+      "core.aardio"
+    ],
+    "getPerspectiveTransform": [
+      "imgproc.aardio"
+    ],
+    "getRectSubPix": [
+      "core.aardio"
+    ],
+    "getRotationMatrix2D": [
+      "imgproc.aardio"
+    ],
+    "getStructuringElement": [
+      "imgproc.aardio"
+    ],
+    "getTextSize": [
+      "imgproc.aardio"
+    ],
+    "getTickCount": [
+      "utils.aardio"
+    ],
+    "getTickFrequency": [
+      "utils.aardio"
+    ],
+    "getVersionMajor": [
+      "core.aardio"
+    ],
+    "getVersionMinor": [
+      "core.aardio"
+    ],
+    "getVersionRevision": [
+      "core.aardio"
+    ],
+    "getVersionString": [
+      "utils.aardio"
+    ],
+    "glob": [
+      "io.aardio"
+    ],
+    "goodFeaturesToTrack": [
+      "imgproc.aardio"
+    ],
+    "grabCut": [
+      "imgproc.aardio"
+    ],
+    "haveImageReader": [
+      "io.aardio"
+    ],
+    "haveImageWriter": [
+      "io.aardio"
+    ],
+    "hconcat": [
+      "imgproc.aardio"
+    ],
+    "idct": [
+      "core.aardio"
+    ],
+    "idft": [
+      "core.aardio"
+    ],
+    "illuminationChange": [
+      "photo.aardio"
+    ],
+    "imageId": [
+      "dnn.aardio(alias)"
+    ],
+    "imdecode": [
+      "io.aardio"
+    ],
+    "imencode": [
+      "io.aardio"
+    ],
+    "imread": [
+      "io.aardio"
+    ],
+    "imreadMulti": [
+      "io.aardio(alias)"
+    ],
+    "imreadmulti": [
+      "io.aardio"
+    ],
+    "imshow": [
+      "highgui.aardio"
+    ],
+    "imwrite": [
+      "io.aardio"
+    ],
+    "inPaint": [
+      "photo.aardio(alias)"
+    ],
+    "inRange": [
+      "imgproc.aardio"
+    ],
+    "init": [
+      "_.aardio"
+    ],
+    "initUndistortRectifyMap": [
+      "calib3d.aardio"
+    ],
+    "inpaint": [
+      "photo.aardio"
+    ],
+    "insertChannel": [
+      "core.aardio"
+    ],
+    "integral": [
+      "core.aardio"
+    ],
+    "integral2": [
+      "core.aardio"
+    ],
+    "integral3": [
+      "core.aardio"
+    ],
+    "intersectConvexConvex": [
+      "imgproc.aardio"
+    ],
+    "invert": [
+      "core.aardio"
+    ],
+    "invertAffineTransform": [
+      "imgproc.aardio"
+    ],
+    "isContourConvex": [
+      "imgproc.aardio"
+    ],
+    "kmeans": [
+      "core.aardio"
+    ],
+    "line": [
+      "imgproc.aardio"
+    ],
+    "linearPolar": [
+      "imgproc.aardio"
+    ],
+    "log": [
+      "core.aardio"
+    ],
+    "logPolar": [
+      "imgproc.aardio"
+    ],
+    "magnitude": [
+      "core.aardio"
+    ],
+    "matchShapes": [
+      "imgproc.aardio"
+    ],
+    "matchTemplate": [
+      "imgproc.aardio"
+    ],
+    "max": [
+      "core.aardio"
+    ],
+    "maxIndex": [
+      "dnn.aardio(alias)"
+    ],
+    "mean": [
+      "imgproc.aardio"
+    ],
+    "meanShift": [
+      "video.aardio"
+    ],
+    "meanStdDev": [
+      "imgproc.aardio"
+    ],
+    "medianBlur": [
+      "imgproc_basic.aardio"
+    ],
+    "merge": [
+      "imgproc.aardio"
+    ],
+    "min": [
+      "core.aardio"
+    ],
+    "minAreaRect": [
+      "imgproc.aardio"
+    ],
+    "minEnclosingCircle": [
+      "imgproc.aardio"
+    ],
+    "minEnclosingTriangle": [
+      "imgproc.aardio"
+    ],
+    "minMaxIdx": [
+      "core.aardio"
+    ],
+    "minMaxLoc": [
+      "imgproc.aardio"
+    ],
+    "mixChannels": [
+      "core.aardio"
+    ],
+    "moments": [
+      "imgproc.aardio"
+    ],
+    "morphologyDefaultBorderValue": [
+      "imgproc.aardio"
+    ],
+    "morphologyEx": [
+      "imgproc.aardio"
+    ],
+    "moveWindow": [
+      "highgui.aardio"
+    ],
+    "mulSpectrums": [
+      "core.aardio"
+    ],
+    "mulTransposed": [
+      "core_extra.aardio"
+    ],
+    "multiply": [
+      "core.aardio"
+    ],
+    "namedWindow": [
+      "highgui.aardio"
+    ],
+    "nmsBoxes": [
+      "dnn.aardio(alias)"
+    ],
+    "norm": [
+      "imgproc.aardio"
+    ],
+    "normalize": [
+      "core.aardio"
+    ],
+    "objectness": [
+      "dnn.aardio(alias)"
+    ],
+    "ones": [
+      "_.aardio"
+    ],
+    "patchNaNs": [
+      "core.aardio"
+    ],
+    "pencilSketch": [
+      "photo.aardio"
+    ],
+    "perspectiveTransform": [
+      "imgproc.aardio"
+    ],
+    "phase": [
+      "core.aardio"
+    ],
+    "phaseCorrelate": [
+      "imgproc.aardio"
+    ],
+    "pointPolygonTest": [
+      "imgproc.aardio"
+    ],
+    "polarToCart": [
+      "core.aardio"
+    ],
+    "polylines": [
+      "imgproc.aardio"
+    ],
+    "pow": [
+      "core.aardio"
+    ],
+    "preCornerDetect": [
+      "imgproc.aardio"
+    ],
+    "projectPoints": [
+      "calib3d.aardio"
+    ],
+    "putText": [
+      "imgproc.aardio"
+    ],
+    "pyrDown": [
+      "imgproc_basic.aardio"
+    ],
+    "pyrMeanShiftFiltering": [
+      "imgproc_basic.aardio"
+    ],
+    "pyrUp": [
+      "imgproc_basic.aardio"
+    ],
+    "randShuffle": [
+      "core.aardio"
+    ],
+    "randn": [
+      "core.aardio"
+    ],
+    "randu": [
+      "core.aardio"
+    ],
+    "readNet": [
+      "dnn.aardio"
+    ],
+    "readNetFromCaffe": [
+      "dnn.aardio"
+    ],
+    "readNetFromDarknet": [
+      "dnn.aardio"
+    ],
+    "readNetFromONNX": [
+      "dnn.aardio"
+    ],
+    "readNetFromOnnx": [
+      "dnn.aardio(alias)"
+    ],
+    "readNetFromTensorflow": [
+      "dnn.aardio"
+    ],
+    "readNetFromTorch": [
+      "dnn.aardio"
+    ],
+    "rectangle": [
+      "imgproc.aardio"
+    ],
+    "reduce": [
+      "core.aardio"
+    ],
+    "remap": [
+      "imgproc.aardio"
+    ],
+    "repeat": [
+      "core.aardio"
+    ],
+    "resize": [
+      "imgproc_basic.aardio"
+    ],
+    "resizeWindow": [
+      "highgui.aardio"
+    ],
+    "rotate": [
+      "core.aardio"
+    ],
+    "rotatedRectangleIntersection": [
+      "imgproc.aardio"
+    ],
+    "scaleAdd": [
+      "core.aardio"
+    ],
+    "score": [
+      "dnn.aardio(alias)",
+      "dnn.aardio(alias)"
+    ],
+    "seamlessClone": [
+      "photo.aardio"
+    ],
+    "sepFilter2D": [
+      "imgproc_basic.aardio"
+    ],
+    "setIdentity": [
+      "core.aardio"
+    ],
+    "setNumThreads": [
+      "utils.aardio"
+    ],
+    "setUseOptimized": [
+      "core.aardio"
+    ],
+    "solve": [
+      "core.aardio"
+    ],
+    "solveCubic": [
+      "core_extra.aardio"
+    ],
+    "solvePnP": [
+      "calib3d.aardio"
+    ],
+    "solvePoly": [
+      "core_extra.aardio"
+    ],
+    "sort": [
+      "core.aardio"
+    ],
+    "sortIdx": [
+      "core.aardio"
+    ],
+    "spatialGradient": [
+      "imgproc_basic.aardio"
+    ],
+    "split": [
+      "imgproc.aardio"
+    ],
+    "sqrBoxFilter": [
+      "imgproc_basic.aardio"
+    ],
+    "sqrt": [
+      "core.aardio"
+    ],
+    "stylization": [
+      "photo.aardio"
+    ],
+    "subtract": [
+      "core.aardio"
+    ],
+    "sum": [
+      "imgproc.aardio(alias)"
+    ],
+    "sumElems": [
+      "imgproc.aardio"
+    ],
+    "textureFlattening": [
+      "photo.aardio"
+    ],
+    "threshold": [
+      "imgproc_basic.aardio"
+    ],
+    "trace": [
+      "imgproc.aardio"
+    ],
+    "transform": [
+      "imgproc.aardio"
+    ],
+    "transpose": [
+      "core.aardio"
+    ],
+    "triangulatePoints": [
+      "calib3d.aardio"
+    ],
+    "undistort": [
+      "calib3d.aardio"
+    ],
+    "undistortPoints": [
+      "calib3d.aardio"
+    ],
+    "useOptimized": [
+      "core.aardio"
+    ],
+    "values": [
+      "dnn.aardio(alias)"
+    ],
+    "vconcat": [
+      "imgproc.aardio"
+    ],
+    "waitKey": [
+      "highgui.aardio"
+    ],
+    "waitKeyEx": [
+      "highgui.aardio"
+    ],
+    "warpAffine": [
+      "imgproc.aardio"
+    ],
+    "warpPerspective": [
+      "imgproc.aardio"
+    ],
+    "warpPolar": [
+      "imgproc.aardio"
+    ],
+    "watershed": [
+      "imgproc.aardio"
+    ],
+    "zeros": [
+      "_.aardio"
+    ]
+  }
+}

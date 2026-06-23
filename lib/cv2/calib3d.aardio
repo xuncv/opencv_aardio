@@ -68,13 +68,13 @@ convertPointsFromHomogeneous = function(src){
 findHomography = function(srcPoints,dstPoints,method=0,ransacReprojThreshold=3.0){
     init();
     var r = ..Aardio.OpenCvSharpBridge.Cv.FindHomography(_asNetMat(_projectPointInput(srcPoints,2)),_asNetMat(_projectPointInput(dstPoints,2)),method,ransacReprojThreshold);
-    return r.Ok, Mat(r.Mat);
+    return Mat(r.Mat1), Mat(r.Mat2);
 }
 
 findFundamentalMat = function(srcPoints,dstPoints,method=8/*FM_RANSAC*/,ransacReprojThreshold=3.0,confidence=0.99){
     init();
     var r = ..Aardio.OpenCvSharpBridge.Cv.FindFundamentalMat(_asNetMat(_projectPointInput(srcPoints,2)),_asNetMat(_projectPointInput(dstPoints,2)),method,ransacReprojThreshold,confidence);
-    return r.Ok, Mat(r.Mat);
+    return Mat(r.Mat1), Mat(r.Mat2);
 }
 
 triangulatePoints = function(projMatr1,projMatr2,projPoints1,projPoints2){

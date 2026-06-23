@@ -504,3 +504,20 @@ dnnDrawDetections = function(img,detections,labels,colors,thickness=2,showLabel=
     }
     return img;
 }
+
+// Python OpenCV exposes DNN entry points under cv2.dnn.* .
+// Keep the historical root-level aliases for backward compatibility, but also
+// publish the same callables on the cv2.dnn namespace for Python-style code.
+dnn.blobFromImage = blobFromImage;
+dnn.blobFromImages = blobFromImages;
+dnn.readNet = readNet;
+dnn.readNetFromONNX = readNetFromONNX;
+dnn.readNetFromOnnx = readNetFromONNX;
+dnn.readNetFromCaffe = readNetFromCaffe;
+dnn.readNetFromDarknet = readNetFromDarknet;
+dnn.readNetFromTensorflow = readNetFromTensorflow;
+dnn.readNetFromTorch = readNetFromTorch;
+dnn.NMSBoxes = NMSBoxes;
+dnn.nmsBoxes = NMSBoxes;
+dnn.Net = DnnNet;
+dnn.DnnNet = DnnNet;

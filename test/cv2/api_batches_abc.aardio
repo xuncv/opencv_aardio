@@ -90,17 +90,17 @@ $.expect(cv2.undistortPoints([[10,10],[20,10]],cam).shape,[2,1,2],"undistortPoin
 var homog = cv2.convertPointsToHomogeneous([[1,2],[3,4]]);
 $.expect(homog.shape,[2,1,3],"convertPointsToHomogeneous shape");
 $.expect(cv2.convertPointsFromHomogeneous(homog).shape,[2,1,2],"convertPointsFromHomogeneous shape");
-var okH,H = cv2.findHomography([[0,0],[1,0],[1,1],[0,1]],[[0,0],[2,0],[2,2],[0,2]]);
-$.test(okH,"findHomography ok");
+var H,maskH = cv2.findHomography([[0,0],[1,0],[1,1],[0,1]],[[0,0],[2,0],[2,2],[0,2]]);
 $.expect(H.shape,[3,3,1],"findHomography shape");
+$.expect(maskH.shape,[4,1,1],"findHomography mask shape");
 var pts1 = []; var pts2 = [];
 for(i=0;7;1){
     table.push(pts1,[i, i%3]);
     table.push(pts2,[i+0.1, (i%3)+0.2]);
 }
-var okF,F = cv2.findFundamentalMat(pts1,pts2,cv2.FM_8POINT);
-$.test(okF,"findFundamentalMat ok");
+var F,maskF = cv2.findFundamentalMat(pts1,pts2,cv2.FM_8POINT);
 $.expect(F.shape,[3,3,1],"findFundamentalMat shape");
+$.expect(maskF.shape,[8,1,1],"findFundamentalMat mask shape");
 var P1 = cv2.zeros(3,4,cv2.CV_64FC1);
 P1.set(0,0,1).set(1,1,1).set(2,2,1);
 var P2 = cv2.zeros(3,4,cv2.CV_64FC1);

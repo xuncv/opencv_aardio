@@ -4,25 +4,42 @@ import cv2;
 var $ = util.testRunner("cv2 dnn basic");
 
 var img = cv2.zeros(10,20,cv2.CV_8UC3);
+$.test(type(cv2.dnn)=="table","cv2.dnn namespace exists");
+$.test(type(cv2.dnn.blobFromImage)=="function","cv2.dnn.blobFromImage exists");
+$.test(type(cv2.dnn.blobFromImages)=="function","cv2.dnn.blobFromImages exists");
+$.test(type(cv2.dnn.readNet)=="function","cv2.dnn.readNet exists");
+$.test(type(cv2.dnn.readNetFromONNX)=="function","cv2.dnn.readNetFromONNX exists");
+$.test(type(cv2.dnn.readNetFromOnnx)=="function","cv2.dnn.readNetFromOnnx alias exists");
+$.test(type(cv2.dnn.readNetFromCaffe)=="function","cv2.dnn.readNetFromCaffe exists");
+$.test(type(cv2.dnn.readNetFromDarknet)=="function","cv2.dnn.readNetFromDarknet exists");
+$.test(type(cv2.dnn.readNetFromTensorflow)=="function","cv2.dnn.readNetFromTensorflow exists");
+$.test(type(cv2.dnn.readNetFromTorch)=="function","cv2.dnn.readNetFromTorch exists");
+$.test(type(cv2.dnn.NMSBoxes)=="function","cv2.dnn.NMSBoxes exists");
+$.test(type(cv2.dnn.Net)=="class","cv2.dnn.Net class exists");
+
 var blob = cv2.blobFromImage(img,1.0,[32,32],[1,2,3],true,false);
+var blobViaDnn = cv2.dnn.blobFromImage(img,1.0,[32,32],[1,2,3],true,false);
+$.expect(blobViaDnn.shape,blob.shape,"cv2.dnn.blobFromImage matches root alias");
 $.expect(blob.dims,4,"blobFromImage creates 4D blob");
 $.expect([blob.sizeAt(0),blob.sizeAt(1),blob.sizeAt(2),blob.sizeAt(3)],[1,3,32,32],"blobFromImage NCHW shape");
 $.expect(blob.typeName,"CV_32FC1","blobFromImage output type");
 
 var blob2 = cv2.blobFromImages([img,img],1.0,[16,16],[0,0,0],false,false);
+var blob2ViaDnn = cv2.dnn.blobFromImages([img,img],1.0,[16,16],[0,0,0],false,false);
+$.expect(blob2ViaDnn.shape,blob2.shape,"cv2.dnn.blobFromImages matches root alias");
 $.expect(blob2.dims,4,"blobFromImages creates 4D blob");
 $.expect([blob2.sizeAt(0),blob2.sizeAt(1),blob2.sizeAt(2),blob2.sizeAt(3)],[2,3,16,16],"blobFromImages NCHW shape");
 
-var idx = cv2.NMSBoxes(
-    [[0,0,10,10],[1,1,10,10],[50,50,10,10]],
-    [0.9,0.8,0.7],
-    0.5,
-    0.4
-);
+var boxes = [[0,0,10,10],[1,1,10,10],[50,50,10,10]];
+var scores = [0.9,0.8,0.7];
+var idx = cv2.NMSBoxes(boxes,scores,0.5,0.4);
 $.expect(idx,[0,2],"NMSBoxes suppresses overlapped lower-score box");
+$.expect(cv2.dnn.NMSBoxes(boxes,scores,0.5,0.4),idx,"cv2.dnn.NMSBoxes matches root alias");
 
 var net = cv2.Net();
 $.test(net.empty(),"empty DNN Net");
+var dnnNet = cv2.dnn.Net();
+$.test(dnnNet.empty(),"empty cv2.dnn.Net");
 net.setPreferableBackend(cv2.DNN_BACKEND_OPENCV).setPreferableTarget(cv2.DNN_TARGET_CPU);
 $.test(net.empty(),"backend/target can be set on empty DNN Net");
 
