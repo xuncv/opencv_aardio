@@ -43,4 +43,38 @@ var rowsPixel = [
 var yoloPixel = cv2.dnnDecodeYolo(rowsPixel,[200,100],0.5,0.4,["cat","dog"],false,true);
 $.test(yoloPixel[1].x == 60 && yoloPixel[1].y == 40 && yoloPixel[1].width == 80 && yoloPixel[1].height == 20,"YOLO pixel box mode");
 
+// Ultralytics YOLOv8/YOLOv9/YOLOv11/YOLOv12 ONNX style rows: [cx,cy,w,h,class1,class2]
+var yoloLatestRows = [
+    [100,50,80,20,0.10,0.80],
+    [104,50,80,20,0.05,0.75],
+    [40,20,40,20,0.70,0.10]
+];
+var yoloLatest = cv2.dnnDecodeYoloLatest(yoloLatestRows,[200,100],0.5,0.4,["cat","dog"],[200,100]);
+$.expect(#yoloLatest,2,"YOLO latest decode supports class-score-only rows and NMS");
+$.expect([yoloLatest[1].classId,yoloLatest[1].modelClassId,yoloLatest[1].label],[2,1,"dog"],"YOLO latest class id mapping");
+$.test(math.abs(yoloLatest[1].score - 0.80) < 0.00001,"YOLO latest score uses best class score");
+$.test(yoloLatest[1].x == 60 && yoloLatest[1].y == 40 && yoloLatest[1].width == 80 && yoloLatest[1].height == 20,"YOLO latest cxcywh pixel box");
+
+// Channels-first output shape [classes+4, numBoxes], equivalent to common [1,84,8400] ONNX output after flattening.
+var yoloCfRows = [
+    [100,104,40], // cx
+    [50,50,20],  // cy
+    [80,80,40],  // w
+    [20,20,20],  // h
+    [0.10,0.05,0.70], // cat
+    [0.80,0.75,0.10]  // dog
+];
+var yoloCf = cv2.dnnDecodeYoloLatest(yoloCfRows,[200,100],0.5,0.4,["cat","dog"],[200,100],{outputLayout="channelsFirst"});
+$.expect(#yoloCf,2,"YOLO latest channels-first layout decode");
+$.expect([yoloCf[1].label,yoloCf[2].label],["dog","cat"],"YOLO latest channels-first labels");
+
+var yoloE2eRows = [
+    [60,40,140,60,0.80,1],
+    [10,10,50,40,0.70,0]
+];
+var yoloE2e = cv2.dnnDecodeYoloEnd2End(yoloE2eRows,[200,100],0.5,0,["cat","dog"],[200,100]);
+$.expect(#yoloE2e,2,"YOLO end-to-end decode rows");
+$.expect([yoloE2e[1].classId,yoloE2e[1].modelClassId,yoloE2e[1].label],[2,1,"dog"],"YOLO end-to-end 0-based model class id mapping");
+$.test(yoloE2e[1].x == 60 && yoloE2e[1].y == 40 && yoloE2e[1].width == 80 && yoloE2e[1].height == 20,"YOLO end-to-end xyxy box");
+
 return $.report();

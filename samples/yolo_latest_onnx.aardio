@@ -1,0 +1,55 @@
+import cv2;
+import console;
+
+/*
+Ultralytics YOLO latest ONNX demo.
+
+1. Export model by Python / ultralytics first, for example:
+   yolo export model=yolo11n.pt format=onnx opset=12 imgsz=640
+
+2. Put model and image paths below, or pass them with _ARGV.model / _ARGV.image.
+*/
+
+var modelPath = _ARGV.model || "/models/yolo11n.onnx";
+var imagePath = _ARGV.image || "/images/test.jpg";
+var outPath = _ARGV.out || "/result_yolo.jpg";
+
+var labels = [
+    "person","bicycle","car","motorcycle","airplane","bus","train","truck","boat","traffic light",
+    "fire hydrant","stop sign","parking meter","bench","bird","cat","dog","horse","sheep","cow",
+    "elephant","bear","zebra","giraffe","backpack","umbrella","handbag","tie","suitcase","frisbee",
+    "skis","snowboard","sports ball","kite","baseball bat","baseball glove","skateboard","surfboard","tennis racket","bottle",
+    "wine glass","cup","fork","knife","spoon","bowl","banana","apple","sandwich","orange",
+    "broccoli","carrot","hot dog","pizza","donut","cake","chair","couch","potted plant","bed",
+    "dining table","toilet","tv","laptop","mouse","remote","keyboard","cell phone","microwave","oven",
+    "toaster","sink","refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrush"
+];
+
+var img = cv2.imread(imagePath);
+var detections = cv2.dnnYoloDetect(
+    modelPath,
+    img,
+    0.25,       // confidence threshold
+    0.45,       // NMS threshold
+    labels,
+    [640,640],  // model input size, match export imgsz
+    {
+        // Common Ultralytics detect ONNX output is [1,84,8400] or [1,8400,84].
+        // The decoder auto-detects both, so most users can keep this empty.
+        // outputLayout = "channelsFirst";
+        // layout = "cxcywh-class";
+    }
+);
+
+cv2.dnnDrawDetections(img,detections,labels,cv2.dnnColorPalette(#labels),2,true);
+cv2.imwrite(outPath,img);
+
+console.dump({
+    model = modelPath;
+    image = imagePath;
+    output = outPath;
+    count = #detections;
+    detections = detections;
+});
+
+return detections;

@@ -97,6 +97,15 @@ readNetFromTorch = function(model){
     return DnnNet(..Aardio.OpenCvSharpBridge.Cv.ReadNetFromTorch(_dnnPath(model)));
 }
 
+readNetFromYolo = function(model,config=""){
+    if(config !== null && config != "") return readNet(model,config,"");
+    var pathInfo = ..io.splitpath(model);
+    var ext = pathInfo.ext ? ..string.lower(pathInfo.ext) : "";
+    if(ext == ".onnx") return readNetFromONNX(model);
+    return readNet(model,"","");
+}
+readNetFromYOLO = readNetFromYolo;
+
 NMSBoxes = function(boxes,scores,scoreThreshold=0.0,nmsThreshold=0.0,eta=1.0,topK=0){
     init();
     var flat = [];
@@ -287,6 +296,296 @@ dnnDecodeYolo = function(rows,imgSize,confThreshold=0.25,nmsThreshold=0.45,label
 }
 
 dnnDecodeYOLO = dnnDecodeYolo;
+
+_dnnYoloRowsFromOutput = function(output,outputLayout){
+    if(type(output)==type.table && #output){
+        if(type.rget(output[1])=="cv2.Mat"){
+            output = output[1];
+        }
+        elseif(outputLayout == "channelsFirst" && type(output[1])==type.table){
+            var rows = [];
+            var rowWidth = #output;
+            var rowCount = #output[1];
+            for(n=1;rowCount;1){
+                var row = [];
+                for(ch=1;rowWidth;1){
+                    ..table.push(row,output[ch][n] : 0);
+                }
+                ..table.push(rows,row);
+            }
+            return rows;
+        }
+        else return output;
+    }
+    if(type.rget(output)!="cv2.Mat") return output;
+
+    var values = output.toFloatArray();
+    var dims = output.dims;
+    var rowWidth = 0;
+    var rowCount = 0;
+    var channelsFirst = false;
+
+    if(dims == 3){
+        var d0 = output.sizeAt(0);
+        var d1 = output.sizeAt(1);
+        var d2 = output.sizeAt(2);
+        if(outputLayout == "channelsFirst"){
+            channelsFirst = true;
+            rowWidth = d1;
+            rowCount = d2;
+        }
+        elseif(outputLayout == "rows"){
+            rowWidth = d2;
+            rowCount = d1;
+        }
+        else{
+            channelsFirst = d1 < d2;
+            rowWidth = channelsFirst ? d1 : d2;
+            rowCount = channelsFirst ? d2 : d1;
+        }
+    }
+    elseif(dims == 2){
+        var r = output.rows;
+        var c = output.cols;
+        if(outputLayout == "channelsFirst"){
+            channelsFirst = true;
+            rowWidth = r;
+            rowCount = c;
+        }
+        elseif(outputLayout == "rows"){
+            rowWidth = c;
+            rowCount = r;
+        }
+        else{
+            channelsFirst = (r < c && r <= 1024);
+            rowWidth = channelsFirst ? r : c;
+            rowCount = channelsFirst ? c : r;
+        }
+    }
+    else{
+        return [];
+    }
+
+    var rows = [];
+    if(rowWidth <= 0 || rowCount <= 0) return rows;
+
+    if(channelsFirst){
+        for(n=1;rowCount;1){
+            var row = [];
+            for(ch=1;rowWidth;1){
+                ..table.push(row,values[(ch-1) * rowCount + n] : 0);
+            }
+            ..table.push(rows,row);
+        }
+    }
+    else{
+        for(n=1;rowCount;1){
+            var row = [];
+            var base = (n-1) * rowWidth;
+            for(ch=1;rowWidth;1){
+                ..table.push(row,values[base + ch] : 0);
+            }
+            ..table.push(rows,row);
+        }
+    }
+    return rows;
+}
+
+_dnnYoloAutoNormalized = function(rows){
+    if(!rows || !#rows) return false;
+    var maxAbs = 0.0;
+    var limit = #rows;
+    if(limit > 20) limit = 20;
+    for(i=1;limit;1){
+        var row = rows[i];
+        if(row && #row >= 4){
+            for(j=1;4;1){
+                var v = ..math.abs(row[j] : 0);
+                if(v > maxAbs) maxAbs = v;
+            }
+        }
+    }
+    return maxAbs <= 2.0;
+}
+
+_dnnYoloMakeBox = function(a,b,c,d,imgSize,inputSize,normalized=false,xyxy=false){
+    var imgW,imgH = _size2wh(imgSize);
+    if(normalized){
+        a *= imgW; c *= imgW;
+        b *= imgH; d *= imgH;
+    }
+    elseif(inputSize){
+        var inW,inH = _size2wh(inputSize);
+        if(inW && inH && (inW != imgW || inH != imgH)){
+            var sx = imgW / inW;
+            var sy = imgH / inH;
+            a *= sx; c *= sx;
+            b *= sy; d *= sy;
+        }
+    }
+
+    var box = null;
+    if(xyxy) box = _dnnRectObject(a,b,c-a,d-b);
+    else box = _dnnRectObject(a - c / 2,b - d / 2,c,d);
+    return dnnClipBox(box,imgSize);
+}
+
+_dnnYoloMaybeEnd2End = function(row){
+    if(!row || #row != 6) return false;
+    var classValue = row[6];
+    var classInt = ..math.floor(classValue + 0.5);
+    if(..math.abs(classValue - classInt) > 0.001) return false;
+    if(row[5] < 0 || row[5] > 1.0) return false;
+    return row[3] > row[1] && row[4] > row[2];
+}
+
+/*
+Decode Ultralytics YOLOv8/YOLOv9/YOLOv11/YOLOv12 detect ONNX output.
+Common output shape: [1,84,8400] or [1,8400,84]. Row format: [cx,cy,w,h,class scores...].
+If inputSize is specified, pixel coordinates are scaled from model input size to imgSize.
+options fields: outputLayout="auto|channelsFirst|rows", layout="auto|cxcywh-class|cxcywh-object-class", normalized, classAware.
+*/
+dnnDecodeYoloUltralytics = function(output,imgSize,confThreshold=0.25,nmsThreshold=0.45,labels,inputSize,options){
+    if(!options) options = {};
+    var rows = _dnnYoloRowsFromOutput(output,options[["outputLayout"]]);
+    if(!rows || !#rows) return [];
+
+    var layout = options[["layout"]] || "auto";
+    if(layout == "auto" && _dnnYoloMaybeEnd2End(rows[1])){
+        return dnnDecodeYoloEnd2End(rows,imgSize,confThreshold,nmsThreshold,labels,inputSize,options);
+    }
+
+    var hasObjectness = (layout == "cxcywh-object-class") || (options[["hasObjectness"]] === true);
+    var classStart = hasObjectness ? 6 : 5;
+    var normalized = options[["normalized"]];
+    if(normalized === null) normalized = _dnnYoloAutoNormalized(rows);
+    var classAware = options[["classAware"]];
+    if(classAware === null) classAware = true;
+
+    var detections = [];
+    for(i,row in rows){
+        if(#row >= classStart){
+            var bestClass = 1;
+            var bestClassScore = row[classStart];
+            for(j=classStart+1;#row;1){
+                if(row[j] > bestClassScore){
+                    bestClassScore = row[j];
+                    bestClass = j - classStart + 1;
+                }
+            }
+
+            var objectness = hasObjectness ? row[5] : 1.0;
+            var score = objectness * bestClassScore;
+            if(score >= confThreshold){
+                var box = _dnnYoloMakeBox(row[1],row[2],row[3],row[4],imgSize,inputSize,normalized,false);
+                var det = {
+                    classId = bestClass;
+                    modelClassId = bestClass - 1;
+                    label = labels ? labels[bestClass] : null;
+                    score = score;
+                    confidence = score;
+                    objectness = objectness;
+                    classScore = bestClassScore;
+                    box = box;
+                    x = box.x;
+                    y = box.y;
+                    width = box.width;
+                    height = box.height;
+                };
+                ..table.push(detections,det);
+            }
+        }
+    }
+    return dnnNMSDetections(detections,confThreshold,nmsThreshold,classAware);
+}
+
+dnnDecodeYoloV8 = dnnDecodeYoloUltralytics;
+dnnDecodeYoloV9 = dnnDecodeYoloUltralytics;
+dnnDecodeYoloV11 = dnnDecodeYoloUltralytics;
+dnnDecodeYoloV12 = dnnDecodeYoloUltralytics;
+dnnDecodeYoloLatest = dnnDecodeYoloUltralytics;
+
+/*
+Decode NMS-free / end-to-end YOLO output, common row format: [x1,y1,x2,y2,score,classId].
+classId in model output is treated as 0-based, returned classId is 1-based for aardio labels.
+options.layout can be "xyxy-class-score" when row format is [x1,y1,x2,y2,classId,score].
+*/
+dnnDecodeYoloEnd2End = function(output,imgSize,confThreshold=0.25,nmsThreshold=0.0,labels,inputSize,options){
+    if(!options) options = {};
+    var rows = _dnnYoloRowsFromOutput(output,options[["outputLayout"]]);
+    if(!rows || !#rows) return [];
+
+    var normalized = options[["normalized"]];
+    if(normalized === null) normalized = _dnnYoloAutoNormalized(rows);
+    var layout = options[["layout"]] || "xyxy-score-class";
+    var scoreIndex = layout == "xyxy-class-score" ? 6 : 5;
+    var classIndex = layout == "xyxy-class-score" ? 5 : 6;
+    var classAware = options[["classAware"]];
+    if(classAware === null) classAware = true;
+
+    var detections = [];
+    for(i,row in rows){
+        if(#row >= 6){
+            var score = row[scoreIndex];
+            if(score >= confThreshold){
+                var modelClassId = ..math.floor((row[classIndex] : 0) + 0.5);
+                var classId = modelClassId + 1;
+                var box = _dnnYoloMakeBox(row[1],row[2],row[3],row[4],imgSize,inputSize,normalized,true);
+                var det = {
+                    classId = classId;
+                    modelClassId = modelClassId;
+                    label = labels ? labels[classId] : null;
+                    score = score;
+                    confidence = score;
+                    box = box;
+                    x = box.x;
+                    y = box.y;
+                    width = box.width;
+                    height = box.height;
+                };
+                ..table.push(detections,det);
+            }
+        }
+    }
+
+    if(nmsThreshold > 0) return dnnNMSDetections(detections,confThreshold,nmsThreshold,classAware);
+    ..table.sort(detections,lambda(next) _dnnScoreOf(owner) > _dnnScoreOf(next));
+    return detections;
+}
+
+dnnDecodeYoloV10 = dnnDecodeYoloEnd2End;
+
+/*
+Convenience call for latest Ultralytics YOLO ONNX models.
+modelOrNet: cv2.DnnNet or ONNX model path. image: cv2.Mat or image path.
+Default preprocessing matches common Ultralytics export: size 640x640, scale 1/255, swapRB=true.
+*/
+dnnYoloDetect = function(modelOrNet,image,confThreshold=0.25,nmsThreshold=0.45,labels,inputSize,options){
+    if(!options) options = {};
+    var net = modelOrNet;
+    if(type(modelOrNet)==type.string) net = readNetFromYolo(modelOrNet);
+    var img = image;
+    if(type(image)==type.string) img = imread(image);
+    if(inputSize === null) inputSize = options[["inputSize"]] || options[["size"]] || [640,640];
+
+    var scaleFactor = options[["scaleFactor"]];
+    if(scaleFactor === null) scaleFactor = 1.0 / 255.0;
+    var mean = options[["mean"]];
+    var swapRB = options[["swapRB"]];
+    if(swapRB === null) swapRB = true;
+    var crop = options[["crop"]];
+    if(crop === null) crop = false;
+
+    var blob = blobFromImage(img,scaleFactor,inputSize,mean,swapRB,crop);
+    net.setInput(blob,options[["inputName"]] || "");
+
+    var output = null;
+    if(options[["outputNames"]]) output = net.forwardLayers(options[["outputNames"]]);
+    else output = net.forward(options[["outputName"]] || "");
+
+    return dnnDecodeYoloLatest(output,[img.width,img.height],confThreshold,nmsThreshold,labels,inputSize,options);
+}
+yoloDetect = dnnYoloDetect;
 
 _dnnRowsFromMat = function(output,rowWidth){
     if(type.rget(output)!="cv2.Mat") return output;
@@ -521,3 +820,14 @@ dnn.NMSBoxes = NMSBoxes;
 dnn.nmsBoxes = NMSBoxes;
 dnn.Net = DnnNet;
 dnn.DnnNet = DnnNet;
+dnn.readNetFromYolo = readNetFromYolo;
+dnn.readNetFromYOLO = readNetFromYolo;
+dnn.decodeYoloUltralytics = dnnDecodeYoloUltralytics;
+dnn.decodeYoloLatest = dnnDecodeYoloLatest;
+dnn.decodeYoloV8 = dnnDecodeYoloV8;
+dnn.decodeYoloV9 = dnnDecodeYoloV9;
+dnn.decodeYoloV10 = dnnDecodeYoloV10;
+dnn.decodeYoloV11 = dnnDecodeYoloV11;
+dnn.decodeYoloV12 = dnnDecodeYoloV12;
+dnn.decodeYoloEnd2End = dnnDecodeYoloEnd2End;
+dnn.yoloDetect = dnnYoloDetect;

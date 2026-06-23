@@ -27,6 +27,7 @@ cv2.readNetFromCaffe(prototxt,caffeModel);
 cv2.readNetFromDarknet(cfgFile,darknetModel);
 cv2.readNetFromTensorflow(model,config);
 cv2.readNetFromTorch(model);
+cv2.readNetFromYolo(model); // YOLO ONNX 或可由 OpenCV 自动识别的模型
 ```
 
 ## 2. blob 与输出 Mat
@@ -125,6 +126,71 @@ cv2.dnnDrawDetections(img,detections,labels,cv2.dnnColorPalette(#labels),2,true)
 cv2.imwrite("/result.jpg",img);
 ```
 
+### 4.1 Ultralytics YOLO 最新 ONNX 模型
+
+新增 `dnnDecodeYoloLatest` / `dnnDecodeYoloUltralytics`，用于解码 Ultralytics YOLOv8、YOLOv9、YOLOv11、YOLOv12 常见 detect ONNX 输出：
+
+```text
+[1, 84, 8400] 或 [1, 8400, 84]
+每个框为 [cx, cy, w, h, class1, class2, ...]
+```
+
+也提供版本别名：
+
+```aardio
+cv2.dnnDecodeYoloV8(...);
+cv2.dnnDecodeYoloV9(...);
+cv2.dnnDecodeYoloV11(...);
+cv2.dnnDecodeYoloV12(...);
+```
+
+最简调用：
+
+```aardio
+import cv2;
+
+var labels = ["person","bicycle","car"/* ... COCO 80 类 ... */];
+var img = cv2.imread("/images/test.jpg");
+
+var detections = cv2.dnnYoloDetect(
+    "/models/yolo11n.onnx",
+    img,
+    0.25,      // confidence threshold
+    0.45,      // NMS threshold
+    labels,
+    [640,640]  // 与导出 imgsz 保持一致
+);
+
+cv2.dnnDrawDetections(img,detections,labels,cv2.dnnColorPalette(#labels),2,true);
+cv2.imwrite("/result_yolo.jpg",img);
+```
+
+如果需要手动 forward：
+
+```aardio
+var net = cv2.readNetFromYolo("/models/yolo11n.onnx");
+var blob = cv2.blobFromImage(img,1/255,[640,640],,true,false);
+net.setInput(blob);
+var out = net.forward();
+
+var detections = cv2.dnnDecodeYoloLatest(out,[img.width,img.height],0.25,0.45,labels,[640,640]);
+```
+
+如果模型导出为 NMS-free / end-to-end 格式，行格式通常是：
+
+```text
+[x1, y1, x2, y2, score, classId]
+```
+
+可用：
+
+```aardio
+var detections = cv2.dnnDecodeYoloEnd2End(out,[img.width,img.height],0.25,0,labels,[640,640]);
+// 别名：cv2.dnnDecodeYoloV10(...)
+```
+
+`cv2.dnn.*` 命名空间下也提供同名 Python 风格入口，例如 `cv2.dnn.yoloDetect(...)`、`cv2.dnn.decodeYoloLatest(...)`。
+
 ## 5. SSD / Faster-RCNN DetectionOutput 解码
 
 支持常见输出行格式：
@@ -176,6 +242,7 @@ var seg = cv2.dnnDecodeSegmentation(output,width,height,numClasses,labels);
 /samples/dnn_minimal_caffe_relu.aardio
 /samples/dnn_minimal_onnx_relu.aardio
 /samples/dnn_postprocess_demo.aardio
+/samples/yolo_latest_onnx.aardio
 ```
 
 也可参考测试文件了解更多边界用法：

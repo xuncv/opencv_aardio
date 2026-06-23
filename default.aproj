@@ -53,6 +53,7 @@
 		<file name="dnn_minimal_caffe_relu.aardio" path="samples\dnn_minimal_caffe_relu.aardio" comment="samples\dnn_minimal_caffe_relu.aardio"/>
 		<file name="dnn_minimal_onnx_relu.aardio" path="samples\dnn_minimal_onnx_relu.aardio" comment="samples\dnn_minimal_onnx_relu.aardio"/>
 		<file name="dnn_postprocess_demo.aardio" path="samples\dnn_postprocess_demo.aardio" comment="samples\dnn_postprocess_demo.aardio"/>
+		<file name="yolo_latest_onnx.aardio" path="samples\yolo_latest_onnx.aardio" comment="samples\yolo_latest_onnx.aardio"/>
 		<file name="highgui_imshow.aardio" path="samples\highgui_imshow.aardio" comment="samples\highgui_imshow.aardio"/>
 		<file name="matchTemplate.aardio" path="samples\matchTemplate.aardio" comment="samples\matchTemplate.aardio"/>
 	</folder>
