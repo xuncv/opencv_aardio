@@ -64,6 +64,8 @@ denoiseTVL1 = function(frames){
     return Mat(..Aardio.OpenCvSharpBridge.Cv.DenoiseTVL1(_asNetMat(frames[1]),_asNetMat(frames[2]),_asNetMat(frames[3])));
 }
 
+denoise_TVL1 = denoiseTVL1;
+
 colorChange = function(src,mask,redMul=1.5,greenMul=1.5,blueMul=1.5){
     init(); return Mat(..Aardio.OpenCvSharpBridge.Cv.ColorChange(_asNetMat(src),_asNetMat(mask),redMul,greenMul,blueMul));
 }

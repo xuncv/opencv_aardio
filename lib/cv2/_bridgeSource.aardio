@@ -563,10 +563,43 @@ namespace Aardio.OpenCvSharpBridge {
         public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
     }
 
+    public sealed class NetFeature2D : IDisposable {
+        public Feature2D Value;
+        public NetFeature2D(Feature2D value){ Value = value; }
+        public DetectAndComputeResult DetectAndCompute(NetMat image){
+            KeyPoint[] keypoints;
+            var descriptors = new Mat();
+            Value.DetectAndCompute(image.Value, null, out keypoints, descriptors);
+            return new DetectAndComputeResult(keypoints, descriptors);
+        }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
     public sealed class NetBFMatcher : IDisposable {
         public BFMatcher Value;
         public NetBFMatcher(int normType, bool crossCheck){ Value = new BFMatcher((NormTypes)normType, crossCheck); }
         public NetMatches Match(NetMat queryDescriptors, NetMat trainDescriptors){ return new NetMatches(Value.Match(queryDescriptors.Value, trainDescriptors.Value)); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class NetFlannBasedMatcher : IDisposable {
+        public FlannBasedMatcher Value;
+        public NetFlannBasedMatcher(){ Value = new FlannBasedMatcher(new OpenCvSharp.Flann.KDTreeIndexParams(5), new OpenCvSharp.Flann.SearchParams(50, 0, true)); }
+        public NetMatches Match(NetMat queryDescriptors, NetMat trainDescriptors){ return new NetMatches(Value.Match(queryDescriptors.Value, trainDescriptors.Value)); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class NetBackgroundSubtractorMOG2 : IDisposable {
+        public BackgroundSubtractorMOG2 Value;
+        public NetBackgroundSubtractorMOG2(int history, double varThreshold, bool detectShadows){ Value = BackgroundSubtractorMOG2.Create(history, varThreshold, detectShadows); }
+        public NetMat Apply(NetMat image, double learningRate){ var dst = new Mat(); Value.Apply(image.Value, dst, learningRate); return new NetMat(dst); }
+        public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
+    }
+
+    public sealed class NetBackgroundSubtractorKNN : IDisposable {
+        public BackgroundSubtractorKNN Value;
+        public NetBackgroundSubtractorKNN(int history, double dist2Threshold, bool detectShadows){ Value = BackgroundSubtractorKNN.Create(history, dist2Threshold, detectShadows); }
+        public NetMat Apply(NetMat image, double learningRate){ var dst = new Mat(); Value.Apply(image.Value, dst, learningRate); return new NetMat(dst); }
         public void Dispose(){ if(Value != null){ Value.Dispose(); Value = null; } }
     }
 
@@ -1040,7 +1073,11 @@ namespace Aardio.OpenCvSharpBridge {
             return ret;
         }
         public static NetORB ORBCreate(int nfeatures){ return new NetORB(nfeatures); }
+        public static NetFeature2D AKAZECreate(int descriptorType, int descriptorSize, int descriptorChannels, double threshold, int nOctaves, int nOctaveLayers, int diffusivity){ return new NetFeature2D(AKAZE.Create((AKAZEDescriptorType)descriptorType, descriptorSize, descriptorChannels, (float)threshold, nOctaves, nOctaveLayers, (KAZEDiffusivityType)diffusivity)); }
+        public static NetFeature2D BRISKCreate(int thresh, int octaves, double patternScale){ return new NetFeature2D(BRISK.Create(thresh, octaves, (float)patternScale)); }
+        public static NetFeature2D KAZECreate(bool extended, bool upright, double threshold, int nOctaves, int nOctaveLayers, int diffusivity){ return new NetFeature2D(KAZE.Create(extended, upright, (float)threshold, nOctaves, nOctaveLayers, (KAZEDiffusivityType)diffusivity)); }
         public static NetBFMatcher BFMatcher(int normType, bool crossCheck){ return new NetBFMatcher(normType, crossCheck); }
+        public static NetFlannBasedMatcher FlannBasedMatcher(){ return new NetFlannBasedMatcher(); }
         public static NetMat DrawKeypoints(NetMat image, NetKeyPoints keypoints){ var dst = new Mat(); Cv2.DrawKeypoints(image.Value, keypoints.Points, dst); return new NetMat(dst); }
         public static NetMat DrawMatches(NetMat img1, NetKeyPoints keypoints1, NetMat img2, NetKeyPoints keypoints2, NetMatches matches){ var dst = new Mat(); Cv2.DrawMatches(img1.Value, keypoints1.Points, img2.Value, keypoints2.Points, matches.Items, dst); return new NetMat(dst); }
         public static NetKeyPoints FAST(NetMat image, int threshold, bool nonmaxSuppression){ return new NetKeyPoints(Cv2.FAST(image.Value, threshold, nonmaxSuppression)); }
@@ -1078,6 +1115,8 @@ namespace Aardio.OpenCvSharpBridge {
         public static double FindTransformECC(NetMat templateImage, NetMat inputImage, NetMat warpMatrix, int motionType, int maxCount, double epsilon){ return Cv2.FindTransformECC(templateImage.Value, inputImage.Value, warpMatrix.Value, (MotionTypes)motionType, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon)); }
         public static MeanShiftResult MeanShift(NetMat probImage, int x, int y, int width, int height, int maxCount, double epsilon){ var window = new Rect(x,y,width,height); var iter = Cv2.MeanShift(probImage.Value, ref window, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon)); return new MeanShiftResult(iter, window); }
         public static CamShiftResult CamShift(NetMat probImage, int x, int y, int width, int height, int maxCount, double epsilon){ var window = new Rect(x,y,width,height); var box = Cv2.CamShift(probImage.Value, ref window, new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, maxCount, epsilon)); return new CamShiftResult(box, window); }
+        public static NetBackgroundSubtractorMOG2 CreateBackgroundSubtractorMOG2(int history, double varThreshold, bool detectShadows){ return new NetBackgroundSubtractorMOG2(history, varThreshold, detectShadows); }
+        public static NetBackgroundSubtractorKNN CreateBackgroundSubtractorKNN(int history, double dist2Threshold, bool detectShadows){ return new NetBackgroundSubtractorKNN(history, dist2Threshold, detectShadows); }
 
         public static NetVideoCapture VideoCaptureIndex(int index){ return new NetVideoCapture(index); }
         public static NetVideoCapture VideoCaptureFile(string fileName){ return new NetVideoCapture(fileName); }

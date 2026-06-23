@@ -11,6 +11,17 @@ getTickFrequency = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetT
 setNumThreads = function(nthreads=0){ init(); ..Aardio.OpenCvSharpBridge.Cv.SetNumThreads(nthreads); }
 getNumThreads = function(){ init(); return ..Aardio.OpenCvSharpBridge.Cv.GetNumThreads(); }
 
+// Keep a small Python-like cv2.utils namespace while preserving root cv2.* compatibility.
+{
+    var exports = [
+        "getVersionString","getBuildInformation","getTickCount","getTickFrequency",
+        "setNumThreads","getNumThreads"
+    ];
+    for i,name in exports {
+        utils[name] = self[name];
+    }
+}
+
 /**intellisense(cv2)
 Mat(.(rows,cols,type) = 创建 Mat 矩阵
 imread(.(path,flags=1) = 读取图像，返回 cv2.Mat

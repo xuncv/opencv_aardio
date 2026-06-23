@@ -29,7 +29,8 @@ imencode = function(ext,img){
     var r = ..Aardio.OpenCvSharpBridge.Cv.ImEncode(ext,_asNetMat(img));
     var bytes = [];
     for(i=0;r.Length-1;1) ..table.push(bytes,r.GetByte(i));
-    return bytes;
+    // Python cv2.imencode returns (retval, buf). Keep buf as byte array for aardio friendliness.
+    return true, bytes;
 }
 
 imdecode = function(bytes,flags=1/*IMREAD_COLOR*/){

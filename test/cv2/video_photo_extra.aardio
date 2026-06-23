@@ -39,12 +39,22 @@ var iter,win = cv2.meanShift(img,[8,8,20,20]);
 $.test(iter >= 0,"meanShift 返回迭代次数");
 $.test(win.width > 0,"meanShift 返回窗口");
 
-var box,win2 = cv2.camShift(img,[8,8,20,20]);
-$.test(box.size[1] > 0,"camShift 返回旋转框");
-$.test(win2.width > 0,"camShift 返回更新窗口");
+var box,win2 = cv2.CamShift(img,[8,8,20,20]);
+$.test(box.size[1] > 0,"CamShift 返回旋转框");
+$.test(win2.width > 0,"CamShift 返回更新窗口");
 
-var tv = cv2.denoiseTVL1([img,img,img]);
-$.expect(tv.shape,[40,40,1],"denoiseTVL1 输出尺寸");
+var mog2 = cv2.createBackgroundSubtractorMOG2();
+var fg2 = mog2.apply(img);
+$.expect(fg2.shape,[40,40,1],"createBackgroundSubtractorMOG2 apply 输出尺寸");
+mog2.release();
+
+var knn = cv2.createBackgroundSubtractorKNN();
+var fgKnn = knn.apply(img);
+$.expect(fgKnn.shape,[40,40,1],"createBackgroundSubtractorKNN apply 输出尺寸");
+knn.release();
+
+var tv = cv2.denoise_TVL1([img,img,img]);
+$.expect(tv.shape,[40,40,1],"denoise_TVL1 输出尺寸");
 
 var cc = cv2.colorChange(color,mask);
 $.expect(cc.shape,[40,40,3],"colorChange 输出尺寸");

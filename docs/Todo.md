@@ -13,9 +13,9 @@
 | 优先级 | 模块 / 名称 | 当前情况 | Python OpenCV 对齐目标 | 待办动作 | 状态 |
 | --- | --- | --- | --- | --- | --- |
 | P0 | `cv2.dnn` | DNN 函数主要挂在 `cv2` 根命名空间，`cv2.dnn` 下未完整暴露 | `cv2.dnn.blobFromImage`、`cv2.dnn.readNetFromONNX`、`cv2.dnn.NMSBoxes` 等 | 已将 DNN 相关函数同步挂载到 `cv2.dnn`，保留根命名空间兼容别名 | DONE |
-| P1 | `cv2.utils` | 存在 `utils.aardio`，但运行时 `cv2.utils` 内容与 Python 不一致 | Python 存在 `cv2.utils` 子模块 | 评估是否补齐 Python `cv2.utils` 常用函数，或在文档中声明仅为内部工具模块 | TODO |
-| P1 | `cv2.core` / `cv2.imgproc` / `cv2.highgui` 等 | aardio 内部按模块拆分，Python 这些通常不是公开子模块 | Python 函数大多直接位于 `cv2` 根命名空间 | 明确这些是内部拆分模块；文档主推 `cv2.xxx` 根命名空间写法 | TODO |
-| P1 | 内部 helper 暴露 | `_size2wh`、`_scalar4`、`_asNetMat` 等 helper 暴露在 `cv2` 根对象 | Python 不公开这些内部函数 | 移入内部表或改为私有约定命名；至少从公开文档中隐藏 | TODO |
+| P1 | `cv2.utils` | 原存在 `utils.aardio`，但运行时 `cv2.utils` 内容与 Python 不一致 | Python 存在 `cv2.utils` 子模块 | 已将版本、计时、线程工具同步到 `cv2.utils` 并测试 | DONE |
+| P1 | `cv2.core` / `cv2.imgproc` / `cv2.highgui` 等 | aardio 内部按模块拆分，Python 这些通常不是公开子模块 | Python 函数大多直接位于 `cv2` 根命名空间 | 已新增 `docs/PythonApiCompatibility.md`，明确内部拆分模块，文档主推根命名空间写法 | DONE |
+| P1 | 内部 helper 暴露 | `_size2wh`、`_scalar4`、`_asNetMat` 等 helper 暴露在 `cv2` 根对象 | Python 不公开这些内部函数 | 已新增兼容文档说明这些为内部实现细节；后续可在 P2/P3 继续物理隐藏 | DONE |
 | P2 | contrib 扩展模块 | `aruco`、`barcode`、`cuda`、`ml`、`fisheye` 等基本缺失 | 对齐 `opencv-contrib-python` 的常见模块 | 根据项目目标决定是否支持；默认暂缓 | HOLD |
 
 ## 2. `cv2.dnn` 待挂载 / 待对齐函数
@@ -37,16 +37,16 @@
 
 | 优先级 | 当前名称 | Python OpenCV 对齐名称 | 当前问题 | 待办动作 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| P1 | `BitwiseAnd` | `bitwise_and` | PascalCase / OpenCvSharp 风格 | 保留兼容别名，主推并测试 `bitwise_and` | TODO |
-| P1 | `BitwiseOr` | `bitwise_or` | PascalCase / OpenCvSharp 风格 | 保留兼容别名，主推并测试 `bitwise_or` | TODO |
-| P1 | `BitwiseXor` | `bitwise_xor` | PascalCase / OpenCvSharp 风格 | 保留兼容别名，主推并测试 `bitwise_xor` | TODO |
-| P1 | `BitwiseNot` | `bitwise_not` | PascalCase / OpenCvSharp 风格 | 保留兼容别名，主推并测试 `bitwise_not` | TODO |
-| P1 | `bitwiseAnd` | `bitwise_and` | camelCase 不符合 Python 命名 | 保留兼容别名，主推 snake_case | TODO |
-| P1 | `bitwiseOr` | `bitwise_or` | camelCase 不符合 Python 命名 | 保留兼容别名，主推 snake_case | TODO |
-| P1 | `bitwiseXor` | `bitwise_xor` | camelCase 不符合 Python 命名 | 保留兼容别名，主推 snake_case | TODO |
-| P1 | `bitwiseNot` | `bitwise_not` | camelCase 不符合 Python 命名 | 保留兼容别名，主推 snake_case | TODO |
-| P1 | `camShift` | `CamShift` | 大小写与 Python 不一致 | 增加 / 主推 `CamShift`，保留 `camShift` 兼容 | TODO |
-| P1 | `denoiseTVL1` | `denoise_TVL1` | 下划线位置与 Python 不一致 | 增加 `denoise_TVL1` 别名 | TODO |
+| P1 | `BitwiseAnd` | `bitwise_and` | PascalCase / OpenCvSharp 风格 | 已保留兼容别名，并通过测试主推 `bitwise_and` | DONE |
+| P1 | `BitwiseOr` | `bitwise_or` | PascalCase / OpenCvSharp 风格 | 已保留兼容别名，并通过测试主推 `bitwise_or` | DONE |
+| P1 | `BitwiseXor` | `bitwise_xor` | PascalCase / OpenCvSharp 风格 | 已保留兼容别名，并通过测试主推 `bitwise_xor` | DONE |
+| P1 | `BitwiseNot` | `bitwise_not` | PascalCase / OpenCvSharp 风格 | 已保留兼容别名，并通过测试主推 `bitwise_not` | DONE |
+| P1 | `bitwiseAnd` | `bitwise_and` | camelCase 不符合 Python 命名 | 已保留兼容别名，并通过测试主推 snake_case | DONE |
+| P1 | `bitwiseOr` | `bitwise_or` | camelCase 不符合 Python 命名 | 已保留兼容别名，并通过测试主推 snake_case | DONE |
+| P1 | `bitwiseXor` | `bitwise_xor` | camelCase 不符合 Python 命名 | 已保留兼容别名，并通过测试主推 snake_case | DONE |
+| P1 | `bitwiseNot` | `bitwise_not` | camelCase 不符合 Python 命名 | 已保留兼容别名，并通过测试主推 snake_case | DONE |
+| P1 | `camShift` | `CamShift` | 大小写与 Python 不一致 | 已测试并主推 `CamShift`，保留 `camShift` 兼容 | DONE |
+| P1 | `denoiseTVL1` | `denoise_TVL1` | 下划线位置与 Python 不一致 | 已增加 `denoise_TVL1` 别名并测试 | DONE |
 | P2 | `convexHullIndices` | 可通过 `convexHull(..., returnPoints=false)` 实现 | Python 没有该独立函数名 | 文档标记为 aardio 便利函数，不作为 Python 对齐 API | TODO |
 | P2 | `contourMoments` | `moments` | Python 使用 `cv2.moments` | 确认 `moments` 是否已存在；如已有则文档弱化 `contourMoments` | TODO |
 | P2 | `applyCLAHE` | `CLAHE.apply` / `createCLAHE` | Python 通常通过 CLAHE 对象方法 | 补齐 / 强化 `createCLAHE` 与 `CLAHE.apply` 用法 | TODO |
@@ -62,22 +62,22 @@
 | --- | --- | --- | --- | --- | --- |
 | P0 | `findHomography` | 原返回 `ok, Mat` 风格 | Python 返回 `(H, mask)` | 已修改为返回单应矩阵 `H` 和 `mask` | DONE |
 | P0 | `findFundamentalMat` | 原返回 `ok, Mat` 风格 | Python 返回 `(F, mask)` | 已修改为返回基础矩阵 `F` 和 `mask` | DONE |
-| P1 | `imencode` | 当前倾向只返回编码后的 bytes | Python 返回 `(retval, buf)` | 增加 Python 风格返回值：成功标记 + buffer | TODO |
+| P1 | `imencode` | 原只返回编码后的 bytes | Python 返回 `(retval, buf)` | 已改为返回 `true, bytes`，并更新测试 | DONE |
 | P1 | `imread` | 文件不存在返回 `null, "文件不存在..."` | Python 返回 `None`，通常不抛异常 | 评估是否保留 aardio 风格错误信息；文档说明差异或增加兼容模式 | TODO |
-| P1 | `VideoCapture.read` | 当前返回 `ok, Mat` | Python 返回 `(ret, frame)` | 基本对齐；补充测试覆盖 | TODO |
-| P1 | `threshold` | 当前返回 `retVal, Mat` | Python 返回 `(retval, dst)` | 基本对齐；补充测试覆盖 | TODO |
-| P1 | `findContours` | 当前返回 `contours, hierarchy` | OpenCV 4 Python 返回 `(contours, hierarchy)` | 基本对齐；补充测试覆盖 | TODO |
+| P1 | `VideoCapture.read` | 当前返回 `ok, Mat` | Python 返回 `(ret, frame)` | 已有视频文件读帧测试覆盖 | DONE |
+| P1 | `threshold` | 当前返回 `retVal, Mat` | Python 返回 `(retval, dst)` | 已有测试覆盖 `(retval, dst)` | DONE |
+| P1 | `findContours` | 当前返回 `contours, hierarchy` | OpenCV 4 Python 返回 `(contours, hierarchy)` | 已有测试覆盖 `(contours, hierarchy)` | DONE |
 
 ## 5. features2d 待补齐函数 / 类
 
 | 优先级 | 函数 / 类名 | 当前情况 | Python OpenCV 对齐目标 | 待办动作 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| P1 | `AKAZE_create` | 缺失 | `cv2.AKAZE_create` | 封装 OpenCvSharp AKAZE，如底层可用 | TODO |
-| P1 | `BRISK_create` | 缺失 | `cv2.BRISK_create` | 封装 OpenCvSharp BRISK，如底层可用 | TODO |
-| P1 | `KAZE_create` | 缺失 | `cv2.KAZE_create` | 封装 OpenCvSharp KAZE，如底层可用 | TODO |
-| P1 | `SIFT_create` | 缺失 | `cv2.SIFT_create` | 检查 OpenCV 4.5.3 / OpenCvSharp 构建是否支持 SIFT | TODO |
-| P1 | `BFMatcher_create` | 缺失或未主推 | `cv2.BFMatcher_create` | 增加 Python 风格工厂函数，映射到 `BFMatcher` | TODO |
-| P1 | `FlannBasedMatcher_create` | 缺失 | `cv2.FlannBasedMatcher_create` | 封装 FlannBasedMatcher | TODO |
+| P1 | `AKAZE_create` | 原缺失 | `cv2.AKAZE_create` | 已封装 OpenCvSharp AKAZE 并测试 `detectAndCompute` | DONE |
+| P1 | `BRISK_create` | 原缺失 | `cv2.BRISK_create` | 已封装 OpenCvSharp BRISK 并测试 `detectAndCompute` | DONE |
+| P1 | `KAZE_create` | 原缺失 | `cv2.KAZE_create` | 已封装 OpenCvSharp KAZE 并测试 `detectAndCompute` | DONE |
+| P1 | `SIFT_create` | 底层 OpenCvSharp 4.5.3 当前构建未暴露 `OpenCvSharp.SIFT` | `cv2.SIFT_create` | 暂缓；需升级底层 OpenCV/OpenCvSharp 或确认 contrib/free 模块支持 | HOLD |
+| P1 | `BFMatcher_create` | 原缺失或未主推 | `cv2.BFMatcher_create` | 已增加 Python 风格工厂函数，映射到 `BFMatcher` 并测试 | DONE |
+| P1 | `FlannBasedMatcher_create` | 原缺失 | `cv2.FlannBasedMatcher_create` | 已封装 FlannBasedMatcher 基础工厂函数 | DONE |
 | P2 | `DescriptorMatcher_create` | 缺失 | `cv2.DescriptorMatcher_create` | 增加工厂函数 | TODO |
 | P2 | `FastFeatureDetector_create` | 缺失 | `cv2.FastFeatureDetector_create` | 增加工厂函数 | TODO |
 | P2 | `AgastFeatureDetector_create` | 缺失 | `cv2.AgastFeatureDetector_create` | 增加工厂函数 | TODO |
@@ -132,8 +132,8 @@
 
 | 优先级 | 函数 / 类名 | 当前情况 | Python OpenCV 对齐目标 | 待办动作 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| P1 | `createBackgroundSubtractorMOG2` | 缺失 | `cv2.createBackgroundSubtractorMOG2` | 封装 MOG2 背景建模 | TODO |
-| P1 | `createBackgroundSubtractorKNN` | 缺失 | `cv2.createBackgroundSubtractorKNN` | 封装 KNN 背景建模 | TODO |
+| P1 | `createBackgroundSubtractorMOG2` | 原缺失 | `cv2.createBackgroundSubtractorMOG2` | 已封装 MOG2 背景建模并测试 `apply` | DONE |
+| P1 | `createBackgroundSubtractorKNN` | 原缺失 | `cv2.createBackgroundSubtractorKNN` | 已封装 KNN 背景建模并测试 `apply` | DONE |
 | P2 | `KalmanFilter` | 缺失 | `cv2.KalmanFilter` | 封装 KalmanFilter 类 | TODO |
 | P2 | `DISOpticalFlow_create` | 缺失 | `cv2.DISOpticalFlow_create` | 评估底层支持后封装 | TODO |
 | P2 | `FarnebackOpticalFlow_create` | 缺失 | `cv2.FarnebackOpticalFlow_create` | 评估底层支持后封装 | TODO |
@@ -162,7 +162,7 @@
 
 | 优先级 | 对象 / 方法 | 当前情况 | Python OpenCV 对齐目标 | 待办动作 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| P1 | `cv2.Mat` | aardio 使用自定义 `Mat` 包装 OpenCvSharp Mat | Python 主要使用 `numpy.ndarray` | 文档明确语言差异；不要承诺完全等价 numpy API | TODO |
-| P1 | `Mat.get` / `Mat.set` | aardio 自定义像素读写接口 | Python 使用 numpy 下标 | 增加示例说明 aardio 等价写法 | TODO |
+| P1 | `cv2.Mat` | aardio 使用自定义 `Mat` 包装 OpenCvSharp Mat | Python 主要使用 `numpy.ndarray` | 已在 `docs/PythonApiCompatibility.md` 说明语言差异，不承诺完全等价 numpy API | DONE |
+| P1 | `Mat.get` / `Mat.set` | aardio 自定义像素读写接口 | Python 使用 numpy 下标 | 已在兼容文档中增加 numpy 下标到 `Mat.get` / `Mat.set` 的迁移示例 | DONE |
 | P2 | `Mat.toBytes` / `toFloatArray` / `toDoubleArray` | aardio 便利方法 | Python 无同名 Mat 方法 | 文档标记为 aardio 扩展方法 | TODO |
 | P2 | `Mat.clone` / `row` / `col` / `roi` | 更接近 C++ / OpenCvSharp Mat 方法 | Python numpy 有不同切片语义 | 文档说明与 Python 示例迁移方式 | TODO |

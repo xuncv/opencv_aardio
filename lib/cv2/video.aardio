@@ -46,3 +46,59 @@ camShift = function(probImage,window,maxCount=10,epsilon=1.0){
 }
 
 CamShift = camShift;
+
+class BackgroundSubtractorMOG2{
+    ctor(history=500,varThreshold=16.0,detectShadows=true){
+        ..cv2.init();
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.CreateBackgroundSubtractorMOG2(history,varThreshold,detectShadows);
+        ..table.gc(this,"release");
+    };
+    apply = function(image,learningRate=-1.0){
+        return ..cv2.Mat(this.net.Apply(..cv2._asNetMat(image),learningRate));
+    }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.BackgroundSubtractorMOG2._metaProperty;
+}
+
+namespace BackgroundSubtractorMOG2{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.BackgroundSubtractorMOG2";
+    )
+}
+
+class BackgroundSubtractorKNN{
+    ctor(history=500,dist2Threshold=400.0,detectShadows=true){
+        ..cv2.init();
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.CreateBackgroundSubtractorKNN(history,dist2Threshold,detectShadows);
+        ..table.gc(this,"release");
+    };
+    apply = function(image,learningRate=-1.0){
+        return ..cv2.Mat(this.net.Apply(..cv2._asNetMat(image),learningRate));
+    }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.BackgroundSubtractorKNN._metaProperty;
+}
+
+namespace BackgroundSubtractorKNN{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.BackgroundSubtractorKNN";
+    )
+}
+
+createBackgroundSubtractorMOG2 = function(history=500,varThreshold=16.0,detectShadows=true){
+    return BackgroundSubtractorMOG2(history,varThreshold,detectShadows);
+}
+
+createBackgroundSubtractorKNN = function(history=500,dist2Threshold=400.0,detectShadows=true){
+    return BackgroundSubtractorKNN(history,dist2Threshold,detectShadows);
+}

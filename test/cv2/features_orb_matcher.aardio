@@ -21,9 +21,9 @@ $.expect(#keypoints.toArray(),keypoints.count,"KeyPoints.toArray count");
 var drawn = cv2.drawKeypoints(img,keypoints);
 $.expect(drawn.shape,[img.height,img.width,3],"drawKeypoints output shape");
 
-var matcher = cv2.BFMatcher(cv2.NORM_HAMMING,true);
+var matcher = cv2.BFMatcher_create(cv2.NORM_HAMMING,true);
 var matches = matcher.match(descriptors,descriptors);
-$.expect(matches.count,keypoints.count,"BFMatcher self-match count");
+$.expect(matches.count,keypoints.count,"BFMatcher_create self-match count");
 var firstMatch = matches.get(0);
 $.expect(firstMatch.distance,0,"BFMatcher self-match zero distance");
 $.expect(firstMatch.queryIdx,firstMatch.trainIdx,"BFMatcher self-match index");
@@ -33,6 +33,24 @@ var drawnMatches = cv2.drawMatches(img,keypoints,img,keypoints,matches);
 $.expect(drawnMatches.height,img.height,"drawMatches output height");
 $.expect(drawnMatches.width,img.width * 2,"drawMatches output width");
 $.expect(drawnMatches.channels(),3,"drawMatches output channels");
+
+var brisk = cv2.BRISK_create();
+var briskKeypoints,briskDescriptors = brisk.detectAndCompute(img);
+$.test(briskKeypoints.count >= 0,"BRISK_create detector is callable");
+$.test(briskDescriptors !== null,"BRISK_create returns descriptor Mat");
+brisk.release();
+
+var akaze = cv2.AKAZE_create();
+var akazeKeypoints,akazeDescriptors = akaze.detectAndCompute(img);
+$.test(akazeKeypoints.count >= 0,"AKAZE_create detector is callable");
+$.test(akazeDescriptors !== null,"AKAZE_create returns descriptor Mat");
+akaze.release();
+
+var kaze = cv2.KAZE_create();
+var kazeKeypoints,kazeDescriptors = kaze.detectAndCompute(img);
+$.test(kazeKeypoints.count >= 0,"KAZE_create detector is callable");
+$.test(kazeDescriptors !== null,"KAZE_create returns descriptor Mat");
+kaze.release();
 
 orb.release();
 matcher.release();

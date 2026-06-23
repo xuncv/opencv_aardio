@@ -7,8 +7,8 @@ var near = function(a,b,eps=1e-6){ return ..math.abs(a-b) <= eps; }
 
 var img = cv2.zeros(5,5,cv2.CV_8UC1);
 img.set(2,2,255);
-var bytes = cv2.imencode('.png',img);
-$.test(#bytes > 16,"imencode returns non-empty byte array");
+var ok,bytes = cv2.imencode('.png',img);
+$.test(ok === true && #bytes > 16,"imencode returns ok and non-empty byte array");
 var decoded = cv2.imdecode(bytes,cv2.IMREAD_GRAYSCALE);
 $.expect(decoded.shape,[5,5,1],"imdecode preserves grayscale shape");
 $.expect(decoded.get(2,2),255,"imdecode restores pixel value");

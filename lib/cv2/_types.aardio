@@ -218,6 +218,32 @@ namespace ORB{
     )
 }
 
+class Feature2D{
+    ctor(net,typ="cv2.Feature2D"){
+        ..cv2.init();
+        this.net = net;
+        this.$typeName = typ;
+        ..table.gc(this,"release");
+    };
+    detectAndCompute = function(image,mask){
+        var r = this.net.DetectAndCompute(..cv2._asNetMat(image));
+        return ..cv2.KeyPoints(r.Keypoints), ..cv2.Mat(r.Descriptors);
+    }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.Feature2D._metaProperty;
+}
+
+namespace Feature2D{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.Feature2D";
+    )
+}
+
 class BFMatcher{
     ctor(normType=6/*NORM_HAMMING*/,crossCheck=false){
         ..cv2.init();
@@ -242,8 +268,55 @@ namespace BFMatcher{
     )
 }
 
+class FlannBasedMatcher{
+    ctor(){
+        ..cv2.init();
+        this.net = ..Aardio.OpenCvSharpBridge.Cv.FlannBasedMatcher();
+        ..table.gc(this,"release");
+    };
+    match = function(queryDescriptors,trainDescriptors){
+        return ..cv2.Matches(this.net.Match(..cv2._asNetMat(queryDescriptors),..cv2._asNetMat(trainDescriptors)));
+    }
+    release = function(){
+        if(this[["net"]]){
+            this.net.Dispose();
+            this[["net"]] = null;
+        }
+    }
+    @..cv2.FlannBasedMatcher._metaProperty;
+}
+
+namespace FlannBasedMatcher{
+    _metaProperty = ..util.metaProperty(
+        _type = "cv2.FlannBasedMatcher";
+    )
+}
+
 ORB_create = function(nfeatures=500){
     return ORB(nfeatures);
+}
+
+AKAZE_create = function(descriptor_type=5/*AKAZE_DESCRIPTOR_MLDB*/, descriptor_size=0, descriptor_channels=3, threshold=0.001, nOctaves=4, nOctaveLayers=4, diffusivity=1/*KAZE_DIFF_PM_G2*/){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.AKAZECreate(descriptor_type,descriptor_size,descriptor_channels,threshold,nOctaves,nOctaveLayers,diffusivity),"cv2.AKAZE");
+}
+
+BRISK_create = function(thresh=30, octaves=3, patternScale=1.0){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.BRISKCreate(thresh,octaves,patternScale),"cv2.BRISK");
+}
+
+KAZE_create = function(extended=false, upright=false, threshold=0.001, nOctaves=4, nOctaveLayers=4, diffusivity=1/*KAZE_DIFF_PM_G2*/){
+    init();
+    return Feature2D(..Aardio.OpenCvSharpBridge.Cv.KAZECreate(extended,upright,threshold,nOctaves,nOctaveLayers,diffusivity),"cv2.KAZE");
+}
+
+BFMatcher_create = function(normType=6/*NORM_HAMMING*/,crossCheck=false){
+    return BFMatcher(normType,crossCheck);
+}
+
+FlannBasedMatcher_create = function(){
+    return FlannBasedMatcher();
 }
 
 drawKeypoints = function(image,keypoints){
