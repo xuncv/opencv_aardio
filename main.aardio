@@ -1,7 +1,18 @@
-import cv2
-img = cv2.imread("./assets/images/Lena.jpg",1/*_CV2_IMREAD_COLOR*/)
-//img = cv2.medianBlur(img,5)
-img = cv2.GaussianBlur( img,::SIZE(5,5))
-cv2.imshow( "窗口标题",img )
-cv2.imwrite("./assets/images/result.jpg",img,{1/*_CV2_IMWRITE_JPEG_QUALITY*/,80}) 
-cv2.waitKey(0)
+import cv2;
+
+var img = cv2.imread("/assets/images/Lena.jpg",cv2.IMREAD_COLOR);
+if(!img){
+    error("读取图像失败：/assets/images/Lena.jpg");
+}
+
+var dst = cv2.GaussianBlur(img,[5,5]);
+
+// 保存到系统临时目录，避免污染仓库资源目录。
+var outPath = io.tmpname("cv2_main_result_",".jpg");
+cv2.imwrite(outPath,dst);
+
+cv2.imshow("dst",dst);
+cv2.waitKey(0);
+cv2.destroyAllWindows();
+
+return outPath;

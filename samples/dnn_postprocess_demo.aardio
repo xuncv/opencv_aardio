@@ -44,7 +44,7 @@ var seg = cv2.dnnDecodeSegmentation(segValues,2,2,2,["background","object"]);
 // 6. Draw detections to an image and save it.
 var img = cv2.zeros(100,200,cv2.CV_8UC3);
 cv2.dnnDrawDetections(img,yoloDetections,detLabels,cv2.dnnColorPalette(#detLabels),2,true);
-var outPath = io.fullpath("/out_dnn_postprocess_demo.jpg");
+var outPath = io.tmpname("cv2_dnn_postprocess_",".jpg");
 cv2.imwrite(outPath,img);
 
 var result = {

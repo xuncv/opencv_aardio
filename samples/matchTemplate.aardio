@@ -1,19 +1,35 @@
-import cv2
-smallImg = cv2.imread("./images/small.jpg");
-normalImg = cv2.imread( "./images/normal.jpg",0 )
-smallImg = cv2.cvtColor( smallImg,6/*_CV2_COLOR_BGR2GRAY*/)
-//smallImg = cv2.gaussianBlur( smallImg,::SIZE(3,3) )
-h,w,c = table.unpack(smallImg.shape)
+// Template matching demo using the bundled Lena image.
+// This sample is self-contained and does not depend on external template files.
+// Run with: samples/matchTemplate.aardio show=true  // optional HighGUI preview
 
-//图像减法,调整至相似亮度
-var mask = ( cv2.mat().ones(h,w,c,0) * 75 ).toMat()
-smallImg = cv2.subtract(smallImg,mask)
+import cv2;
 
-//cv2.imshow("smallImg",smallImg)
-match = cv2.matchTemplate(normalImg,smallImg)
-var minVal,maxVal,minLoc,maxLoc = cv2.minMaxLoc(match)
-normalImg = cv2.rectangle( normalImg,::POINT(maxLoc.x,maxLoc.y),::POINT(maxLoc.x+smallImg.cols,maxLoc.y+smallImg.rows),::Scalar(0,0,0),3 )
-cv2.imshow("result",normalImg )
-cv2.waitKey();
+var normalImg = cv2.imread("/assets/images/Lena.jpg",cv2.IMREAD_GRAYSCALE);
+if(!normalImg || normalImg.empty()){
+    return { skipped = true; reason = "missing /assets/images/Lena.jpg" };
+}
 
-//算法来自 https://github.com/xuncv/image-match
+var expected = [150,120];
+var smallImg = normalImg.roi(expected[1],expected[2],80,80).clone();
+var match = cv2.matchTemplate(normalImg,smallImg);
+var minVal,maxVal,minLoc,maxLoc = cv2.minMaxLoc(match);
+
+var preview = cv2.cvtColor(normalImg,cv2.COLOR_GRAY2BGR);
+cv2.rectangle(preview,maxLoc,[maxLoc[1] + smallImg.width,maxLoc[2] + smallImg.height],[0,255,0],2);
+cv2.putText(preview,"match: " + string.format("%.3f",maxVal),[10,25],cv2.FONT_HERSHEY_SIMPLEX,0.8,[0,0,255],2);
+
+var outPath = io.tmpname("cv2_match_template_",".jpg");
+cv2.imwrite(outPath,preview);
+
+if(_ARGV && _ARGV.show){
+    cv2.imshow("matchTemplate",preview);
+    cv2.waitKey(0);
+    cv2.destroyAllWindows();
+}
+
+return {
+    expected = expected;
+    maxLoc = maxLoc;
+    maxVal = maxVal;
+    output = outPath;
+}
